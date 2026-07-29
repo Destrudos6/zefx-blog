@@ -1,0 +1,63 @@
+---
+import { getMediaUrl } from '../utils/media';
+import type { Post, Project } from '../data/content';
+
+interface Props {
+  post: Post;
+  projectMap: Record<string, Project>;
+  color: string;
+  index: number;
+}
+
+const { post, projectMap, color, index } = Astro.props;
+const coverImage = post.coverImage ? getMediaUrl(post.coverImage) : null;
+---
+
+<a class="post-card reveal" href={`/posts/${post.slug}`} style={`--ac:${post.categoryColor}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}`} data-category={post.category}>
+  <div class="post-cover" style={coverImage ? `background-image:url(${coverImage});background-size:cover;background-position:center` : `background:${color}`}>
+    {!coverImage && (
+      <div class="cover-inner">
+        <span class="cover-icon">📸</span>
+        <span class="cover-label mono">IMG_{String(index + 1).padStart(4, '0')}</span>
+      </div>
+    )}
+  </div>
+  <div class="post-body">
+    <div class="post-meta-row">
+      <span class="cat">{post.category}</span>
+      {post.project && projectMap[post.project] && (
+        <span class="project-tag" style={`--pc:${projectMap[post.project].coverColor}`}>{projectMap[post.project].title}</span>
+      )}
+      <time>{post.date}</time>
+    </div>
+    <h3><span class="hl-title">{post.title}</span></h3>
+    <p>{post.excerpt}</p>
+    <div class="post-foot">
+      <span class="mono">{post.readTime} · {post.comments} 评论</span>
+      <span class="go">→</span>
+    </div>
+  </div>
+</a>
+
+<style>
+  .post-card { text-decoration: none; color: inherit; }
+  .project-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: 2px 8px;
+    background: var(--pc);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+    white-space: nowrap;
+  }
+  .post-card:hover .hl-title {
+    text-decoration: underline;
+    text-decoration-color: var(--lemon);
+    text-decoration-thickness: .28em;
+    text-underline-offset: .12em;
+    text-decoration-skip-ink: auto;
+  }
+</style>

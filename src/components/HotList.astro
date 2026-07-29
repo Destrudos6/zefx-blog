@@ -1,0 +1,135 @@
+---
+import PreviewPopup from './PreviewPopup.astro';
+import type { HotPost } from '../data/backblaze';
+import { getMediaUrl } from '../utils/media';
+
+interface Props {
+  posts: HotPost[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div class="hot-posts" id="hot-posts">
+  <span class="hot-label">🔥 热门文章</span>
+  <ol class="hot-list" id="hot-list">
+    {posts.map(post => (
+      <li data-slug={post.slug} data-comments="0" data-preview={JSON.stringify({
+        title: post.title,
+        category: post.category,
+        categoryColor: post.categoryColor,
+        categoryTextColor: post.categoryTextColor,
+        excerpt: post.excerpt,
+        coverColor: post.coverColor,
+        coverImage: post.coverImage ? getMediaUrl(post.coverImage) : null,
+        slug: post.slug,
+        project: post.project ?? null,
+      })}>
+        <a href={`/posts/${post.slug}`}>{post.title}</a>
+        <span class="hot-meta"><span class="comment-count">0</span> 评论</span>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<PreviewPopup visible={false} data={null} />
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const items = document.querySelectorAll('#hot-list li');
+    let hideTimer = null;
+
+    items.forEach(li => {
+      li.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+        const raw = li.dataset.preview;
+        if (raw) {
+          try {
+            const data = JSON.parse(raw);
+            document.dispatchEvent(new CustomEvent('preview-show', { detail: data }));
+          } catch(e) {}
+        }
+      });
+      li.addEventListener('mouseleave', () => {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          document.dispatchEvent(new CustomEvent('preview-hide'));
+        }, 200);
+      });
+    });
+
+    const hotPosts = document.querySelector('.hot-posts');
+    if (hotPosts) {
+      hotPosts.addEventListener('mouseleave', () => {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          document.dispatchEvent(new CustomEvent('preview-hide'));
+        }, 200);
+      });
+    }
+
+    // 动态获取评论数并排序
+    initHotPostsSort();
+  });
+
+  async function initHotPostsSort() {
+    const list = document.getElementById('hot-list');
+    if (!list) return;
+    const items = Array.from(list.querySelectorAll('li'));
+
+    // 从 GitHub API 获取评论数
+    const repo = document.documentElement.getAttribute('data-repo') || '';
+    const owner = document.documentElement.getAttribute('data-owner') || '';
+    if (!repo || !owner) return;
+
+    try {
+      const resp = await fetch(`https://api.github.com/repos/${owner}/${repo}/discussions?per_page=100`);
+      if (!resp.ok) return;
+      const discussions = await resp.json();
+
+      // 建立 discussion title -> comment count 映射
+      const commentMap = new Map();
+      discussions.forEach(d => {
+        commentMap.set(d.title, d.comments);
+      });
+
+      // 更新每个 item 的评论数
+      items.forEach(li => {
+        const link = li.querySelector('a');
+        const title = link?.textContent?.trim() || '';
+        const count = commentMap.get(title) || 0;
+        li.dataset.comments = String(count);
+        const countEl = li.querySelector('.comment-count');
+        if (countEl) countEl.textContent = String(count);
+      });
+
+      // 按评论数降序排序，最多取前 6 个
+      items.sort((a, b) => parseInt(b.dataset.comments) - parseInt(a.dataset.comments));
+      const top6 = items.slice(0, 6);
+
+      // 清空列表并重新填充
+      list.innerHTML = '';
+      top6.forEach(li => list.appendChild(li));
+
+
+    } catch(e) {
+      // API 失败时保持原始顺序
+    }
+  }
+</script>
+
+<style>
+  .hot-list li {
+    transition: background-color .2s;
+    position: relative;
+    border-radius: 2px;
+  }
+  @media (hover: hover) {
+    .hot-list li:hover {
+      background-color: var(--paper);
+    }
+    .hot-list li:hover a {
+      color: var(--red);
+    }
+  }
+</style>

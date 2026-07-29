@@ -1,0 +1,33 @@
+---
+import type { AboutData } from '../data/backblaze';
+import { getSiteData } from '../data/backblaze';
+import { getMediaUrl } from '../utils/media';
+
+interface Props {
+  data: AboutData;
+}
+
+const { data } = Astro.props;
+const siteData = await getSiteData();
+const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
+---
+
+<section class="about" id="about">
+  <div class="section">
+    <div class="about-grid">
+      <div class="ava reveal"><img src={avatarUrl} alt="头像" width="132" height="132" /></div>
+      <div class="reveal" style="--d:.1s">
+        <h2>关于站主</h2>
+        <p class="bio">{data.bio}</p>
+        <p class="facts">
+          {data.facts.map(f => <><b>▸</b>{f}<br /></>)}
+        </p>
+      </div>
+    </div>
+    <div class="stats reveal" style="--d:.15s">
+      {data.stats.map(s => (
+        <div class="stat"><div class="num" data-count={s.count}>0</div><small>{s.unit}</small></div>
+      ))}
+    </div>
+  </div>
+</section>

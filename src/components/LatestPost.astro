@@ -1,0 +1,167 @@
+---
+import { getMediaUrl } from '../utils/media';
+
+interface Props {
+  category: string;
+  categoryColor: string;
+  categoryTextColor?: string;
+  date: string;
+  title: string;
+  excerpt: string;
+  readTime: string;
+  comments: number;
+  href: string;
+  coverImage?: string;
+  project?: { title: string; coverColor: string } | null;
+}
+
+const {
+  category,
+  categoryColor,
+  categoryTextColor,
+  date,
+  title,
+  excerpt,
+  readTime,
+  comments,
+  href,
+  coverImage,
+  project,
+} = Astro.props;
+
+const styleAttr = `--ac:${categoryColor}${categoryTextColor ? `; --actext:${categoryTextColor}` : ''}`;
+const coverStyle = coverImage ? `background-image:url(${getMediaUrl(coverImage)});background-size:cover;background-position:center` : '';
+---
+
+<a class="latest-post" href={href} style={styleAttr}>
+  <div class="latest-body">
+    <div class="latest-meta">
+      <span class="cat">{category}</span>
+      {project && (
+        <span class="project-tag" style={`--pc:${project.coverColor}`}>{project.title}</span>
+      )}
+      <time>{date}</time>
+      <span class="mono dim meta-read">{readTime} · {comments} 评论</span>
+    </div>
+    <h2><span class="hl-text">{title}</span></h2>
+    <p>{excerpt}</p>
+  </div>
+  <div class="latest-cover" aria-hidden="true" style={coverStyle}></div>
+</a>
+
+<style>
+  .latest-post {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    height: 300px;
+    border: 3px solid var(--ink);
+    background: var(--card);
+    box-shadow: 10px 10px 0 var(--ink);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .latest-post:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 13px 13px 0 var(--ink);
+  }
+
+  /* ---- 左侧内容 ---- */
+  .latest-body {
+    display: flex;
+    flex-direction: column;
+    padding: 26px 28px;
+    gap: 10px;
+  }
+  .latest-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .latest-meta time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--soft);
+  }
+  .meta-read {
+    font-size: 11px;
+  }
+  .latest-body h2 {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: clamp(20px, 2.5vw, 28px);
+    line-height: 1.35;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hl-text {
+    display: inline;
+  }
+  .latest-post:hover .hl-text {
+    background-image: linear-gradient(transparent 70%, var(--lemon) 70%);
+  }
+  .project-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: 2px 8px;
+    background: var(--pc);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+    white-space: nowrap;
+  }
+  .latest-body p {
+    font-size: 14px;
+    color: var(--soft);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ---- 右侧封面 ---- */
+  .latest-cover {
+    width: 100%;
+    height: 100%;
+    background: var(--ac, var(--blue));
+    overflow: hidden;
+  }
+  .latest-cover[style*="background-image"]::before {
+    display: none;
+  }
+  .latest-cover::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(var(--paper) 1.4px, transparent 1.6px);
+    background-size: 15px 15px;
+    opacity: .28;
+  }
+
+  /* ---- 响应式 ---- */
+  @media (max-width: 1000px) {
+    .latest-post {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+    .latest-cover {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
+    }
+    .latest-body { padding: 24px 22px; }
+  }
+  @media (max-width: 640px) {
+    .latest-body { padding: 20px 18px; gap: 8px; }
+    .latest-body h2 { font-size: 20px; }
+  }
+</style>

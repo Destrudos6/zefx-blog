@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import { getAllPostsFromCollection, getAllProjects, POSTS_PER_PAGE } from '../../data/content';
+import { getCategories } from '../../data/backblaze';
+import PostCard from '../../components/PostCard.astro';
+
+const allPosts = await getAllPostsFromCollection();
+const allProjects = await getAllProjects();
+const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
+
+// 从文章数据动态派生分类列表
+const allCategories = await getCategories();
+const categoryLabels = [...new Set(allPosts.map(p => p.category))];
+const categories = [
+  { label: '全部', count: allPosts.length, active: true },
+  ...categoryLabels.map(label => ({
+    label,
+    count: allPosts.filter(p => p.category === label).length,
+    active: false,
+  })),
+];
+const catMap = Object.fromEntries(allCategories.map(c => [c.slug, c.label]));
+catMap.all = '全部';
+
+export async function getStaticPaths() {
+  const allPosts = await getAllPostsFromCollection();
+  const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+  return Array.from({ length: totalPages - 1 }, (_, i) => ({
+    params: { page: String(i + 2) },
+    props: { page: i + 2, totalPages },
+  }));
+}
+
+const { page = 1, totalPages } = Astro.props;
+const start = (page - 1) * POSTS_PER_PAGE;
+const currentPosts = allPosts.slice(start, start + POSTS_PER_PAGE);
+
+const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)'];
+
+const prevPage = page > 1 ? (page === 2 ? '/posts' : `/posts/${page - 1}`) : null;
+const nextPage = page < totalPages ? `/posts/${page + 1}` : null;
+---
+
+<BaseLayout title={page === 1 ? '文章 · ZEFX' : `文章 (第${page}页) · ZEFX`}>
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>全部<span class="hl">文章</span></h1>
+    <p class="page-desc">{allPosts.length} 篇手打文字,关于技术、生活、摄影和读书。不追热点,只写想写的。</p>
+  </div>
+
+  <section class="section" style="padding-top:0">
+    <div class="cats reveal">
+      {categories.map(cat => (
+        <button class={`cat-btn${cat.active ? ' on' : ''}`} data-label={cat.label}>{cat.label} {cat.count}</button>
+      ))}
+    </div>
+
+    <div class="posts-grid" id="posts-grid">
+      {currentPosts.map((post, i) => (
+        <PostCard post={post} projectMap={projectMap} color={coverColors[(start + i) % coverColors.length]} index={start + i} />
+      ))}
+    </div>
+
+    {totalPages > 1 && (
+      <nav class="pagination reveal">
+        {prevPage && (
+          <a class="page-btn" href={prevPage}>← 上一页</a>
+        )}
+        <span class="page-info mono">第 {page} 页 / 共 {totalPages} 页</span>
+        {nextPage && (
+          <a class="page-btn" href={nextPage}>下一页 →</a>
+        )}
+      </nav>
+    )}
+  </section>
+
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<style>
+  .posts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .posts-grid .post-card {
+    grid-template-columns: 240px 1fr;
+    height: 240px;
+  }
+  .posts-grid .post-cover {
+    width: 200px;
+    height: 200px;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    margin-top: 56px;
+    padding-top: 36px;
+    border-top: 2px dashed var(--ink);
+  }
+  .page-btn {
+    font-family: var(--mono);
+    font-size: 14px; font-weight: 700;
+    padding: 10px 22px;
+    border: var(--bd);
+    background: var(--card);
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+  }
+  .page-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+    color: var(--red);
+  }
+  .page-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--ink);
+  }
+  .page-info {
+    font-size: 13px;
+    color: var(--soft);
+    letter-spacing: .08em;
+  }
+
+  @media (max-width: 1000px) {
+    .posts-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .pagination { flex-wrap: wrap; gap: 12px; }
+  }
+</style>
+
+<script define:vars={{ catMap }}>
+  (function() {
+    var buttons = document.querySelectorAll('.cat-btn');
+    var grid = document.getElementById('posts-grid');
+    if (!grid) return;
+    var items = grid.querySelectorAll('.post-card');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('on'); });
+        btn.classList.add('on');
+        var label = btn.dataset.label;
+        var en = Object.entries(catMap).find(function(v) { return v[1] === label; })?.[0] || '';
+        history.replaceState(null, '', en ? '#' + en : window.location.pathname);
+        items.forEach(function(item) {
+          item.style.display = (label === '全部' || item.dataset.category === label) ? '' : 'none';
+        });
+        grid.style.setProperty('display', items.length > 0 ? 'grid' : 'none');
+      });
+    });
+    var hash = window.location.hash.slice(1);
+    if (hash) {
+      var zhLabel = catMap[hash] || hash;
+      var target = document.querySelector('.cat-btn[data-label="' + zhLabel + '"]');
+      if (target) target.click();
+    }
+  })();
+</script>

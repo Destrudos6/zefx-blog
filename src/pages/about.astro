@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BackToTop from '../components/BackToTop.astro';
+import { getAboutData, getSiteData } from '../data/backblaze';
+import { getMediaUrl } from '../utils/media';
+
+const aboutData = await getAboutData();
+const siteData = await getSiteData();
+const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
+---
+
+<BaseLayout title="关于 · ZEFX">
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>关于<span class="hl">站主</span></h1>
+  </div>
+
+  <section class="section" style="padding-top:0">
+    <div class="about-grid">
+      <div class="ava reveal"><img src={avatarUrl} alt="头像" width="132" height="132" /></div>
+      <div class="reveal" style="--d:.1s">
+        <p class="bio" style="font-size:17px; line-height:1.9" set:html={aboutData.bioLong}></p>
+        <p class="facts">
+          {aboutData.facts.map(f => <><b>▸</b>{f}<br /></>)}
+        </p>
+      </div>
+    </div>
+    <div class="stats reveal" style="--d:.15s">
+      {aboutData.stats.map(s => (
+        <div class="stat"><div class="num" data-count={s.count}>0</div><small>{s.unit}</small></div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:20px">
+    <div class="sec-head reveal">
+      <h2>时间<span class="hl">线</span></h2>
+    </div>
+    <div class="timeline">
+      {aboutData.timeline.map((item, i) => (
+        <div class="tl-item reveal" style={`--d:.${i * 8}s`}>
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <time>{item.date}</time>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<style>
+  .timeline { position: relative; padding-left: 40px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 11px; top: 0; bottom: 0;
+    width: 2px; background: var(--ink); opacity: .2;
+  }
+  .tl-item { position: relative; margin-bottom: 36px; }
+  .tl-dot {
+    position: absolute; left: -40px; top: 6px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--lemon); border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .tl-content time {
+    font-family: var(--mono); font-size: 12px; color: var(--soft);
+    letter-spacing: .1em; display: block; margin-bottom: 6px;
+  }
+  .tl-content h3 {
+    font-family: var(--serif); font-weight: 900;
+    font-size: clamp(18px,2.2vw,24px); margin-bottom: 8px;
+  }
+  .tl-content p { font-size: 14.5px; color: var(--soft); max-width: 36em; }
+
+  @media (max-width: 1000px) {
+    .about-grid { grid-template-columns: 1fr; gap: 36px; }
+  }
+</style>

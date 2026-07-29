@@ -1,0 +1,24 @@
+---
+import type { TickerItem } from '../data/backblaze';
+
+interface Props {
+  items: TickerItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="ticker" aria-hidden="true">
+  <div class="tick-track">
+    <div class="tick-set">
+      {items.map(item => (
+        <span>{item.highlight ? <b>✦</b> : '✦'} <b>{item.highlight || item.text}</b>{item.highlight ? ` ${item.text.replace(item.highlight, '').replace(/^[,，、\s]+/, '')}` : ''}</span>
+      ))}
+    </div>
+    <div class="tick-set">
+      {items.map(item => (
+        <span>{item.highlight ? <b>✦</b> : '✦'} <b>{item.highlight || item.text}</b>{item.highlight ? ` ${item.text.replace(item.highlight, '').replace(/^[,，、\s]+/, '')}` : ''}</span>
+      ))}
+    </div>
+  </div>
+</div>

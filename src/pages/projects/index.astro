@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Footer from '../../components/Footer.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import { getAllProjects } from '../../data/content';
+
+const allProjects = await getAllProjects();
+---
+
+<BaseLayout title="项目 · ZEFX">
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>项<span class="hl">目</span></h1>
+    <p class="page-desc">开一个文件夹,专注做一件事。长线任务、学习计划、独立开发……这里记录每个项目的从零到一。</p>
+  </div>
+
+  <section class="section" style="padding-top:0">
+    <div class="projects-grid">
+      {allProjects.map(project => (
+        <a class="project-link" href={`/projects/${project.slug}`}>
+          <ProjectCard
+            title={project.title}
+            status={project.status}
+            statusLabel={project.statusLabel}
+            description={project.description}
+            logs={project.logs.slice(0, 2)}
+            tags={project.tags}
+          />
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<style>
+  .project-link { text-decoration: none; color: inherit; }
+</style>

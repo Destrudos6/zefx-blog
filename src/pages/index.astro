@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Ticker from '../components/Ticker.astro';
+import LatestPost from '../components/LatestPost.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import About from '../components/About.astro';
+import Friends from '../components/Friends.astro';
+import Footer from '../components/Footer.astro';
+import BackToTop from '../components/BackToTop.astro';
+import { getAllPostsFromCollection } from '../data/content';
+import { getFriendLinks, getTickerItems, getAboutData } from '../data/backblaze';
+import { getAllProjects } from '../data/content';
+
+const allPosts = await getAllPostsFromCollection();
+const latest = allPosts[0] ?? null;
+const secondLatest = allPosts[1] ?? null;
+const friendLinks = await getFriendLinks();
+const tickerItems = await getTickerItems();
+const aboutData = await getAboutData();
+const allProjects = await getAllProjects();
+const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
+---
+
+<BaseLayout>
+  <Header />
+  <Hero hotPosts={allPosts.map(p => ({ slug: p.slug, title: p.title, category: p.category, categoryColor: p.categoryColor, categoryTextColor: p.categoryTextColor, excerpt: p.excerpt, coverColor: p.categoryColor, coverImage: p.coverImage, project: p.project ? projectMap[p.project] ?? null : null }))} />
+  <Ticker items={tickerItems} />
+
+  <section class="section" id="posts">
+    <div class="sec-head reveal">
+      <h2>最新<span class="hl">文章</span></h2>
+      <a class="sec-link" href="/posts">全部 {allPosts.length} 篇 →</a>
+    </div>
+    <div class="latest-grid">
+      {latest && (
+        <LatestPost
+          category={latest.category}
+          categoryColor={latest.categoryColor}
+          categoryTextColor={latest.categoryTextColor}
+          date={latest.date}
+          title={latest.title}
+          excerpt={latest.excerpt}
+          readTime={latest.readTime}
+          comments={latest.comments}
+          href={`/posts/${latest.slug}`}
+          coverImage={latest.coverImage}
+          project={latest.project ? projectMap[latest.project] ?? null : null}
+        />
+      )}
+      {secondLatest && (
+        <LatestPost
+          category={secondLatest.category}
+          categoryColor={secondLatest.categoryColor}
+          categoryTextColor={secondLatest.categoryTextColor}
+          date={secondLatest.date}
+          title={secondLatest.title}
+          excerpt={secondLatest.excerpt}
+          readTime={secondLatest.readTime}
+          comments={secondLatest.comments}
+          href={`/posts/${secondLatest.slug}`}
+          coverImage={secondLatest.coverImage}
+          project={secondLatest.project ? projectMap[secondLatest.project] ?? null : null}
+        />
+      )}
+    </div>
+  </section>
+
+  <section class="section" id="projects" style="padding-top:20px">
+    <div class="sec-head reveal">
+      <h2>项<span class="hl">目</span></h2>
+      <p style="color:var(--soft); font-size:15.5px; margin-top:6px">开一个文件夹,专注做一件事。长线任务、学习计划、独立开发……这里记录每个项目的从零到一。</p>
+    </div>
+    <div class="projects-grid">
+      {allProjects.slice(0, 3).map(project => (
+        <a class="project-link" href={`/projects/${project.slug}`}>
+          <ProjectCard
+            title={project.title}
+            status={project.status}
+            statusLabel={project.statusLabel}
+            description={project.description}
+            logs={project.logs.slice(0, 2)}
+            tags={project.tags}
+          />
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <About data={aboutData} />
+  <Friends links={friendLinks} />
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<style>
+  .project-link { text-decoration: none; color: inherit; }
+  .latest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 1000px) {
+    .latest-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

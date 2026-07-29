@@ -1,0 +1,124 @@
+---
+import '../styles/global.css';
+import { getSiteData } from '../data/backblaze';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title = 'ZEFX · 个人成长记录博客', description = '一叶个人的互联网扁舟。关于技术、生活、摄影和读书。', ogImage } = Astro.props;
+const siteData = (await getSiteData()).site;
+const { github } = siteData;
+const faviconUrl = siteData.favicon || '/favicon.ico';
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-owner={github.owner} data-repo={github.repo}>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href={faviconUrl}>
+  <meta name="generator" content={Astro.generator}>
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={canonicalUrl}>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonicalUrl}>
+  {ogImage && <meta property="og:image" content={ogImage}>}
+  <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'}>
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={description}>
+  {ogImage && <meta name="twitter:image" content={ogImage}>}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900;1,9..144,600;1,9..144,900&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="progress"></div>
+  <slot />
+</body>
+</html>
+
+<script>
+  // 主题切换
+  const root = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  if (stored) {
+    root.dataset.theme = stored;
+  } else if (matchMedia('(prefers-color-scheme: dark)').matches) {
+    root.dataset.theme = 'dark';
+  }
+  document.getElementById('themeToggle')?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    localStorage.setItem('theme', next);
+  });
+
+  // 阅读进度 + 回到顶部
+  const prog = document.getElementById('progress');
+  const toTop = document.getElementById('toTop');
+  if (prog && toTop) {
+    addEventListener('scroll', () => {
+      const h = document.documentElement;
+      prog.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+      toTop.classList.toggle('show', h.scrollTop > 500);
+    }, {passive:true});
+    toTop.addEventListener('click', () => scrollTo({top:0, behavior:'smooth'}));
+  }
+
+  // 滚动浮现
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), {threshold:.14});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // 数字动画
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const nio = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    nio.unobserve(e.target);
+    const el = e.target, end = +(el.dataset.count || 0), t0 = performance.now();
+    (function step(now){
+      const k = Math.min((now - t0) / 1500, 1);
+      el.textContent = Math.round(end * ease(k)).toLocaleString();
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }), {threshold:.5});
+  document.querySelectorAll('.num[data-count]').forEach(el => nio.observe(el));
+
+  // 汉堡菜单
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+  if (hamburger && mobileNav) {
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileNav.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', isOpen);
+      mobileNav.setAttribute('aria-hidden', !isOpen);
+    });
+    mobileNav.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        mobileNav.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        mobileNav.setAttribute('aria-hidden', 'true');
+      });
+    });
+  }
+
+  // 锚点平滑滚动
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({behavior: 'smooth'});
+      }
+    });
+  });
+</script>

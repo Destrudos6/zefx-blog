@@ -1,0 +1,51 @@
+---
+import HotList from './HotList.astro';
+import { getSiteData } from '../data/backblaze';
+import type { HotPost } from '../data/backblaze';
+
+interface Props {
+  hotPosts: HotPost[];
+}
+
+const { hotPosts } = Astro.props;
+const siteData = await getSiteData();
+const { hero } = siteData.site;
+---
+
+<section class="hero" id="home">
+  <div class="ghost" aria-hidden="true">{hero.ghost}</div>
+  <div class="hero-grid">
+    <div>
+      <div class="meta-row reveal">
+        {hero.metaChips.map((chip, i) => (
+          <span class={`chip${chip.variant === 'hot' ? ' hot' : ''} mono`} style={`--d:.${i * 8}s`} id={chip.id || undefined}>
+            {chip.id === 'clock' ? '----.--.-- --:--:--' : chip.text}
+          </span>
+        ))}
+      </div>
+      <h1 class="reveal" style="--d:.08s">
+        {hero.title.split('').map(c => <span class="word">{c}</span>)}
+      </h1>
+      <p class="subtitle reveal" style="--d:.16s" set:html={hero.subtitle}></p>
+      <p class="tagline reveal" style="--d:.22s">
+        {hero.tagline}<span class="caret"></span>
+      </p>
+      <div class="stickers reveal" style="--d:.3s">
+        {hero.stickers.map((s, i) => <span class={`sticker${i === 1 ? ' s2' : ''}`}>{s}</span>)}
+      </div>
+    </div>
+    <HotList posts={hotPosts} />
+  </div>
+</section>
+
+<script>
+  const clock = document.getElementById('clock');
+  const p = (n: number) => String(n).padStart(2, '0');
+  (function tick(){
+    const d = new Date();
+    if (clock) {
+      clock.textContent = `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} 周${'日一二三四五六'[d.getDay()]} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    }
+    setTimeout(tick, 1000);
+  })();
+</script>

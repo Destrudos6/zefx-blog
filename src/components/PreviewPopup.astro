@@ -1,0 +1,174 @@
+---
+import type { HotPost } from '../data/backblaze';
+import { getMediaUrl } from '../utils/media';
+
+interface Props {
+  visible: boolean;
+  data: HotPost | null;
+}
+
+const { visible, data } = Astro.props;
+const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `; --actext:${data.categoryTextColor}` : ''}` : '';
+---
+
+<div class="preview-popup" id="preview-popup" data-visible={visible ? 'true' : 'false'}>
+  <div class="preview-cover" style={data ? (data.coverImage ? `background-image:url(${getMediaUrl(data.coverImage)});background-size:cover;background-position:center` : `background:${data.coverColor}`) : ''}>
+    {!data?.coverImage && <div class="preview-svg" aria-hidden="true">📸</div>}
+  </div>
+    <div class="preview-body">
+      <div class="preview-meta">
+        <span class="cat">{data ? data.category : ''}</span>
+        <span class="project-tag" style={data?.project ? `--pc:${data.project.coverColor}` : ''} data-has-project={data?.project ? 'true' : 'false'}>{data?.project?.title || ''}</span>
+      </div>
+      <h4 class="preview-title">{data ? data.title : ''}</h4>
+      <p class="preview-excerpt">{data ? data.excerpt : ''}</p>
+    </div>
+</div>
+
+<script>
+  const popup = document.getElementById('preview-popup');
+  if (popup) {
+    document.addEventListener('preview-show', ((e: CustomEvent) => {
+      const d = e.detail;
+      if (!d) { popup.classList.remove('show'); return; }
+      const cover = popup.querySelector('.preview-cover');
+      const cat = popup.querySelector('.cat');
+      const title = popup.querySelector('.preview-title');
+      const excerpt = popup.querySelector('.preview-excerpt');
+      if (cover) {
+        if (d.coverImage) {
+          cover.style.background = '';
+          const imgUrl = d.coverImage;
+          cover.style.backgroundImage = `url(${imgUrl})`;
+          cover.style.backgroundSize = 'cover';
+          cover.style.backgroundPosition = 'center';
+        } else {
+          cover.style.backgroundImage = '';
+          cover.style.background = d.coverColor || 'var(--blue)';
+        }
+      }
+      const previewSvg = popup.querySelector('.preview-svg');
+      if (previewSvg) previewSvg.style.display = d.coverImage ? 'none' : '';
+      if (cat) { cat.textContent = d.category || ''; cat.style.cssText = `--ac:${d.categoryColor || 'var(--blue)'}${d.categoryTextColor ? `; --actext:${d.categoryTextColor}` : ''}`; }
+      const projectTag = popup.querySelector('.project-tag');
+      if (projectTag) {
+        if (d.project && d.project.title) {
+          projectTag.style.display = '';
+          projectTag.textContent = d.project.title;
+          projectTag.style.setProperty('--pc', d.project.coverColor);
+          projectTag.dataset.hasProject = 'true';
+        } else {
+          projectTag.style.display = 'none';
+          projectTag.dataset.hasProject = 'false';
+        }
+      }
+      if (title) title.textContent = d.title || '';
+      if (excerpt) excerpt.textContent = d.excerpt || '';
+
+      // 动态定位：始终在热榜容器左侧，不遮挡
+      const hotPosts = document.querySelector('.hot-posts');
+      if (hotPosts) {
+        const rect = hotPosts.getBoundingClientRect();
+        const pw = popup.offsetWidth || 320;
+        const gap = 16;
+        popup.style.left = '';
+        popup.style.right = '';
+        popup.style.left = (rect.left - pw - gap) + 'px';
+      }
+      popup.classList.add('show');
+    }) as EventListener);
+
+    document.addEventListener('preview-hide', (() => {
+      popup.classList.remove('show');
+    }) as EventListener);
+  }
+</script>
+
+<style>
+  .preview-popup {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    width: 320px;
+    height: 400px;
+    padding-top: 24px;
+    background: var(--card);
+    border: 3px solid var(--ink);
+    overflow: hidden;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  .preview-popup.show {
+    opacity: 1;
+  }
+
+  .preview-cover {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    align-self: center;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .preview-cover[style*="background-image"]::before {
+    display: none;
+  }
+  .preview-cover::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(var(--paper) 1.4px, transparent 1.6px);
+    background-size: 15px 15px;
+    opacity: .26;
+  }
+  .preview-svg {
+    position: relative;
+    z-index: 1;
+    font-size: 44px;
+    filter: grayscale(.15);
+  }
+
+  .preview-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .preview-meta { display: flex; align-items: center; gap: 8px; }
+  .cat {
+    background: var(--ac, var(--blue)); color: var(--actext, #fff);
+    border: var(--bd); padding: 2px 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .project-tag {
+    display: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: 2px 8px;
+    background: var(--pc);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+    white-space: nowrap;
+  }
+  .project-tag[data-has-project="true"] {
+    display: inline-block;
+  }
+  .preview-title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: 17px; line-height: 1.45;
+  }
+  .preview-excerpt {
+    font-size: 13.5px; color: var(--soft); line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  @media (max-width: 1200px) {
+    .preview-popup { right: 300px; }
+  }
+  @media (max-width: 1000px) {
+    .preview-popup { display: none !important; }
+  }
+</style>

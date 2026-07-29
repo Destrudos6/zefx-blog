@@ -1,0 +1,351 @@
+---
+const { hasToc = true, hasComments = true } = Astro.props;
+---
+
+<div class="mobile-actions" id="mobileActions">
+  <button class="mobile-action-btn" id="toggleActions" aria-label="工具">
+    <span class="dots"><i></i><i></i><i></i></span>
+    <span class="close">×</span>
+  </button>
+  {hasToc && (
+    <button class="mobile-action-item mobile-action-toc" id="mobileTocBtn" aria-label="目录">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+    </button>
+  )}
+  {hasComments && (
+    <button class="mobile-action-item mobile-action-comments" id="mobileCommentsBtn" aria-label="评论">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  )}
+  <button class="mobile-action-item mobile-action-copy" id="mobileCopyBtn" aria-label="复制链接">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+  </button>
+  <button class="mobile-action-item mobile-action-top" id="mobileTopBtn" aria-label="回到顶部">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+</div>
+
+<!-- 移动端目录弹窗 -->
+<div class="mobile-toc-modal" id="mobileTocModal" aria-hidden="true">
+  <div class="mobile-toc-overlay"></div>
+  <div class="mobile-toc-sheet">
+    <div class="mobile-toc-header">
+      <h4>目录</h4>
+      <button class="mobile-toc-close" id="mobileTocClose" aria-label="关闭">×</button>
+    </div>
+    <nav class="mobile-toc-nav" id="mobileTocNav"></nav>
+  </div>
+</div>
+
+<!-- 复制成功提示 -->
+<div class="copy-toast" id="copyToast">链接已复制</div>
+
+<style>
+  .mobile-actions {
+    position: fixed;
+    right: 16px;
+    bottom: 80px;
+    z-index: 250;
+    display: none;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  .mobile-action-btn {
+    width: 50px;
+    height: 50px;
+    border: var(--bd);
+    background: var(--lemon);
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+  }
+  .mobile-action-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .mobile-action-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+  .mobile-action-btn .dots {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+  .mobile-action-btn .dots i {
+    display: block;
+    width: 18px;
+    height: 2.5px;
+    background: var(--ink);
+    transition: transform .3s, opacity .3s;
+  }
+  .mobile-action-btn .close {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .mobile-actions.open .mobile-action-btn .dots {
+    opacity: 0;
+  }
+  .mobile-actions.open .mobile-action-btn .close {
+    opacity: 1;
+  }
+
+  .mobile-action-item {
+    width: 46px;
+    height: 46px;
+    border: var(--bd);
+    background: var(--card);
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateY(10px) scale(.8);
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+  }
+  .mobile-action-item:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .mobile-actions.open .mobile-action-item {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .mobile-actions.open .mobile-action-toc { transition-delay: .05s; }
+  .mobile-actions.open .mobile-action-comments { transition-delay: .1s; }
+  .mobile-actions.open .mobile-action-copy { transition-delay: .15s; }
+  .mobile-actions.open .mobile-action-top { transition-delay: .2s; }
+
+  /* 目录弹窗 */
+  .mobile-toc-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 350;
+    display: none;
+  }
+  .mobile-toc-modal.open {
+    display: block;
+  }
+  .mobile-toc-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .mobile-toc-modal.open .mobile-toc-overlay {
+    opacity: 1;
+  }
+  .mobile-toc-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 70vh;
+    background: var(--paper);
+    border-top: var(--bd);
+    box-shadow: 0 -8px 0 var(--ink);
+    transform: translateY(100%);
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    display: flex;
+    flex-direction: column;
+  }
+  .mobile-toc-modal.open .mobile-toc-sheet {
+    transform: translateY(0);
+  }
+  .mobile-toc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: var(--bd);
+    flex-shrink: 0;
+  }
+  .mobile-toc-header h4 {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .2em;
+    color: var(--red);
+  }
+  .mobile-toc-close {
+    width: 32px;
+    height: 32px;
+    border: var(--bd);
+    background: var(--card);
+    font-size: 20px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .mobile-toc-close:active {
+    transform: translate(1px, 1px);
+    box-shadow: 0 0 0 var(--ink);
+  }
+  .mobile-toc-nav {
+    padding: 12px 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .mobile-toc-nav a {
+    display: block;
+    font-size: 15px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(128,128,128,.2);
+    color: var(--ink);
+    transition: color .2s, padding-left .2s;
+  }
+  .mobile-toc-nav a:last-child { border-bottom: none; }
+  .mobile-toc-nav a:hover { color: var(--red); padding-left: 6px; }
+  .mobile-toc-nav a.toc-h3 { padding-left: 16px; font-size: 14px; color: var(--soft); }
+
+  /* 复制提示 */
+  .copy-toast {
+    position: fixed;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 20px;
+    border: var(--bd);
+    box-shadow: 4px 4px 0 var(--ink);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 400;
+  }
+  .copy-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (min-width: 769px) {
+    .mobile-actions { display: none !important; }
+  }
+  @media (max-width: 768px) {
+    .mobile-actions { display: flex; }
+  }
+</style>
+
+<script>
+  (function() {
+    var actions = document.getElementById('mobileActions');
+    var toggle = document.getElementById('toggleActions');
+    var tocModal = document.getElementById('mobileTocModal');
+    var tocBtn = document.getElementById('mobileTocBtn');
+    var tocClose = document.getElementById('mobileTocClose');
+    var tocNav = document.getElementById('mobileTocNav');
+    var commentsBtn = document.getElementById('mobileCommentsBtn');
+    var copyBtn = document.getElementById('mobileCopyBtn');
+    var copyToast = document.getElementById('copyToast');
+    var scrollTimer = null;
+
+    // 自动隐藏/显示（滚动时隐藏，停止滚动后显示）
+    function hideActions() {
+      if (actions.classList.contains('open')) return;
+      actions.style.opacity = '0';
+      actions.style.pointerEvents = 'none';
+    }
+    function showActions() {
+      actions.style.opacity = '';
+      actions.style.pointerEvents = '';
+    }
+    addEventListener('scroll', function() {
+      hideActions();
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(showActions, 600);
+    }, {passive:true});
+
+    // 展开/收起
+    toggle?.addEventListener('click', function() {
+      actions.classList.toggle('open');
+    });
+
+    // 目录
+    function buildMobileToc() {
+      var tocEl = document.querySelector('.toc-nav');
+      if (!tocEl || !tocNav) return;
+      tocNav.innerHTML = tocEl.innerHTML;
+      tocNav.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+          closeToc();
+        });
+      });
+    }
+    function openToc() {
+      buildMobileToc();
+      tocModal.classList.add('open');
+      tocModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeToc() {
+      tocModal.classList.remove('open');
+      tocModal.setAttribute('aria-hidden', 'true');
+    }
+    tocBtn?.addEventListener('click', openToc);
+    tocClose?.addEventListener('click', closeToc);
+    tocModal?.querySelector('.mobile-toc-overlay').addEventListener('click', closeToc);
+
+    // 评论区
+    commentsBtn?.addEventListener('click', function() {
+      var target = document.querySelector('#giscus, .giscus-section, iframe[src*="giscus"]');
+      if (target) {
+        target.scrollIntoView({behavior: 'smooth'});
+      } else {
+        var article = document.querySelector('.article-content');
+        if (article) {
+          article.scrollIntoView({behavior: 'smooth', block: 'end'});
+        }
+      }
+    });
+
+    // 复制链接
+    copyBtn?.addEventListener('click', function() {
+      var url = location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(showToast).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+    });
+    function fallbackCopy() {
+      var ta = document.createElement('textarea');
+      ta.value = location.href;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast(); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+    function showToast() {
+      copyToast.classList.add('show');
+      setTimeout(function() { copyToast.classList.remove('show'); }, 2000);
+    }
+
+    // 回到顶部
+    var topBtn = document.getElementById('mobileTopBtn');
+    topBtn?.addEventListener('click', function() {
+      scrollTo({top:0, behavior:'smooth'});
+    });
+  })();
+</script>

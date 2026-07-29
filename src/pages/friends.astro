@@ -1,0 +1,149 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import BackToTop from "../components/BackToTop.astro";
+import { getFriendLinks } from "../data/backblaze";
+
+const friends = await getFriendLinks();
+---
+
+<BaseLayout title="友链 · ZEFX">
+    <Header />
+
+    <div class="page-banner reveal">
+        <h1>友链 · 还在认真写博客的<span class="hl">友友</span></h1>
+        <p class="page-desc">
+            无论是记录生活、传递美好，还是分享技术，文字都是拉近我们内心距离的方式。如果你也在写,欢迎交换友链。
+        </p>
+    </div>
+
+    <section class="section" style="padding-top:0">
+        <div class="flinks-detailed">
+            {
+                friends.map((f) => (
+                    <a
+                        class="fl-card reveal"
+                        href={f.url}
+                        style={`--c:${f.color}`}
+                    >
+                        <div class="fl-card-head">
+                            <i />
+                            <span class="fl-name">{f.name}</span>
+                        </div>
+                        <p class="fl-desc">{f.desc}</p>
+                    </a>
+                ))
+            }
+        </div>
+
+        <div class="flink-cta reveal" style="margin-top:56px">
+            <div class="flink-cta-inner">
+                <span class="cta-kicker mono">LINK EXCHANGE</span>
+                <h3>交换友链</h3>
+                <p>
+                    要求很简单:不需要日更，不需要周更，你的更新频率按你的喜好就好。
+                    记录自己的成长，记录你的观点，或是分享技术，分享你所看到的世界。只要你还在坚持写，欢迎交换友链
+                </p>
+                <p>
+                    请在邮件里附上你的博客地址、名称和一句简介。不过，在发送邮件之前，请在你的博客中为我的网站先添加上友链。我会在
+                    48 小时内回复并添加。
+                </p>
+                <a class="btn" href="mailto:hi@zefx.site"
+                    >发邮件给我 <span>→</span></a
+                >
+            </div>
+        </div>
+    </section>
+
+    <Footer />
+    <BackToTop />
+</BaseLayout>
+
+<style>
+    .flinks-detailed {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    .fl-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        border: var(--bd);
+        background: var(--card);
+        padding: 24px;
+        box-shadow: 6px 6px 0 var(--ink);
+        transition:
+            transform 0.28s,
+            box-shadow 0.28s;
+    }
+    .fl-card:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 9px 9px 0 var(--red);
+        background: var(--ink);
+        color: var(--paper);
+    }
+    .fl-card-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .fl-card-head i {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--c, var(--red));
+        border: 2px solid var(--ink);
+        flex-shrink: 0;
+    }
+    .fl-name {
+        font-weight: 700;
+        font-size: 17px;
+        font-family: var(--serif);
+    }
+    .fl-desc {
+        font-size: 14px;
+        color: var(--soft);
+        line-height: 1.6;
+    }
+    .fl-card:hover .fl-desc {
+        color: var(--paper);
+        opacity: 0.8;
+    }
+
+    .flink-cta-inner {
+        border: 3px dashed var(--ink);
+        background: var(--card);
+        padding: 56px 48px;
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .cta-kicker {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--red);
+        margin-bottom: 18px;
+    }
+    .flink-cta-inner h3 {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: clamp(26px, 3.4vw, 38px);
+        margin-bottom: 16px;
+    }
+    .flink-cta-inner p {
+        font-size: 15.5px;
+        color: var(--soft);
+        margin-bottom: 16px;
+        max-width: 32em;
+        line-height: 1.7;
+    }
+    .flink-cta-inner p:last-of-type {
+        margin-bottom: 32px;
+    }
+</style>

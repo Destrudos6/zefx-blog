@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BackToTop from '../components/BackToTop.astro';
+---
+
+<BaseLayout title="搜索 · ZEFX">
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>搜<span class="hl">索</span></h1>
+    <p class="page-desc" id="page-desc">输入关键词搜索文章和项目</p>
+  </div>
+
+  <section class="section" style="padding-top:0">
+    <div class="search-box reveal">
+      <form action="/search" method="GET">
+        <input class="search-input" type="search" name="q" id="search-input" value="" placeholder="输入关键词…" aria-label="搜索文章和项目">
+      </form>
+    </div>
+
+    <div id="search-results">
+      <p class="search-status mono" id="search-status"></p>
+    </div>
+  </section>
+
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<script is:inline>
+  var searchCache = null;
+
+  async function getSearchData() {
+    if (!searchCache) {
+      var resp = await fetch('/search.json');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      searchCache = await resp.json();
+    }
+    return searchCache;
+  }
+
+  (async () => {
+    try {
+      const q = new URLSearchParams(window.location.search).get('q');
+      if (!q || !q.trim()) return;
+
+      const qTrim = q.trim();
+      document.getElementById('page-desc').textContent = `正在搜索 "${qTrim}"`;
+      document.getElementById('search-input').value = qTrim;
+
+      const container = document.getElementById('search-results');
+      const status = document.getElementById('search-status');
+      status.textContent = '正在搜索…';
+
+      const allItems = await getSearchData();
+
+      const searchTerm = qTrim.toLowerCase();
+      const now = Date.now();
+      const results = allItems
+        .map(item => {
+          let score = 0;
+
+          if (item.title?.toLowerCase().includes(searchTerm)) { score += 10; }
+          if (item.category?.toLowerCase().includes(searchTerm)) { score += 5; }
+          if (item.excerpt?.toLowerCase().includes(searchTerm)) { score += 3; }
+          if (item.content?.toLowerCase().includes(searchTerm)) { score += 1; }
+          if (item.tags?.some(t => t.toLowerCase().includes(searchTerm))) { score += 5; }
+          if (item.description?.toLowerCase().includes(searchTerm)) { score += 3; }
+          if (item.statusLabel?.toLowerCase().includes(searchTerm)) { score += 2; }
+
+          // 时间衰减：仅对已匹配条目，根据新程度加分（最多 +2）
+          if (score > 0 && item.date) {
+            var daysOld = (now - new Date(item.date).getTime()) / 86400000;
+            var timeBoost = Math.max(0, 1 - daysOld / 365);
+            score += timeBoost * 2;
+          }
+
+          return { ...item, score };
+        })
+        .filter(function(item) { return item.score > 0; })
+        .sort((a, b) => b.score - a.score);
+
+      if (results.length === 0) {
+        container.innerHTML = '<p class="search-empty">没有找到与 "<strong>' + escapeHtml(qTrim) + '</strong>" 相关的结果。试试其他关键词？</p>';
+        return;
+      }
+
+      // 分页
+      var PER_PAGE = 12;
+      var page = parseInt(new URLSearchParams(location.search).get('page') || '1', 10);
+      var totalPages = Math.ceil(results.length / PER_PAGE);
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      var start = (page - 1) * PER_PAGE;
+      var paged = results.slice(start, start + PER_PAGE);
+
+      var html = '<p class="search-status mono">找到 ' + results.length + ' 个结果</p>';
+      html += '<div class="posts-grid">';
+      html += paged.map(function(item) {
+        var isPost = item.type === 'post';
+        var href = isPost ? '/posts/' + item.slug : '/projects/' + item.slug;
+        var bg = isPost ? (item.categoryColor || 'var(--blue)') : 'var(--green)';
+        var label = isPost ? item.category : '项目';
+        var snippet = getSnippet(item, searchTerm);
+        var excerpt = snippet || item.excerpt || item.description || '';
+        if (excerpt.length > 120) excerpt = excerpt.slice(0, 120) + '…';
+        var ac = isPost ? (item.categoryColor || 'var(--blue)') : 'var(--green)';
+        var act = isPost && item.categoryColor ? '; --actext:#fff' : '';
+        var date = isPost && item.date ? item.date : (item.statusLabel || '');
+
+        var coverStyle = item.coverImage
+          ? 'background-image:url(' + item.coverImage + ');background-size:cover;background-position:center'
+          : 'background:' + bg;
+
+        var projectTag = isPost && item.project
+          ? '<span class="project-tag" style="--pc:' + item.project.coverColor + '">' + item.project.title + '</span>'
+          : '';
+
+        return '<a class="post-card" href="' + escapeAttr(href) + '" style="--ac:' + ac + act + '">'
+          + '<div class="post-cover" style="' + coverStyle + '">'
+          + (item.coverImage ? '' : '<div class="cover-inner">'
+          + '<span class="cover-icon">' + (isPost ? '📸' : '📂') + '</span>'
+          + '<span class="cover-label mono">' + escapeHtml(label) + '</span>'
+          + '</div>')
+          + '</div>'
+          + '<div class="post-body">'
+          + '<div class="post-meta-row">'
+          + '<span class="cat">' + escapeHtml(label) + '</span>'
+          + projectTag
+          + '<time>' + escapeHtml(date) + '</time>'
+          + '</div>'
+          + '<h3>' + highlight(item.title, searchTerm) + '</h3>'
+          + '<p>' + escapeHtml(excerpt) + '</p>'
+          + '</div></a>';
+      }).join('');
+      html += '</div>';
+
+      // 分页导航
+      if (totalPages > 1) {
+        html += '<nav class="pagination">';
+        if (page > 1) {
+          html += '<a class="page-btn" href="/search?q=' + encodeURIComponent(qTrim) + '&page=' + (page - 1) + '">← 上一页</a>';
+        }
+        html += '<span class="page-info mono">第 ' + page + ' 页 / 共 ' + totalPages + ' 页</span>';
+        if (page < totalPages) {
+          html += '<a class="page-btn" href="/search?q=' + encodeURIComponent(qTrim) + '&page=' + (page + 1) + '">下一页 →</a>';
+        }
+        html += '</nav>';
+      }
+
+      container.innerHTML = html;
+    } catch (e) {
+      container.innerHTML = `<p class="search-empty">搜索服务暂时不可用。请稍后再试。</p>`;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function highlight(text, q) {
+      if (!text) return '';
+      const idx = text.toLowerCase().indexOf(q);
+      if (idx === -1) return text;
+      return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + q.length) + '</mark>' + text.slice(idx + q.length);
+    }
+
+    function getSnippet(item, q) {
+      // 标题匹配 → 摘要在前匹配
+      // 正文匹配 → 显示上下文片段
+      const candidates = [];
+      if (item.excerpt) candidates.push({ text: item.excerpt, weight: 3 });
+      if (item.content) candidates.push({ text: item.content, weight: 1 });
+      if (item.description) candidates.push({ text: item.description, weight: 2 });
+      if (item.tags) candidates.push({ text: item.tags.join(' '), weight: 2 });
+
+      for (const c of candidates) {
+        const idx = c.text.toLowerCase().indexOf(q);
+        if (idx !== -1) {
+          const radius = 50;
+          const start = Math.max(0, idx - radius);
+          const end = Math.min(c.text.length, idx + q.length + radius);
+          return (start > 0 ? '…' : '') + highlight(c.text.slice(start, end), q) + (end < c.text.length ? '…' : '');
+        }
+      }
+      // 没有正文匹配则显示摘要前 120 字符
+      return item.excerpt ? highlight(item.excerpt.slice(0, 120), q) + (item.excerpt.length > 120 ? '…' : '') : '';
+    }
+  })();
+</script>
+
+<style>
+  .search-box { margin-bottom: 36px; }
+  .search-input {
+    width: 100%; max-width: 500px; padding: 14px 18px;
+    border: var(--bd); background: var(--card);
+    font-size: 16px; font-family: inherit; color: inherit;
+    box-shadow: 4px 4px 0 var(--ink); transition: box-shadow .2s;
+  }
+  .search-input:focus { outline: none; box-shadow: 6px 6px 0 var(--ink); }
+
+  .search-status { font-size: 13px; color: var(--soft); margin-bottom: 24px; }
+  .search-empty {
+    font-size: 15px; color: var(--soft); padding: 40px 0;
+    border-top: 2px dashed var(--ink);
+  }
+  .search-empty strong { color: var(--ink); }
+</style>

@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="404 · 页面未找到 · ZEFX">
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>4<span class="hl">0</span>4</h1>
+    <p class="page-desc">页面未找到</p>
+  </div>
+
+  <section class="section" style="text-align:center; padding:60px 0">
+    <p style="font-size:18px; color:var(--soft); margin-bottom:24px">
+      你访问的页面不存在，可能已被移动或删除。
+    </p>
+    <a href="/" style="display:inline-block; padding:12px 28px; background:var(--lemon); color:var(--ink); border:2px solid var(--ink); box-shadow:4px 4px 0 var(--ink); font-weight:700; text-decoration:none; transition:transform .15s,box-shadow .15s">
+      ← 返回首页
+    </a>
+  </section>
+
+  <Footer />
+</BaseLayout>

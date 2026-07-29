@@ -1,0 +1,22 @@
+{
+  "name": "zefx",
+  "type": "module",
+  "version": "0.98.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/pull-content.mjs && astro build",
+    "build:local": "astro build",
+    "preview": "astro preview",
+    "pull:content": "node scripts/pull-content.mjs --force",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.1.3",
+    "dotenv": "^16.4.7"
+  }
+}

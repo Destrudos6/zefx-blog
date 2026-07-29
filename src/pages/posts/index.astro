@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getAllPostsFromCollection, getAllProjects, POSTS_PER_PAGE } from '../../data/content';
+import { getCategories } from '../../data/backblaze';
+
+const allPosts = await getAllPostsFromCollection();
+const allProjects = await getAllProjects();
+const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
+
+const allCategories = await getCategories();
+const categoryLabels = [...new Set(allPosts.map(p => p.category))];
+const categories = [
+  { label: '全部', count: allPosts.length, active: true },
+  ...categoryLabels.map(label => ({
+    label,
+    count: allPosts.filter(p => p.category === label).length,
+    active: false,
+  })),
+];
+const catMap = Object.fromEntries(allCategories.map(c => [c.slug, c.label]));
+catMap.all = '全部';
+
+const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+const firstPagePosts = allPosts.slice(0, POSTS_PER_PAGE);
+const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)'];
+---
+
+<BaseLayout title="文章 · ZEFX">
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>全部<span class="hl">文章</span></h1>
+    <p class="page-desc">{allPosts.length} 篇手打文字,关于技术、生活、摄影和读书。不追热点,只写想写的。</p>
+  </div>
+
+  <section class="section" style="padding-top:0">
+    <div class="cats reveal">
+      {categories.map(cat => (
+        <button class={`cat-btn${cat.active ? ' on' : ''}`} data-label={cat.label}>{cat.label} {cat.count}</button>
+      ))}
+    </div>
+
+    <div class="posts-grid" id="posts-grid">
+      {firstPagePosts.map((post, i) => (
+        <PostCard post={post} projectMap={projectMap} color={coverColors[i % coverColors.length]} index={i} />
+      ))}
+    </div>
+
+    {totalPages > 1 && (
+      <nav class="pagination reveal">
+        <span class="page-info mono">第 1 页 / 共 {totalPages} 页</span>
+        <a class="page-btn" href="/posts/2">下一页 →</a>
+      </nav>
+    )}
+  </section>
+
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<script define:vars={{ catMap }}>
+  (function() {
+    var buttons = document.querySelectorAll('.cat-btn');
+    var grid = document.getElementById('posts-grid');
+    if (!grid) return;
+    var items = grid.querySelectorAll('.post-card');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('on'); });
+        btn.classList.add('on');
+        var label = btn.dataset.label;
+        var en = Object.entries(catMap).find(function(v) { return v[1] === label; })?.[0] || '';
+        history.replaceState(null, '', en ? '#' + en : window.location.pathname);
+        items.forEach(function(item) {
+          item.style.display = (label === '全部' || item.dataset.category === label) ? '' : 'none';
+        });
+        grid.style.setProperty('display', items.length > 0 ? 'grid' : 'none');
+      });
+    });
+    var hash = window.location.hash.slice(1);
+    if (hash) {
+      var zhLabel = catMap[hash] || hash;
+      var target = document.querySelector('.cat-btn[data-label="' + zhLabel + '"]');
+      if (target) target.click();
+    }
+  })();
+</script>

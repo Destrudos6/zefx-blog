@@ -1,0 +1,35 @@
+---
+import type { ProjectLog } from '../data/content';
+
+interface Props {
+  title: string;
+  status: 'active' | 'done' | 'pause';
+  statusLabel: string;
+  description: string;
+  logs: ProjectLog[];
+  tags: string[];
+}
+
+const { title, status, statusLabel, description, logs, tags } = Astro.props;
+---
+
+<div class="project reveal">
+  <div class="project-head">
+    <h3>{title}</h3>
+    <span class={`project-status ${status}`}>{statusLabel}</span>
+  </div>
+  <p class="project-desc">{description}</p>
+  <div class="project-updates">
+    {logs.map(u => (
+      <div class="p-update">
+        <time>{u.date}</time>
+        <p>{u.text}</p>
+      </div>
+    ))}
+  </div>
+  <div class="project-tags">
+    {tags.map(t => (
+      <span class="tag">{t}</span>
+    ))}
+  </div>
+</div>

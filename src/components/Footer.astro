@@ -1,0 +1,32 @@
+---
+import { getSiteData } from '../data/backblaze';
+
+const siteData = await getSiteData();
+const { description, copyright, footerNav, categories, elsewhere } = siteData.site;
+---
+
+<footer>
+  <div class="f-ghost" aria-hidden="true">Focus on the essential.</div>
+  <div class="f-cols">
+    <div class="f-brand">
+      <h4>{siteData.site.name}</h4>
+      <p>{description}</p>
+    </div>
+    <div>
+      <h4>导航</h4>
+      <ul>{footerNav.map(item => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+    </div>
+    <div>
+      <h4>分类</h4>
+      <ul>{categories.map(item => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+    </div>
+    <div>
+      <h4>ELSEWHERE</h4>
+      <ul>{elsewhere.map(item => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+    </div>
+  </div>
+  <div class="f-bottom">
+    <span>{copyright}</span>
+    <span>构建时间 {new Date().toISOString().slice(0,10)}</span>
+  </div>
+</footer>

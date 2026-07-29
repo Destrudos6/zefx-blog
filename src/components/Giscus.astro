@@ -1,0 +1,40 @@
+---
+import { getSiteData } from '../data/backblaze';
+
+const { giscus } = (await getSiteData()).site;
+---
+
+{giscus?.repo && giscus?.repoId && giscus?.categoryId && (
+  <section class="giscus-section" id="giscus">
+    <script src="https://giscus.app/client.js"
+      data-repo={giscus.repo}
+      data-repo-id={giscus.repoId}
+      data-category={giscus.category}
+      data-category-id={giscus.categoryId}
+      data-mapping={giscus.mapping ?? 'pathname'}
+      data-strict={giscus.strict ?? '0'}
+      data-reactions-enabled={giscus.reactionsEnabled ?? '1'}
+      data-emit-metadata="0"
+      data-input-position={giscus.inputPosition ?? 'top'}
+      data-theme="/giscus-theme.css"
+      data-lang={giscus.lang ?? 'zh-CN'}
+      data-loading="lazy"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </section>
+)}
+
+<style>
+  .giscus-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px 0;
+  }
+
+  @media (max-width: 640px) {
+    .giscus-section {
+      padding: 32px 18px 0;
+    }
+  }
+</style>
