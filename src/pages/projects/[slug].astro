@@ -82,7 +82,7 @@ const statusIcon = project.status === 'active' ? '▶' : project.status === 'don
                 <h3><a href={`/posts/${post.slug}`}>{post.title}</a></h3>
                 <p>{post.excerpt}</p>
                 <div class="proj-post-meta">
-                  <span class="mono">{post.readTime} · {post.comments} 评论</span>
+                  <span class="mono">{post.readTime} · <span data-comment-slug={post.slug}>{post.comments}</span> 评论</span>
                   <span class="go">→</span>
                 </div>
               </div>

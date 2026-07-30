@@ -77,9 +77,9 @@ const { posts } = Astro.props;
     if (!list) return;
     const items = Array.from(list.querySelectorAll('li'));
 
-    // 从 GitHub API 获取评论数
-    const repo = document.documentElement.getAttribute('data-repo') || '';
-    const owner = document.documentElement.getAttribute('data-owner') || '';
+    const owner = document.documentElement.getAttribute('data-giscus-owner') || '';
+    const repo = document.documentElement.getAttribute('data-giscus-repo') || '';
+    const mapping = document.documentElement.getAttribute('data-giscus-mapping') || 'pathname';
     if (!repo || !owner) return;
 
     try {
@@ -87,31 +87,29 @@ const { posts } = Astro.props;
       if (!resp.ok) return;
       const discussions = await resp.json();
 
-      // 建立 discussion title -> comment count 映射
       const commentMap = new Map();
       discussions.forEach(d => {
-        commentMap.set(d.title, d.comments);
+        if (mapping === 'pathname') {
+          const match = d.title.match(/\/posts\/(.+)/);
+          if (match) commentMap.set(match[1], d.comments);
+        } else {
+          commentMap.set(d.title, d.comments);
+        }
       });
 
-      // 更新每个 item 的评论数
       items.forEach(li => {
-        const link = li.querySelector('a');
-        const title = link?.textContent?.trim() || '';
-        const count = commentMap.get(title) || 0;
+        const slug = li.dataset.slug || '';
+        const count = commentMap.get(slug) || 0;
         li.dataset.comments = String(count);
         const countEl = li.querySelector('.comment-count');
         if (countEl) countEl.textContent = String(count);
       });
 
-      // 按评论数降序排序，最多取前 6 个
       items.sort((a, b) => parseInt(b.dataset.comments) - parseInt(a.dataset.comments));
       const top6 = items.slice(0, 6);
 
-      // 清空列表并重新填充
       list.innerHTML = '';
       top6.forEach(li => list.appendChild(li));
-
-
     } catch(e) {
       // API 失败时保持原始顺序
     }
