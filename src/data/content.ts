@@ -65,10 +65,8 @@ export async function getAllProjects(): Promise<Project[]> {
   const { getCollection } = await import('astro:content');
   const entries = await getCollection('projects');
   return entries.map(entry => {
-    // entry.id 形如 "blog-rebuild/logs" → slug 取第一段
-    const slug = entry.id.split('/')[0];
     return {
-      slug,
+      slug: entry.id,
       title: entry.data.title,
       status: entry.data.status,
       statusLabel: entry.data.statusLabel,

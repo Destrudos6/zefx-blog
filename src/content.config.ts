@@ -9,11 +9,10 @@ const posts = defineCollection({
     generateId({ entry }) {
       const parts = entry.split('/');
       const name = parts[parts.length - 1].replace(/\.md$/, '');
-      // 项目文章：路径含子目录（如 project-slug/posts/article.md）
-      // 用 "project-name-article-name" 格式确保唯一且 URL 友好
       const hasSubDir = parts.length > 2 && parts.some(p => p === 'posts');
       if (hasSubDir) {
-        return parts[0] + '-' + name;
+        const postsIdx = parts.indexOf('posts');
+        return parts[postsIdx - 1] + '-' + name;
       }
       return name;
     },
@@ -33,7 +32,14 @@ const posts = defineCollection({
 });
 
 const projects = defineCollection({
-  loader: glob({ pattern: '**/logs.json', base: './src/content' }),
+  loader: glob({
+    pattern: '**/logs.json',
+    base: './src/content',
+    generateId({ entry }) {
+      const parts = entry.split('/');
+      return parts[parts.length - 2];
+    },
+  }),
   schema: z.object({
     title: z.string(),
     status: z.enum(['active', 'done', 'pause']),

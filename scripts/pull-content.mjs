@@ -19,7 +19,6 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
 
-// 加载 .env 文件
 config();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -31,6 +30,7 @@ const USE_B2 = process.env.USE_B2 === 'true';
 const B2_PROXY_URL = process.env.B2_PROXY_URL || '';
 const B2_PREFIX = process.env.B2_PREFIX || '';
 const FORCE = process.argv.includes('--force');
+const CONCURRENCY = Number(process.env.PULL_CONCURRENCY) || 8;
 
 if (!USE_B2 && !FORCE) {
   console.log('[pull-content] USE_B2 is not enabled, skipping remote fetch.');
@@ -44,10 +44,8 @@ if (!B2_PROXY_URL) {
 }
 
 console.log(`[pull-content] Fetching content from: ${B2_PROXY_URL}`);
+console.log(`[pull-content] Concurrency: ${CONCURRENCY}`);
 
-/**
- * 从 B2 获取文件
- */
 async function fetchFromB2(path) {
   const fullPath = B2_PREFIX ? `${B2_PREFIX}/${path}` : path;
   const url = `${B2_PROXY_URL}/${fullPath}`;
@@ -69,43 +67,59 @@ async function fetchBinary(path) {
   return new Uint8Array(await response.arrayBuffer());
 }
 
-/**
- * 确保目录存在
- */
 async function ensureDir(path) {
   await mkdir(path, { recursive: true });
 }
 
-/**
- * 写入文件
- */
 async function writeFileContent(filePath, content) {
   await ensureDir(dirname(filePath));
   await writeFile(filePath, content);
 }
 
-/**
- * 拉取单个文件
- */
 async function pullFile(remotePath, localPath, isBinary = false) {
   try {
     const content = isBinary
       ? await fetchBinary(remotePath)
       : await fetchText(remotePath);
     await writeFileContent(localPath, content);
-    console.log(`  ✓ ${remotePath}`);
-    return true;
+    return { path: remotePath, ok: true };
   } catch (err) {
-    console.error(`  ✗ ${remotePath}: ${err.message}`);
-    return false;
+    return { path: remotePath, ok: false, error: err.message };
   }
 }
 
 /**
- * 从 B2 获取内容索引并下载所有内容
+ * 带并发限制的并行执行
  */
+async function runConcurrent(tasks, concurrency = CONCURRENCY) {
+  const results = [];
+  const executing = new Set();
+
+  for (const task of tasks) {
+    const p = task().then(result => {
+      executing.delete(p);
+      return result;
+    });
+    executing.add(p);
+    results.push(p);
+
+    if (executing.size >= concurrency) {
+      await Promise.race(executing);
+    }
+  }
+
+  return Promise.all(results);
+}
+
+function logResults(results, label) {
+  const ok = results.filter(r => r.ok);
+  const failed = results.filter(r => !r.ok);
+  for (const r of ok) console.log(`  ✓ ${r.path}`);
+  for (const r of failed) console.error(`  ✗ ${r.path}: ${r.error}`);
+  console.log(`[pull-content] ${label}: ${ok.length}/${results.length} succeeded`);
+}
+
 async function pullAllContent() {
-  // 尝试获取内容索引
   const indexPath = B2_PREFIX ? `${B2_PREFIX}/content-index.json` : 'content-index.json';
   const indexUrl = `${B2_PROXY_URL}/${indexPath}`;
 
@@ -126,77 +140,74 @@ async function pullAllContent() {
 
   console.log(`[pull-content] Found content index`);
 
-  // 拉取内容文件（Markdown、JSON）
   if (contentIndex.content) {
     console.log(`[pull-content] Pulling ${contentIndex.content.length} content files...`);
-    for (const file of contentIndex.content) {
+    const tasks = contentIndex.content.map(file => {
       const remotePath = typeof file === 'string' ? file : file.path;
       const isBinary = typeof file === 'object' && file.type === 'binary';
       const localPath = join(CONTENT_DIR, remotePath);
-      await pullFile(remotePath, localPath, isBinary);
-    }
+      return () => pullFile(remotePath, localPath, isBinary);
+    });
+    const results = await runConcurrent(tasks);
+    logResults(results, 'Content files');
   }
 
-  // 拉取媒体资源
   if (contentIndex.media) {
     console.log(`[pull-content] Pulling ${contentIndex.media.length} media files...`);
-    for (const file of contentIndex.media) {
+    const tasks = contentIndex.media.map(file => {
       const remotePath = typeof file === 'string' ? file : file.path;
       const isBinary = typeof file === 'object' && file.type === 'binary';
       const localPath = join(PUBLIC_DIR, remotePath);
-      await pullFile(remotePath, localPath, isBinary);
-    }
+      return () => pullFile(remotePath, localPath, isBinary);
+    });
+    const results = await runConcurrent(tasks);
+    logResults(results, 'Media files');
   }
 }
 
-/**
- * 使用默认目录结构拉取内容
- * 假设 B2 存储桶中的目录结构与本地一致
- */
 async function pullDefaultStructure() {
-  const textExtensions = ['.md', '.json', '.css', '.js', '.html', '.svg', '.txt'];
   const binaryExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.woff', '.woff2', '.ttf'];
 
-  // 拉取内容目录
   const contentDirs = ['posts', 'projects'];
   for (const dir of contentDirs) {
     try {
-      // 尝试获取目录索引
       const indexContent = await fetchText(`${dir}/index.json`);
       const items = JSON.parse(indexContent);
 
+      const tasks = [];
       for (const item of items) {
         if (item.contentPath) {
-          await pullFile(item.contentPath, join(CONTENT_DIR, item.contentPath), false);
+          tasks.push(() => pullFile(item.contentPath, join(CONTENT_DIR, item.contentPath), false));
         }
         if (item.metaPath) {
-          await pullFile(item.metaPath, join(CONTENT_DIR, item.metaPath), false);
+          tasks.push(() => pullFile(item.metaPath, join(CONTENT_DIR, item.metaPath), false));
         }
       }
+      const results = await runConcurrent(tasks);
+      logResults(results, `${dir} content`);
     } catch (err) {
       console.log(`  - Skipping ${dir}: ${err.message}`);
     }
   }
 
-  // 拉取媒体资源目录
   const mediaDirs = ['posts/coverimage', 'posts/illustration', 'projects'];
   for (const dir of mediaDirs) {
     try {
       const indexContent = await fetchText(`${dir}/index.json`);
       const items = JSON.parse(indexContent);
 
-      for (const item of items) {
-        const ext = item.path.split('.').pop()?.toLowerCase();
+      const tasks = items.map(item => {
         const isBinary = binaryExtensions.some(e => item.path.endsWith(e));
-        await pullFile(item.path, join(PUBLIC_DIR, item.path), isBinary);
-      }
+        return () => pullFile(item.path, join(PUBLIC_DIR, item.path), isBinary);
+      });
+      const results = await runConcurrent(tasks);
+      logResults(results, `${dir} media`);
     } catch (err) {
       console.log(`  - Skipping media ${dir}: ${err.message}`);
     }
   }
 }
 
-// 执行拉取
 try {
   console.log('[pull-content] Starting content pull from B2...');
   await pullAllContent();
