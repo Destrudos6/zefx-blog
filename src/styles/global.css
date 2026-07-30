@@ -412,12 +412,13 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .plane{position:absolute; right:-16px; bottom:-20px; width:130px; transform:rotate(-12deg); opacity:.9; pointer-events:none}
 
 /* ============ 页脚 ============ */
-footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden}
+footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden; position:relative}
 .f-ghost{
   font-family:var(--disp); font-weight:900; font-size:clamp(52px,10vw,130px); line-height:.95;
-  color:transparent; -webkit-text-stroke:2px var(--ghostc); white-space:nowrap; margin-bottom:48px; user-select:none;
+  color:transparent; -webkit-text-stroke:2px var(--ghostc); white-space:nowrap; user-select:none;
+  position:absolute; top:64px; left:24px; right:24px; z-index:0; pointer-events:none;
 }
-.f-cols{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; padding-bottom:44px; border-bottom:var(--bd)}
+.f-cols{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; padding-bottom:44px; border-bottom:var(--bd); position:relative; z-index:1}
 .f-cols h4{font-family:var(--mono); font-size:12px; letter-spacing:.2em; color:var(--red); margin-bottom:16px}
 .f-cols li{list-style:none; margin-bottom:10px; font-size:14.5px}
 .f-cols li a{border-bottom:1px solid transparent; transition:.2s}
@@ -480,7 +481,7 @@ footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden}
   .page-banner h1{font-size:clamp(28px,8vw,42px)}
   .page-banner .page-desc{font-size:15px}
   .f-cols{grid-template-columns:1fr 1fr 1fr; gap:20px}
-  .f-ghost{font-size:clamp(36px,12vw,72px)}
+  .f-ghost{font-size:clamp(36px,12vw,72px); top:40px; left:18px; right:18px}
   .hot-posts{height:auto; padding:20px; min-height:auto}
   .hot-list a{font-size:14px; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
   .mobile-nav nav{padding:8px 16px}
