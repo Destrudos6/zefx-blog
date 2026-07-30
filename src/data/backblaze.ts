@@ -87,6 +87,7 @@ export interface SiteData {
       reactionsEnabled?: string;
       inputPosition?: string;
       theme?: string;
+      themeDark?: string;
       lang?: string;
     };
   };

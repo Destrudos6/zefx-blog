@@ -2,10 +2,24 @@
 import { getSiteData } from '../data/backblaze';
 
 const { giscus } = (await getSiteData()).site;
+const origin = Astro.site?.origin || '';
+
+function resolveTheme(path?: string): string {
+  if (!path) return 'light';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  if (path.startsWith('/')) return `${origin}${path}`;
+  return path;
+}
+
+const themeLight = resolveTheme(giscus?.theme);
+const themeDark = resolveTheme(giscus?.themeDark) || themeLight;
 ---
 
 {giscus?.repo && giscus?.repoId && giscus?.categoryId && (
-  <section class="giscus-section" id="giscus">
+  <section class="giscus-section" id="giscus"
+    data-theme-light={themeLight}
+    data-theme-dark={themeDark}
+  >
     <script is:inline data-giscus={JSON.stringify({
       repo: giscus.repo,
       repoId: giscus.repoId,
@@ -19,8 +33,10 @@ const { giscus } = (await getSiteData()).site;
     })}>
       (function() {
         var cfg = JSON.parse(document.currentScript.dataset.giscus);
+        var sec = document.currentScript.parentNode;
         var s = localStorage.getItem('theme');
         var isDark = s === 'dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches);
+        var theme = isDark ? sec.dataset.themeDark : sec.dataset.themeLight;
 
         var g = document.createElement('script');
         g.src = 'https://giscus.app/client.js';
@@ -33,13 +49,13 @@ const { giscus } = (await getSiteData()).site;
         g.setAttribute('data-reactions-enabled', cfg.reactionsEnabled);
         g.setAttribute('data-emit-metadata', '0');
         g.setAttribute('data-input-position', cfg.inputPosition);
-        g.setAttribute('data-theme', isDark ? '/giscus-dark.css' : '/giscus-light.css');
+        g.setAttribute('data-theme', theme);
         g.setAttribute('data-lang', cfg.lang);
         g.setAttribute('data-loading', 'lazy');
         g.crossOrigin = 'anonymous';
         g.async = true;
 
-        document.currentScript.parentNode.appendChild(g);
+        sec.appendChild(g);
       })();
     </script>
   </section>
@@ -61,15 +77,19 @@ const { giscus } = (await getSiteData()).site;
 
 <script>
   function getGiscusTheme() {
+    const sec = document.getElementById('giscus');
+    if (!sec) return '';
     return document.documentElement.dataset.theme === 'dark'
-      ? '/giscus-dark.css' : '/giscus-light.css';
+      ? sec.dataset.themeDark : sec.dataset.themeLight;
   }
 
   function syncGiscusTheme() {
     const iframe = document.querySelector('iframe.giscus-frame');
     if (!iframe) return;
+    const theme = getGiscusTheme();
+    if (!theme) return;
     iframe.contentWindow.postMessage(
-      { giscus: { setTheme: getGiscusTheme() } },
+      { giscus: { setConfig: { theme } } },
       'https://giscus.app'
     );
   }

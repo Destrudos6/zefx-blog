@@ -323,6 +323,7 @@ node scripts/generate-index.mjs --write
       "reactionsEnabled": "1",
       "inputPosition": "top",
       "theme": "/giscus-light.css",
+      "themeDark": "/giscus-dark.css",
       "lang": "zh-CN"
     }
   }
@@ -815,6 +816,7 @@ public/ 或 B2 桶
     "reactionsEnabled": "1",
     "inputPosition": "top",
     "theme": "/giscus-light.css",
+    "themeDark": "/giscus-dark.css",
     "lang": "zh-CN"
   }
 }
@@ -824,7 +826,16 @@ public/ 或 B2 桶
 
 项目包含两个自定义 Giscus 主题文件 `public/giscus-light.css` 和 `public/giscus-dark.css`，采用与博客一致的 Neo-Brutalist 风格。评论区会自动跟随博客主题切换。
 
-如需修改主题，编辑对应文件后重新部署即可。
+**`theme` / `themeDark` 配置说明：**
+
+| 字段 | 说明 |
+|------|------|
+| `theme` | 亮色模式主题。支持 giscus 内置主题名（如 `light`、`preferred_color_scheme`）、相对路径（如 `/giscus-light.css`）或完整 URL（如 `https://example.com/theme.css`） |
+| `themeDark` | 可选。暗色模式主题。未设置时回退到 `theme`。格式同上 |
+
+- 相对路径会自动拼接站点域名转为绝对 URL（giscus iframe 需要完整 URL 才能加载自定义 CSS）
+- 使用内置主题（如 `preferred_color_scheme`）时无需设置 `themeDark`，giscus 会自行处理
+- 如需修改 Neo-Brutalist 风格，编辑 `public/giscus-light.css` / `public/giscus-dark.css` 后重新部署即可
 
 ---
 
