@@ -83,7 +83,7 @@ const { posts } = Astro.props;
     if (!repo || !owner) return;
 
     try {
-      const resp = await fetch(`https://api.github.com/repos/${owner}/${repo}/discussions?per_page=100`);
+      const resp = await fetch(`/api/github-discussions?owner=${owner}&repo=${repo}`);
       if (!resp.ok) return;
       const discussions = await resp.json();
 

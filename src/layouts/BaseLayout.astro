@@ -136,7 +136,7 @@ const giscusRepo = giscusParts[1] || '';
   const giscusMapping = document.documentElement.getAttribute('data-giscus-mapping') || 'pathname';
   const commentEls = document.querySelectorAll('[data-comment-slug]');
   if (giscusOwner && giscusRepo && commentEls.length) {
-    fetch(`https://api.github.com/repos/${giscusOwner}/${giscusRepo}/discussions?per_page=100`)
+    fetch(`/api/github-discussions?owner=${giscusOwner}&repo=${giscusRepo}`)
       .then(r => r.ok ? r.json() : [])
       .then(discussions => {
         const map = new Map();
