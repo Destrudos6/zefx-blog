@@ -37,16 +37,7 @@ const statusIcon = project.status === 'active' ? '▶' : project.status === 'don
         ))}
       </div>
     </div>
-    <div class="project-hero-cover" style={project.coverImage ? `background-image:url(${getMediaUrl(project.coverImage)});background-size:cover;background-position:center` : `background:${project.coverColor}`}>
-      {!project.coverImage && (
-        <>
-          <span class="tape t1"></span><span class="tape t2"></span>
-          <div class="cover-placeholder">
-            <span class="cover-icon">📂</span>
-            <span class="cover-label mono">PROJECT</span>
-          </div>
-        </>
-      )}
+    <div class="project-hero-cover" style={`background-image:url(${getMediaUrl(`projects/${project.slug}/cover.png`)});background-size:cover;background-position:center`}>
     </div>
   </div>
 

@@ -22,7 +22,7 @@ export async function GET() {
         categoryColor: p.categoryColor,
         date: p.date,
         excerpt: p.excerpt,
-        coverImage: p.coverImage ? getMediaUrl(p.coverImage) : null,
+        coverImage: getMediaUrl(`projects/${p.slug}/cover.png`),
         project: proj,
       };
     }),
