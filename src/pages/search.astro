@@ -106,6 +106,7 @@ import BackToTop from '../components/BackToTop.astro';
         var snippet = getSnippet(item, searchTerm);
         var excerpt = snippet || item.excerpt || item.description || '';
         if (excerpt.length > 120) excerpt = excerpt.slice(0, 120) + '…';
+        excerpt = escapeHtml(excerpt);
         var ac = isPost ? (item.categoryColor || 'var(--blue)') : 'var(--green)';
         var act = isPost && item.categoryColor ? '; --actext:#fff' : '';
         var date = isPost && item.date ? item.date : (item.statusLabel || '');
@@ -132,7 +133,7 @@ import BackToTop from '../components/BackToTop.astro';
           + '<time>' + escapeHtml(date) + '</time>'
           + '</div>'
           + '<h3>' + highlight(item.title, searchTerm) + '</h3>'
-          + '<p>' + escapeHtml(excerpt) + '</p>'
+          + '<p>' + highlight(excerpt, searchTerm) + '</p>'
           + '</div></a>';
       }).join('');
       html += '</div>';
@@ -173,8 +174,6 @@ import BackToTop from '../components/BackToTop.astro';
     }
 
     function getSnippet(item, q) {
-      // 标题匹配 → 摘要在前匹配
-      // 正文匹配 → 显示上下文片段
       const candidates = [];
       if (item.excerpt) candidates.push({ text: item.excerpt, weight: 3 });
       if (item.content) candidates.push({ text: item.content, weight: 1 });
@@ -187,11 +186,10 @@ import BackToTop from '../components/BackToTop.astro';
           const radius = 50;
           const start = Math.max(0, idx - radius);
           const end = Math.min(c.text.length, idx + q.length + radius);
-          return (start > 0 ? '…' : '') + highlight(c.text.slice(start, end), q) + (end < c.text.length ? '…' : '');
+          return (start > 0 ? '…' : '') + c.text.slice(start, end) + (end < c.text.length ? '…' : '');
         }
       }
-      // 没有正文匹配则显示摘要前 120 字符
-      return item.excerpt ? highlight(item.excerpt.slice(0, 120), q) + (item.excerpt.length > 120 ? '…' : '') : '';
+      return item.excerpt ? item.excerpt.slice(0, 120) + (item.excerpt.length > 120 ? '…' : '') : '';
     }
   })();
 </script>
@@ -212,4 +210,5 @@ import BackToTop from '../components/BackToTop.astro';
     border-top: 2px dashed var(--ink);
   }
   .search-empty strong { color: var(--ink); }
+  mark { background: #fef08a; padding: 0 2px; border-radius: 2px; }
 </style>
