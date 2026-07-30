@@ -72,6 +72,7 @@ export interface SiteData {
       note: string;
     };
     searchPlaceholder: string;
+    postsTagline?: string;
     github: {
       owner: string;
       repo: string;

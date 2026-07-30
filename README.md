@@ -306,6 +306,8 @@ node scripts/generate-index.mjs --write
 
     "searchPlaceholder": "搜索文章…",
 
+    "postsTagline": "关于技术、生活、摄影和读书。不追热点,只写想写的。",
+
     "github": {
       "owner": "destrudos6",
       "repo": "zefx"
@@ -341,6 +343,12 @@ node scripts/generate-index.mjs --write
 |------|------|
 | `avatar` | 可选。站点头像路径，默认 `/Avatar.png`。B2 模式下自动转换为代理 URL |
 | `favicon` | 可选。网站图标路径，默认 `/favicon.ico` |
+
+**postsTagline 说明：**
+
+| 字段 | 说明 |
+|------|------|
+| `postsTagline` | 可选。文章列表页标语，显示为「X 篇手打文字,{postsTagline}」。未配置时默认为「关于技术、生活、摄影和读书。不追热点,只写想写的。」 |
 
 ---
 

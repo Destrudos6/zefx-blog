@@ -4,12 +4,15 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BackToTop from '../../components/BackToTop.astro';
 import { getAllPostsFromCollection, getAllProjects, POSTS_PER_PAGE } from '../../data/content';
-import { getCategories } from '../../data/backblaze';
+import { getCategories, getSiteData } from '../../data/backblaze';
 import PostCard from '../../components/PostCard.astro';
 
 const allPosts = await getAllPostsFromCollection();
 const allProjects = await getAllProjects();
 const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
+
+const siteData = (await getSiteData()).site;
+const postsTagline = siteData.postsTagline ?? '关于技术、生活、摄影和读书。不追热点,只写想写的。';
 
 // 从文章数据动态派生分类列表
 const allCategories = await getCategories();
@@ -49,7 +52,7 @@ const nextPage = page < totalPages ? `/posts/${page + 1}` : null;
 
   <div class="page-banner reveal">
     <h1>全部<span class="hl">文章</span></h1>
-    <p class="page-desc">{allPosts.length} 篇手打文字,关于技术、生活、摄影和读书。不追热点,只写想写的。</p>
+    <p class="page-desc">{allPosts.length} 篇手打文字,{postsTagline}</p>
   </div>
 
   <section class="section" style="padding-top:0">
