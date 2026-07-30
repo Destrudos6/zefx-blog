@@ -469,6 +469,8 @@ footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden;
   .section{padding:56px 18px}
   h1{gap:10px}
   .stat{padding:0 22px}
+  .stat .num{font-size:28px}
+  .stat small{font-size:10px}
   .logo small{display:none}
   .hero{padding:40px 18px 36px}
   .word{font-size:clamp(36px,10vw,52px); border-width:2px; box-shadow:5px 5px 0 var(--ink)}
