@@ -76,23 +76,27 @@ const themeDark = resolveTheme(giscus?.themeDark) || themeLight;
 </style>
 
 <script>
-  function getGiscusTheme() {
-    const sec = document.getElementById('giscus');
-    if (!sec) return '';
-    return document.documentElement.dataset.theme === 'dark'
-      ? sec.dataset.themeDark : sec.dataset.themeLight;
-  }
+  const sec = document.getElementById('giscus');
+  if (sec) {
+    function syncGiscusTheme() {
+      const iframe = document.querySelector('iframe.giscus-frame');
+      if (!iframe) return;
+      const theme = document.documentElement.dataset.theme === 'dark'
+        ? sec.dataset.themeDark : sec.dataset.themeLight;
+      if (!theme) return;
+      iframe.contentWindow.postMessage(
+        { giscus: { setConfig: { theme } } },
+        'https://giscus.app'
+      );
+    }
 
-  function syncGiscusTheme() {
-    const iframe = document.querySelector('iframe.giscus-frame');
-    if (!iframe) return;
-    const theme = getGiscusTheme();
-    if (!theme) return;
-    iframe.contentWindow.postMessage(
-      { giscus: { setConfig: { theme } } },
-      'https://giscus.app'
-    );
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          syncGiscusTheme();
+          return;
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
   }
-
-  document.getElementById('themeToggle')?.addEventListener('click', syncGiscusTheme);
 </script>

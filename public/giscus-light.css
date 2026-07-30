@@ -1,33 +1,23 @@
 /*!
  * Giscus Theme — ZEFX Neo-Brutalist (Light)
- * Custom theme matching zefx.site design system
+ * Follows giscus official theme convention.
+ * Design tokens match zefx.site global.css :root
  */
 
-/*! Custom CSS */
+/* ── Custom layout ── */
 .gsc-reactions-count { display: none }
 .gsc-timeline { flex-direction: column-reverse }
 .gsc-header { padding-bottom: 1rem }
 .gsc-comments > .gsc-header { order: 1 }
 .gsc-comments > .gsc-comment-box { margin-bottom: 1rem; order: 2 }
 .gsc-comments > .gsc-timeline { order: 3 }
-.gsc-homepage-bg { background-color: #f5f1e6 }
-main .gsc-loading-image { background-image: url('https://github.githubassets.com/images/mona-loading-default.gif') }
 
-/* ============================================================
-   Light Theme
-   ============================================================ */
+/* ── Theme variables ── */
 main {
-  --paper: #f5f1e6;
-  --card: #fdfaf1;
-  --ink: #1f2537;
-  --soft: #5b6172;
-  --red: #e8432d;
-  --blue: #2b46d4;
-  --lemon: #ffd23f;
-  --green: #1e7a5c;
-  --orange: #f28c1b;
+  --primary-default: 232, 67, 45;
+  --bg-default: 245, 241, 230;
 
-  /* Syntax highlighting — warm tones */
+  /* Syntax highlighting */
   --color-prettylights-syntax-comment: #768390;
   --color-prettylights-syntax-constant: #2b46d4;
   --color-prettylights-syntax-entity: #8b3cc9;
@@ -59,7 +49,7 @@ main {
   --color-prettylights-syntax-sublimelinter-gutter-mark: #545d68;
   --color-prettylights-syntax-constant-other-reference-link: #2b46d4;
 
-  /* Button colors — neo-brutalist */
+  /* Buttons */
   --color-btn-text: #1f2537;
   --color-btn-bg: #fdfaf1;
   --color-btn-border: rgba(31, 37, 55, 0.2);
@@ -83,10 +73,8 @@ main {
   --color-btn-primary-disabled-bg: rgba(232, 67, 45, 0.5);
   --color-btn-primary-disabled-border: rgba(31, 37, 55, 0.2);
 
-  /* Action list */
+  /* Action list & Segmented control */
   --color-action-list-item-default-hover-bg: rgba(31, 37, 55, 0.08);
-
-  /* Segmented control */
   --color-segmented-control-bg: rgba(31, 37, 55, 0.08);
   --color-segmented-control-button-bg: #fdfaf1;
   --color-segmented-control-button-selected-border: #1f2537;
@@ -96,17 +84,15 @@ main {
   --color-fg-muted: #5b6172;
   --color-fg-subtle: #768390;
 
-  /* Canvas / backgrounds */
+  /* Canvas */
   --color-canvas-default: #f5f1e6;
   --color-canvas-overlay: #fdfaf1;
   --color-canvas-inset: #f0ebdd;
   --color-canvas-subtle: #fdfaf1;
 
-  /* Borders */
+  /* Borders & Neutral */
   --color-border-default: #1f2537;
   --color-border-muted: rgba(31, 37, 55, 0.3);
-
-  /* Neutral */
   --color-neutral-muted: rgba(31, 37, 55, 0.1);
 
   /* Accent */
@@ -124,10 +110,8 @@ main {
   --color-danger-muted: rgba(232, 67, 45, 0.2);
   --color-danger-subtle: rgba(232, 67, 45, 0.08);
 
-  /* Primer */
+  /* Primer & Scale */
   --color-primer-shadow-inset: 0 0 #0000;
-
-  /* Scale */
   --color-scale-gray-7: #e8e4d8;
   --color-scale-blue-8: #2b46d4;
 
@@ -136,298 +120,258 @@ main {
   --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
 }
 
+/* ── Loading & pagination ── */
+main .pagination-loader-container {
+  background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line.svg");
+}
+main .gsc-loading-image {
+  background-image: url("https://github.githubassets.com/images/mona-loading-default.gif");
+}
+
 /* ============================================================
-   Giscus Container Overrides — Neo-Brutalist Style
+   Neo-Brutalist Overrides
    ============================================================ */
 
+/* Main frame */
 main .gsc-main-frame {
-  border: 2px solid var(--ink);
-  box-shadow: 6px 6px 0 var(--ink);
-  background: var(--paper);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 6px 6px 0 var(--color-border-default);
 }
 
+/* Comment box */
 main .gsc-comment-box {
-  border: 2px solid var(--ink);
-  background: var(--card);
-  box-shadow: 4px 4px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 4px 4px 0 var(--color-border-default);
 }
-
 main .gsc-comment-box-tabs {
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--color-border-default);
 }
-
 main .gsc-comment-box-md-tab {
   font-family: "Space Mono", "Courier New", monospace;
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.08em;
 }
-
 main .gsc-comment-box-md-tab.selected {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--color-fg-default);
+  color: var(--color-canvas-default);
 }
 
+/* Textarea */
 main .gsc-comment-box-textarea {
-  border: 2px solid var(--ink);
-  background: var(--paper);
+  border: 2px solid var(--color-border-default);
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 15px;
-  color: var(--ink);
 }
-
 main .gsc-comment-box-textarea:focus {
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--color-border-default);
   outline: none;
 }
 
+/* Buttons — unified style */
 main .gsc-comment-box-bottom button,
 main .gsc-reply-box button {
   font-family: "Space Mono", "Courier New", monospace;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.06em;
-  border: 2px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
+  padding: 6px 16px;
+  border: 2px solid var(--color-border-default);
+  box-shadow: 3px 3px 0 var(--color-border-default);
   transition: transform 0.15s, box-shadow 0.15s;
 }
-
 main .gsc-comment-box-bottom button:hover,
 main .gsc-reply-box button:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: 5px 5px 0 var(--color-border-default);
 }
-
 main .gsc-comment-box-bottom button:active,
 main .gsc-reply-box button:active {
   transform: translate(2px, 2px);
-  box-shadow: 0 0 0 var(--ink);
+  box-shadow: 0 0 0 var(--color-border-default);
 }
-
 main .gsc-comment-box-bottom button.btn-primary,
 main .gsc-reply-box button.btn-primary {
-  background: var(--red);
-  color: #ffffff;
+  background: var(--color-btn-primary-bg);
+  color: #fff;
 }
 
-main .gsc-comment-box-bottom button.btn-primary:hover {
-  background: var(--red);
-}
-
+/* Comments */
 main .gsc-comment {
-  border: 2px solid var(--ink);
-  background: var(--card);
-  box-shadow: 4px 4px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 4px 4px 0 var(--color-border-default);
   margin-bottom: 16px;
 }
-
 main .gsc-comment-header {
-  border-bottom: 1px dashed rgba(128, 128, 128, 0.3);
+  border-bottom: 1px dashed var(--color-border-muted);
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 12px;
 }
-
 main .gsc-comment-author {
   font-family: "Noto Serif SC", "Songti SC", serif;
   font-weight: 700;
   font-size: 15px;
 }
-
 main .gsc-comment-content {
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 15px;
   line-height: 1.8;
-  color: var(--ink);
 }
 
+/* Comment actions */
 main .gsc-comment-actions {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 12px;
 }
-
 main .gsc-comment-actions button {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 12px;
   font-weight: 700;
-  color: var(--soft);
+  padding: 4px 10px;
   transition: color 0.2s;
 }
-
 main .gsc-comment-actions button:hover {
-  color: var(--red);
+  color: var(--color-btn-primary-bg);
 }
 
+/* Reactions */
 main .gsc-reactions-button {
-  border: 2px solid var(--ink);
-  background: var(--card);
-  box-shadow: 2px 2px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 2px 2px 0 var(--color-border-default);
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 12px;
   font-weight: 700;
+  padding: 4px 12px;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-
 main .gsc-reactions-button:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--color-border-default);
 }
-
 main .gsc-reactions-popover {
-  border: 2px solid var(--ink);
-  background: var(--paper);
-  box-shadow: 4px 4px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 4px 4px 0 var(--color-border-default);
 }
 
-main .gsc-upvote-button {
-  color: var(--soft);
-}
-
-main .gsc-upvote-button:hover {
-  color: var(--red);
-}
-
+/* Timestamps */
 main .gsc-comment-author-timestamp,
 main .gsc-reply-author-timestamp {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 11px;
-  color: var(--soft);
 }
 
+/* Replies */
 main .gsc-reply {
-  border-left: 3px solid var(--ink);
+  border-left: 3px solid var(--color-border-default);
   padding-left: 16px;
   margin-top: 12px;
 }
 
-main .gsc-pagination {
+/* Pagination */
+main .gsc-pagination-button {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 13px;
   font-weight: 700;
-}
-
-main .gsc-pagination-button {
-  border: 2px solid var(--ink);
-  background: var(--card);
-  box-shadow: 3px 3px 0 var(--ink);
+  padding: 6px 16px;
+  border: 2px solid var(--color-border-default);
+  box-shadow: 3px 3px 0 var(--color-border-default);
   transition: transform 0.15s, box-shadow 0.15s;
 }
-
 main .gsc-pagination-button:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--ink);
-  color: var(--red);
+  box-shadow: 5px 5px 0 var(--color-border-default);
+  color: var(--color-btn-primary-bg);
 }
 
+/* Sign-in */
 main .gsc-signin-section {
-  border: 2px dashed var(--ink);
-  background: var(--card);
-  padding: 20px;
+  border: 2px dashed var(--color-border-default);
+  padding: 24px;
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 13px;
 }
-
 main .gsc-signin-button {
-  border: 2px solid var(--ink);
-  background: var(--lemon);
-  color: var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  background: #ffd23f;
+  color: var(--color-fg-default);
+  box-shadow: 3px 3px 0 var(--color-border-default);
   font-family: "Space Mono", "Courier New", monospace;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.06em;
+  padding: 8px 20px;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-
 main .gsc-signin-button:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: 5px 5px 0 var(--color-border-default);
 }
 
+/* Loading */
 main .gsc-loading-container {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 13px;
-  color: var(--soft);
 }
 
+/* No comments */
 main .gsc-no-comments {
   font-family: "Noto Serif SC", "Songti SC", serif;
   font-size: 16px;
-  color: var(--soft);
   text-align: center;
   padding: 40px 20px;
 }
 
+/* Header */
 main .gsc-header {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 13px;
   font-weight: 700;
-  color: var(--soft);
 }
-
 main .gsc-left-header span {
   font-family: "Noto Serif SC", "Songti SC", serif;
   font-weight: 900;
   font-size: 18px;
-  color: var(--ink);
 }
 
-main .gsc-social-reaction-summary-item {
-  font-family: "Space Mono", "Courier New", monospace;
-  font-size: 12px;
-  font-weight: 700;
-}
-
+/* Comment count */
 main .gsc-comments-count {
   font-family: "Noto Serif SC", "Songti SC", serif;
   font-weight: 900;
   font-size: 20px;
-  color: var(--ink);
 }
-
 main .gsc-comments-count-separator {
-  border-top: 2px solid var(--ink);
+  border-top: 2px solid var(--color-border-default);
   margin: 16px 0;
 }
 
+/* Markdown content */
 main .gsc-comment-content h1,
 main .gsc-comment-content h2,
 main .gsc-comment-content h3 {
   font-family: "Noto Serif SC", "Songti SC", serif;
   font-weight: 700;
-  color: var(--ink);
 }
-
 main .gsc-comment-content h1 { font-size: 22px; margin: 20px 0 12px; }
 main .gsc-comment-content h2 { font-size: 18px; margin: 16px 0 10px; }
 main .gsc-comment-content h3 { font-size: 16px; margin: 14px 0 8px; }
-
-main .gsc-comment-content p {
-  margin-bottom: 12px;
-}
-
+main .gsc-comment-content p { margin-bottom: 12px; }
 main .gsc-comment-content a {
-  color: var(--blue);
-  border-bottom: 2px solid var(--blue);
+  color: #2b46d4;
+  border-bottom: 2px solid #2b46d4;
   transition: color 0.2s;
 }
-
 main .gsc-comment-content a:hover {
-  color: var(--red);
-  border-color: var(--red);
+  color: #e8432d;
+  border-color: #e8432d;
 }
-
 main .gsc-comment-content code {
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 0.88em;
-  background: var(--paper);
-  border: 1px solid var(--ink);
+  border: 1px solid var(--color-border-default);
   padding: 2px 6px;
 }
-
 main .gsc-comment-content pre {
-  background: var(--ink);
-  color: var(--paper);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--color-border-default);
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
   padding: 16px;
   overflow-x: auto;
@@ -436,84 +380,74 @@ main .gsc-comment-content pre {
   line-height: 1.6;
   margin: 16px 0;
 }
-
 main .gsc-comment-content pre code {
   background: none;
   border: none;
   padding: 0;
   color: inherit;
 }
-
 main .gsc-comment-content blockquote {
-  border-left: 4px solid var(--red);
   padding: 12px 16px;
   margin: 16px 0;
-  background: var(--card);
-  border: 2px solid var(--ink);
-  border-left: 6px solid var(--red);
+  border: 2px solid var(--color-border-default);
+  border-left: 6px solid #e8432d;
   font-style: italic;
-  color: var(--soft);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--color-border-default);
 }
-
 main .gsc-comment-content ul,
 main .gsc-comment-content ol {
   padding-left: 24px;
   margin-bottom: 12px;
 }
-
 main .gsc-comment-content li {
   margin-bottom: 6px;
   line-height: 1.7;
 }
-
 main .gsc-comment-content strong {
   font-weight: 700;
-  color: var(--ink);
 }
-
 main .gsc-comment-content img {
   max-width: 100%;
-  border: 2px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 3px 3px 0 var(--color-border-default);
 }
 
+/* Reply box */
 main .gsc-reply-box {
-  border-top: 1px dashed rgba(128, 128, 128, 0.3);
+  border-top: 1px dashed var(--color-border-muted);
   padding-top: 12px;
 }
-
 main .gsc-reply-box textarea {
-  border: 2px solid var(--ink);
-  background: var(--paper);
+  border: 2px solid var(--color-border-default);
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
-  color: var(--ink);
 }
-
 main .gsc-reply-box textarea:focus {
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--color-border-default);
   outline: none;
 }
 
+/* Emoji */
 main .gsc-emoji-button {
-  border: 2px solid var(--ink);
-  background: var(--card);
-  box-shadow: 2px 2px 0 var(--ink);
+  border: 2px solid var(--color-border-default);
+  box-shadow: 2px 2px 0 var(--color-border-default);
+  padding: 4px 8px;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-
 main .gsc-emoji-button:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--color-border-default);
 }
 
+/* Preview tab */
 main .gsc-preview-tab-content {
-  border: 2px solid var(--ink);
-  background: var(--paper);
+  border: 2px solid var(--color-border-default);
   padding: 16px;
 }
 
-main .gsc-homepage-bg {
-  background-color: var(--paper);
+/* Social reaction */
+main .gsc-social-reaction-summary-item {
+  font-family: "Space Mono", "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 700;
 }
