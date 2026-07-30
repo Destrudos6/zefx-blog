@@ -20,7 +20,7 @@ const giscusRepo = giscusParts[1] || '';
 ---
 
 <!doctype html>
-<html lang="zh-CN"
+<html lang="zh-CN" class="preload"
   data-owner={github.owner} data-repo={github.repo}
   data-giscus-owner={giscusOwner} data-giscus-repo={giscusRepo}
   data-giscus-mapping={giscus?.mapping ?? 'pathname'}
@@ -58,6 +58,7 @@ const giscusRepo = giscusParts[1] || '';
 <script>
   // 主题切换
   const root = document.documentElement;
+  requestAnimationFrame(() => root.classList.remove('preload'));
   document.getElementById('themeToggle')?.addEventListener('click', () => {
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
