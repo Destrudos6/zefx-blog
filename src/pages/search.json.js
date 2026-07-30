@@ -1,4 +1,5 @@
 import { getAllPostsFromCollection, getAllProjects } from '../data/content';
+import { getMediaUrl } from '../utils/media';
 
 export async function GET() {
   const [posts, projects] = await Promise.all([
@@ -21,7 +22,7 @@ export async function GET() {
         categoryColor: p.categoryColor,
         date: p.date,
         excerpt: p.excerpt,
-        coverImage: p.coverImage,
+        coverImage: p.coverImage ? getMediaUrl(p.coverImage) : null,
         project: proj,
       };
     }),
@@ -33,7 +34,7 @@ export async function GET() {
       tags: p.tags,
       status: p.status,
       statusLabel: p.statusLabel,
-      coverImage: p.coverImage,
+      coverImage: p.coverImage ? getMediaUrl(p.coverImage) : null,
     })),
   ];
 
