@@ -90,7 +90,7 @@ const { posts } = Astro.props;
       const commentMap = new Map();
       discussions.forEach(d => {
         if (mapping === 'pathname') {
-          const match = d.title.match(/\/posts\/(.+)/);
+          const match = d.title.match(/posts\/([^/]+)/);
           if (match) commentMap.set(match[1], d.comments);
         } else {
           commentMap.set(d.title, d.comments);

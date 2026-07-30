@@ -142,7 +142,7 @@ const giscusRepo = giscusParts[1] || '';
         const map = new Map();
         discussions.forEach(d => {
           if (giscusMapping === 'pathname') {
-            const m = d.title.match(/\/posts\/(.+)/);
+            const m = d.title.match(/posts\/([^/]+)/);
             if (m) map.set(m[1], d.comments);
           } else {
             map.set(d.title, d.comments);
