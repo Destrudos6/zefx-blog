@@ -322,7 +322,7 @@ node scripts/generate-index.mjs --write
       "strict": "0",
       "reactionsEnabled": "1",
       "inputPosition": "top",
-      "theme": "/giscus-theme.css",
+      "theme": "/giscus-light.css",
       "lang": "zh-CN"
     }
   }
@@ -771,7 +771,8 @@ coverImage: "/posts/coverimage/my-post-cover.png"
 public/ 或 B2 桶
 ├── Avatar.png                        ← 站点头像
 ├── favicon.ico                       ← 网站图标
-├── giscus-theme.css                  ← Giscus 自定义主题
+├── giscus-light.css                 ← Giscus 亮色主题
+├── giscus-dark.css                  ← Giscus 暗色主题
 ├── posts/
 │   ├── coverimage/                   ← 文章封面图
 │   │   ├── test-cover.png
@@ -813,7 +814,7 @@ public/ 或 B2 桶
     "strict": "0",
     "reactionsEnabled": "1",
     "inputPosition": "top",
-    "theme": "/giscus-theme.css",
+    "theme": "/giscus-light.css",
     "lang": "zh-CN"
   }
 }
@@ -821,9 +822,9 @@ public/ 或 B2 桶
 
 ### 自定义主题
 
-项目包含一个自定义 Giscus 主题文件 `public/giscus-theme.css`，采用与博客一致的 Neo-Brutalist 风格。
+项目包含两个自定义 Giscus 主题文件 `public/giscus-light.css` 和 `public/giscus-dark.css`，采用与博客一致的 Neo-Brutalist 风格。评论区会自动跟随博客主题切换。
 
-如需修改主题，编辑该文件后重新部署即可。
+如需修改主题，编辑对应文件后重新部署即可。
 
 ---
 
@@ -972,7 +973,8 @@ zefx/
 ├── public/                 # 静态资源（构建时从 B2 填充）
 │   ├── Avatar.png
 │   ├── favicon.ico
-│   ├── giscus-theme.css
+│   ├── giscus-light.css
+│   ├── giscus-dark.css
 │   ├── robots.txt
 │   ├── posts/
 │   └── projects/

@@ -6,22 +6,42 @@ const { giscus } = (await getSiteData()).site;
 
 {giscus?.repo && giscus?.repoId && giscus?.categoryId && (
   <section class="giscus-section" id="giscus">
-    <script src="https://giscus.app/client.js"
-      data-repo={giscus.repo}
-      data-repo-id={giscus.repoId}
-      data-category={giscus.category}
-      data-category-id={giscus.categoryId}
-      data-mapping={giscus.mapping ?? 'pathname'}
-      data-strict={giscus.strict ?? '0'}
-      data-reactions-enabled={giscus.reactionsEnabled ?? '1'}
-      data-emit-metadata="0"
-      data-input-position={giscus.inputPosition ?? 'top'}
-      data-theme="/giscus-theme.css"
-      data-lang={giscus.lang ?? 'zh-CN'}
-      data-loading="lazy"
-      crossorigin="anonymous"
-      async
-    ></script>
+    <script is:inline data-giscus={JSON.stringify({
+      repo: giscus.repo,
+      repoId: giscus.repoId,
+      category: giscus.category,
+      categoryId: giscus.categoryId,
+      mapping: giscus.mapping ?? 'pathname',
+      strict: giscus.strict ?? '0',
+      reactionsEnabled: giscus.reactionsEnabled ?? '1',
+      inputPosition: giscus.inputPosition ?? 'top',
+      lang: giscus.lang ?? 'zh-CN',
+    })}>
+      (function() {
+        var cfg = JSON.parse(document.currentScript.dataset.giscus);
+        var s = localStorage.getItem('theme');
+        var isDark = s === 'dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches);
+
+        var g = document.createElement('script');
+        g.src = 'https://giscus.app/client.js';
+        g.setAttribute('data-repo', cfg.repo);
+        g.setAttribute('data-repo-id', cfg.repoId);
+        g.setAttribute('data-category', cfg.category);
+        g.setAttribute('data-category-id', cfg.categoryId);
+        g.setAttribute('data-mapping', cfg.mapping);
+        g.setAttribute('data-strict', cfg.strict);
+        g.setAttribute('data-reactions-enabled', cfg.reactionsEnabled);
+        g.setAttribute('data-emit-metadata', '0');
+        g.setAttribute('data-input-position', cfg.inputPosition);
+        g.setAttribute('data-theme', isDark ? '/giscus-dark.css' : '/giscus-light.css');
+        g.setAttribute('data-lang', cfg.lang);
+        g.setAttribute('data-loading', 'lazy');
+        g.crossOrigin = 'anonymous';
+        g.async = true;
+
+        document.currentScript.parentNode.appendChild(g);
+      })();
+    </script>
   </section>
 )}
 
@@ -38,3 +58,21 @@ const { giscus } = (await getSiteData()).site;
     }
   }
 </style>
+
+<script>
+  function getGiscusTheme() {
+    return document.documentElement.dataset.theme === 'dark'
+      ? '/giscus-dark.css' : '/giscus-light.css';
+  }
+
+  function syncGiscusTheme() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setTheme: getGiscusTheme() } },
+      'https://giscus.app'
+    );
+  }
+
+  document.getElementById('themeToggle')?.addEventListener('click', syncGiscusTheme);
+</script>

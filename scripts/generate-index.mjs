@@ -27,7 +27,8 @@ const IGNORE = [
   '.astro',
   'node_modules',
   '.DS_Store',
-  'giscus-theme.css',
+  'giscus-light.css',
+  'giscus-dark.css',
   'Avatar.png',
   'favicon.ico',
 ];
