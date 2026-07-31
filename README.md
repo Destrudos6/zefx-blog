@@ -882,7 +882,7 @@ GITHUB_REPO=zefx.site-comments
 
 > 说明：
 > - `GITHUB_TOKEN` 用于评论数统计（`/api/github-discussions` 代理 GitHub Discussions API），必填。
-> - `GITHUB_OWNER` / `GITHUB_REPO` 为可选白名单。配置后只允许查询该仓库，防止 token 被滥用；**值必须与 `site.json` 中 `giscus.repo` 按 `/` 拆分的结果一致**（如 `giscus.repo = "destrudos6/zefx.site-comments"` → owner 填 `destrudos6`、repo 填 `zefx.site-comments`，注意不是链接也不是 `owner/repo` 完整形式）。不配置则不做白名单校验。
+> - `GITHUB_OWNER` / `GITHUB_REPO` 为可选白名单。配置后只允许查询该仓库，防止 token 被滥用；**值必须与 `site.json` 中 `giscus.repo` 按 `/` 拆分的结果一致**（如 `giscus.repo = "Destrudos6/zefx.site-comments"` → owner 填 `Destrudos6`、repo 填 `zefx.site-comments`，注意不是链接也不是 `owner/repo` 完整形式）。比较不区分大小写，owner 填大写或小写均可。不配置则不做白名单校验。
 > - 环境变量修改后需要**重新部署**才会生效。
 
 4. **自定义域名**（可选）
