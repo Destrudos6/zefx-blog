@@ -3,3 +3,6 @@
 
 /giscus-dark.css
   Access-Control-Allow-Origin: *
+
+/search.json
+  Content-Type: application/json; charset=utf-8
