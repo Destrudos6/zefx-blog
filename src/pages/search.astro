@@ -112,7 +112,7 @@ import BackToTop from '../components/BackToTop.astro';
         var date = isPost && item.date ? item.date : (item.statusLabel || '');
 
         var coverStyle = item.coverImage
-          ? 'background-image:url("' + escapeAttr(item.coverImage) + '");background-size:cover;background-position:center'
+          ? 'background-image:url(' + item.coverImage + ');background-size:cover;background-position:center'
           : 'background:' + bg;
 
         var projectTag = isPost && item.project
@@ -195,7 +195,7 @@ import BackToTop from '../components/BackToTop.astro';
 </script>
 
 <style>
-  .search-box { margin-bottom: 36px; text-align: center; }
+  .search-box { margin-bottom: 36px; }
   .search-input {
     width: 100%; max-width: 500px; padding: 14px 18px;
     border: var(--bd); background: var(--card);
