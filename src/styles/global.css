@@ -388,7 +388,9 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   padding:12px 20px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--ink);
   transition:.22s;
 }
-.fl i{width:11px; height:11px; border-radius:50%; background:var(--c,var(--red)); border:2px solid var(--ink)}
+.fl i{width:11px; height:11px; border-radius:50%; background:var(--c,var(--red)); border:2px solid var(--ink); flex-shrink:0}
+.fl-ico{display:none; width:16px; height:16px; object-fit:contain; flex-shrink:0}
+.fl-ico.ok{display:inline-block}
 .fl:hover{transform:translate(-3px,-3px); box-shadow:7px 7px 0 var(--ink); background:var(--ink); color:var(--paper)}
 .flink-note{font-family:var(--mono); font-size:13px; color:var(--soft)}
 .flink-note a{color:var(--red); border-bottom:2px solid var(--red)}

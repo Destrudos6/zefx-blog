@@ -6,6 +6,16 @@ import BackToTop from "../components/BackToTop.astro";
 import { getFriendLinks } from "../data/backblaze";
 
 const friends = await getFriendLinks();
+
+/** 从友链 URL 安全提取域名；无效 URL 返回空串（不显示 favicon） */
+function safeHost(url?: string): string {
+    if (!url || !/^https?:\/\//i.test(url)) return "";
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return "";
+    }
+}
 ---
 
 <BaseLayout title="友链 · ZEFX">
@@ -21,21 +31,39 @@ const friends = await getFriendLinks();
     <section class="section" style="padding-top:0">
         <div class="flinks-detailed">
             {
-                friends.map((f) => (
-                    <a
-                        class="fl-card reveal"
-                        href={f.url || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={`--c:${f.color}`}
-                    >
-                        <div class="fl-card-head">
-                            <span class="fl-dot" />
-                            <span class="fl-name">{f.name}</span>
-                        </div>
-                        <p class="fl-desc">{f.desc}</p>
-                    </a>
-                ))
+                friends.map((f) => {
+                    const host = safeHost(f.url);
+                    return (
+                        <a
+                            class="fl-card reveal"
+                            href={f.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={`--c:${f.color}`}
+                        >
+                            <div class="fl-card-head">
+                                <span class="fl-dot" />
+                                {host && (
+                                    <img
+                                        class="fl-ico fl-card-ico"
+                                        src={`https://${host}/favicon.ico`}
+                                        alt=""
+                                        width="18"
+                                        height="18"
+                                        loading="lazy"
+                                        decoding="async"
+                                        referrerpolicy="no-referrer"
+                                        data-host={host}
+                                        onload="this.previousElementSibling.style.display='none';this.classList.add('ok')"
+                                        onerror="if(!this.dataset.fbk){this.dataset.fbk='1';this.src='https://www.google.com/s2/favicons?domain='+this.dataset.host+'&sz=64'}else{this.style.display='none'}"
+                                    />
+                                )}
+                                <span class="fl-name">{f.name}</span>
+                            </div>
+                            <p class="fl-desc">{f.desc}</p>
+                        </a>
+                    );
+                })
             }
         </div>
 
@@ -97,6 +125,10 @@ const friends = await getFriendLinks();
         border: 2px solid var(--ink);
         flex-shrink: 0;
         display: inline-block;
+    }
+    .fl-card-ico {
+        width: 18px !important;
+        height: 18px !important;
     }
     .fl-name {
         font-weight: 700;

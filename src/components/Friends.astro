@@ -7,6 +7,16 @@ interface Props {
 }
 
 const { links, showExchange = false } = Astro.props;
+
+/** 从友链 URL 安全提取域名；无效 URL 返回空串（不显示 favicon） */
+function safeHost(url?: string): string {
+    if (!url || !/^https?:\/\//i.test(url)) return '';
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return '';
+    }
+}
 ---
 
 <section class="section" id="friends">
@@ -15,12 +25,30 @@ const { links, showExchange = false } = Astro.props;
     </div>
     <div class="flinks reveal">
         {
-            links.map((f) => (
-                <a class="fl" href={f.url || "#"} style={`--c:${f.color}`}>
-                    <i />
-                    {f.name}
-                </a>
-            ))
+            links.map((f) => {
+                const host = safeHost(f.url);
+                return (
+                    <a class="fl" href={f.url || "#"} style={`--c:${f.color}`}>
+                        <i aria-hidden="true"></i>
+                        {host && (
+                            <img
+                                class="fl-ico"
+                                src={`https://${host}/favicon.ico`}
+                                alt=""
+                                width="16"
+                                height="16"
+                                loading="lazy"
+                                decoding="async"
+                                referrerpolicy="no-referrer"
+                                data-host={host}
+                                onload="this.previousElementSibling.style.display='none';this.classList.add('ok')"
+                                onerror="if(!this.dataset.fbk){this.dataset.fbk='1';this.src='https://www.google.com/s2/favicons?domain='+this.dataset.host+'&sz=64'}else{this.style.display='none'}"
+                            />
+                        )}
+                        {f.name}
+                    </a>
+                );
+            })
         }
     </div>
     {
