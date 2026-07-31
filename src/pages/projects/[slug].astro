@@ -91,7 +91,7 @@ const ogImage = getMediaUrl(coverPath);
   </section>
 
   <div class="back-link reveal" style="margin-top:20px">
-    <a class="btn" href="/projects" onclick="event.preventDefault();var ok=false;try{ok=new URL(document.referrer).origin===location.origin}catch(e){}if(ok&&history.length>1){window.history.back()}else{window.location.href='/projects'}">← 返回</a>
+    <a class="btn" href="/projects" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/projects'}">← 返回</a>
   </div>
 
   <Footer />
