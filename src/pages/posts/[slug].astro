@@ -27,6 +27,7 @@ export async function getStaticPaths() {
 
 const { post, toc, Content } = Astro.props;
 const projectInfo = post.data.project ? projectMap[post.data.project] : null;
+const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : null;
 ---
 
 <BaseLayout title={`${post.data.title} · ZEFX`} ogImage={post.data.coverImage ? getMediaUrl(post.data.coverImage) : undefined}>
@@ -34,17 +35,27 @@ const projectInfo = post.data.project ? projectMap[post.data.project] : null;
   <div class="article-page">
   <a class="back-bar reveal" href="/posts" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/posts'}">← 返回</a>
   <div class="article-header reveal">
-    <div class="article-meta">
-        <span class="cat" style={`--ac:${post.data.categoryColor}; ${post.data.categoryTextColor ? `--actext:${post.data.categoryTextColor}` : ''}`}>{post.data.category}</span>
-        {projectInfo && (
-          <span class="project-tag" style={`--pc:${projectInfo.data.coverColor}`}>{projectInfo.data.title}</span>
-        )}
-        <time>{post.data.date}</time>
-        <span class="mono dim">{post.data.readTime} · <span data-comment-slug={post.id}>{post.data.comments}</span> 评论</span>
-      </div>
-      <h1>{post.data.title}</h1>
-      <p class="article-excerpt">{post.data.excerpt}</p>
+    <div class="article-header-main">
+      <div class="article-meta">
+          <span class="cat" style={`--ac:${post.data.categoryColor}; ${post.data.categoryTextColor ? `--actext:${post.data.categoryTextColor}` : ''}`}>{post.data.category}</span>
+          {projectInfo && (
+            <span class="project-tag" style={`--pc:${projectInfo.data.coverColor}`}>{projectInfo.data.title}</span>
+          )}
+          <time>{post.data.date}</time>
+          <span class="mono dim">{post.data.readTime} · <span data-comment-slug={post.id}>{post.data.comments}</span> 评论</span>
+        </div>
+        <h1>{post.data.title}</h1>
+        <p class="article-excerpt">{post.data.excerpt}</p>
     </div>
+    {coverImage ? (
+      <div class="article-cover" style={`background-image:url(${coverImage});background-size:cover;background-position:center`}></div>
+    ) : (
+      <div class="article-cover placeholder" style={`--ac:${post.data.categoryColor};background:${post.data.categoryColor}`}>
+        <span class="cover-icon">📸</span>
+        <span class="cover-label mono">{post.data.category}</span>
+      </div>
+    )}
+  </div>
 
     <div class="article-body">
       {toc.length > 0 && (
@@ -78,9 +89,50 @@ const projectInfo = post.data.project ? projectMap[post.data.project] : null;
   }
 
   .article-header {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 48px;
+    align-items: start;
     padding: 40px 0 48px;
     border-bottom: 3px solid var(--ink);
     margin-bottom: 48px;
+  }
+
+  .article-header-main {
+    min-width: 0;
+  }
+
+  .article-cover {
+    position: relative;
+    min-height: 260px;
+    display: grid;
+    place-items: center;
+    border: var(--bd);
+    box-shadow: 8px 8px 0 var(--ink);
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+  }
+  .article-cover::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(var(--paper) 1.4px, transparent 1.6px);
+    background-size: 14px 14px;
+    opacity: .25;
+  }
+  .article-cover[style*="background-image"]::before {
+    display: none;
+  }
+  .cover-icon {
+    position: relative;
+    font-size: 44px;
+    filter: grayscale(.15);
+  }
+  .cover-label {
+    position: relative;
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .08em;
   }
 
   .article-meta {
@@ -117,10 +169,19 @@ const projectInfo = post.data.project ? projectMap[post.data.project] : null;
 
   .article-body {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 48px;
+    grid-template-columns: 1fr 350px;
+    gap: 32px;
     align-items: start;
     padding-bottom: 80px;
+  }
+
+  /* grid 按 DOM 顺序填充列：正文在前（order 1 → 左列 1fr），目录在后（order 2 → 右列 300px） */
+  .article-content {
+    order: 1;
+    min-width: 0;
+  }
+  .toc {
+    order: 2;
   }
 
   .toc {
@@ -307,8 +368,21 @@ const projectInfo = post.data.project ? projectMap[post.data.project] : null;
   }
 
   @media (max-width: 1000px) {
+    .article-header {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .article-cover {
+      min-height: 0;
+      aspect-ratio: 16 / 9;
+      order: -1;
+    }
     .article-body {
       grid-template-columns: 1fr;
+    }
+    /* 单列时目录回到正文上方，保持原来的阅读顺序 */
+    .toc {
+      order: -1;
     }
     .toc {
       position: static;
