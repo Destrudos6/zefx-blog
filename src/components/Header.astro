@@ -19,9 +19,7 @@ const dashboardLabel = umami?.dashboardLabel || '统计';
       {navItems.map(item => (
         <a href={item.href} class={currentPath === item.href ? 'active' : ''}>{item.label}</a>
       ))}
-      {umami?.dashboardUrl && (
-        <a href={umami.dashboardUrl} target="_blank" rel="noopener noreferrer">{dashboardLabel}</a>
-      )}
+      <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>{dashboardLabel}</a>
     </nav>
     <div class="bar-right">
       <form class="search-wrap" action="/search" method="GET">
@@ -49,9 +47,7 @@ const dashboardLabel = umami?.dashboardLabel || '统计';
       {navItems.map(item => (
         <a href={item.href} class={currentPath === item.href ? 'active' : ''}>{item.label}</a>
       ))}
-      {umami?.dashboardUrl && (
-        <a href={umami.dashboardUrl} target="_blank" rel="noopener noreferrer">{dashboardLabel}</a>
-      )}
+      <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>{dashboardLabel}</a>
     </nav>
   </div>
 </header>
