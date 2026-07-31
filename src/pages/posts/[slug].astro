@@ -424,6 +424,8 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
     grid-template-columns: 1fr 1fr;
     gap: 24px;
     margin: 8px 0 48px;
+    /* 与正文内容区等宽（.article-content 的 max-width），保持左右对齐 */
+    max-width: 680px;
   }
   .pager-card {
     display: flex;
@@ -437,6 +439,10 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
     color: inherit;
     transition: transform .2s, box-shadow .2s, color .2s;
     min-width: 0;
+  }
+  /* 只有上一篇或只有下一篇时，单卡片占满整行宽度 */
+  .pager-card:only-child {
+    grid-column: 1 / -1;
   }
   .pager-card:hover {
     transform: translate(-2px, -2px);
