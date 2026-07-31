@@ -1,0 +1,170 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BackToTop from '../components/BackToTop.astro';
+import { getAllPostsFromCollection } from '../data/content';
+
+const allPosts = await getAllPostsFromCollection();
+
+// 收集所有标签及计数
+const tagCounts = new Map<string, number>();
+for (const p of allPosts) {
+  for (const t of p.tags) {
+    tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+  }
+}
+const tags = [...tagCounts.entries()]
+  .map(([name, count]) => ({ name, count }))
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'zh-CN'));
+const maxCount = Math.max(1, ...tags.map(t => t.count));
+---
+
+<BaseLayout title="标签 · ZEFX">
+  <Header />
+
+  <div class="page-banner reveal">
+    <h1>标<span class="hl">签</span></h1>
+    <p class="page-desc">{tags.length} 个标签，{allPosts.length} 篇文章。点击标签筛选文章，再点一次取消。</p>
+  </div>
+
+  <section class="section" style="padding-top:0">
+    <div class="tag-cloud reveal" id="tag-cloud">
+      {tags.map(t => (
+        <button type="button" class={`tag-chip${t.count === maxCount ? ' hot' : ''}`} data-tag={t.name} aria-pressed="false">
+          {t.name} <span class="tag-count mono">{t.count}</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="tags-posts" id="tags-posts">
+      {allPosts.map(p => (
+        <a class="tag-post reveal" href={`/posts/${p.slug}`} data-tags={p.tags.join(',')}>
+          <span class="tag-post-cat" style={`--ac:${p.categoryColor}; ${p.categoryTextColor ? `--actext:${p.categoryTextColor}` : ''}`}>{p.category}</span>
+          <span class="tag-post-title">{p.title}</span>
+          <time class="tag-post-date mono">{p.date}</time>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <Footer />
+  <BackToTop />
+</BaseLayout>
+
+<script>
+  (function() {
+    var chips = document.querySelectorAll('.tag-chip');
+    var posts = document.querySelectorAll('.tag-post');
+    if (!chips.length) return;
+
+    function applyFilter(tag) {
+      posts.forEach(function(p) {
+        var tags = (p.dataset.tags || '').split(',').filter(Boolean);
+        p.style.display = (!tag || tags.indexOf(tag) !== -1) ? '' : 'none';
+      });
+      chips.forEach(function(c) {
+        var active = c.dataset.tag === tag;
+        c.classList.toggle('on', active);
+        c.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    chips.forEach(function(c) {
+      c.addEventListener('click', function() {
+        var active = c.classList.contains('on');
+        var next = active ? '' : c.dataset.tag;
+        history.replaceState(null, '', next ? '#' + encodeURIComponent(next) : window.location.pathname);
+        applyFilter(next);
+      });
+    });
+
+    var hash = window.location.hash.slice(1);
+    applyFilter(hash ? decodeURIComponent(hash) : '');
+  })();
+</script>
+
+<style>
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: var(--bd);
+    background: var(--card);
+    box-shadow: 3px 3px 0 var(--ink);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: inherit;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s, background .2s, color .2s;
+  }
+  .tag-chip:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--ink);
+    color: var(--red);
+  }
+  .tag-chip.hot .tag-count { color: var(--red); }
+  .tag-chip.on {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 1px 1px 0 var(--ink);
+    transform: translate(2px, 2px);
+  }
+  .tag-chip.on .tag-count { color: var(--lemon); }
+  .tag-count {
+    font-size: 11px;
+    color: var(--soft);
+  }
+
+  .tags-posts {
+    border-top: 2px dashed rgba(128,128,128,.25);
+  }
+  .tag-post {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 8px;
+    border-bottom: 2px dashed rgba(128,128,128,.25);
+    text-decoration: none;
+    color: inherit;
+    transition: background .2s, padding-left .2s;
+  }
+  .tag-post:hover {
+    background: var(--card);
+    padding-left: 16px;
+  }
+  .tag-post-cat {
+    width: fit-content;
+    background: var(--ac);
+    color: var(--actext, #fff);
+    border: var(--bd);
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .tag-post-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .tag-post-date {
+    font-size: 12px;
+    color: var(--soft);
+  }
+
+  @media (max-width: 640px) {
+    .tag-post { grid-template-columns: 1fr auto; }
+    .tag-post-cat { grid-column: 1 / -1; }
+  }
+</style>

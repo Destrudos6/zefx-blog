@@ -10,6 +10,7 @@ export interface Post {
   comments: number;
   coverImage?: string;
   project?: string;
+  tags: string[];
 }
 
 export interface ProjectLog {
@@ -53,6 +54,7 @@ export async function getAllPostsFromCollection(): Promise<Post[]> {
     comments: entry.data.comments,
     coverImage: entry.data.coverImage,
     project: entry.data.project,
+    tags: entry.data.tags ?? [],
   }));
 }
 

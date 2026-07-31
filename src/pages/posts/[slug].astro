@@ -13,19 +13,44 @@ const projectMap = Object.fromEntries(allProjects.map(p => [p.id.split('/')[0], 
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
-  return await Promise.all(posts.map(async (post) => {
+  // 与 getAllPostsFromCollection 一致：按日期倒序（新 → 旧）
+  const sorted = [...posts].sort((a, b) => (b.data.date || '').localeCompare(a.data.date || ''));
+  return await Promise.all(sorted.map(async (post, i) => {
     const { Content, headings } = await render(post);
     const toc = headings
       .filter(h => h.depth >= 2 && h.depth <= 3)
       .map(h => ({ id: h.slug, text: h.text, level: h.depth }));
+
+    // 相关文章推荐：与当前文章共享标签最多的前 3 篇（排除自身）
+    const myTags = new Set(post.data.tags ?? []);
+    const relatedPosts = myTags.size
+      ? sorted
+          .filter(p => p.id !== post.id)
+          .map(p => ({
+            p,
+            shared: (p.data.tags ?? []).filter(t => myTags.has(t)).length,
+          }))
+          .filter(x => x.shared > 0)
+          .sort((a, b) => b.shared - a.shared || (b.p.data.date || '').localeCompare(a.p.data.date || ''))
+          .slice(0, 3)
+          .map(x => x.p)
+      : [];
+
     return {
       params: { slug: post.id },
-      props: { post, toc, Content },
+      props: {
+        post,
+        toc,
+        Content,
+        prevPost: sorted[i - 1] ?? null, // 更新的文章
+        nextPost: sorted[i + 1] ?? null, // 更旧的文章
+        relatedPosts,
+      },
     };
   }));
 }
 
-const { post, toc, Content } = Astro.props;
+const { post, toc, Content, prevPost, nextPost, relatedPosts } = Astro.props;
 const projectInfo = post.data.project ? projectMap[post.data.project] : null;
 const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : null;
 ---
@@ -73,6 +98,38 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
 
       <article class="article-content"><Content /></article>
     </div>
+
+    <nav class="post-pager reveal" aria-label="上一篇 / 下一篇">
+      {prevPost && (
+        <a class="pager-card pager-prev" href={`/posts/${prevPost.id}`}>
+          <span class="pager-kicker mono">← 上一篇</span>
+          <span class="pager-title">{prevPost.data.title}</span>
+          <span class="pager-meta mono">{prevPost.data.date}</span>
+        </a>
+      )}
+      {nextPost && (
+        <a class="pager-card pager-next" href={`/posts/${nextPost.id}`}>
+          <span class="pager-kicker mono">下一篇 →</span>
+          <span class="pager-title">{nextPost.data.title}</span>
+          <span class="pager-meta mono">{nextPost.data.date}</span>
+        </a>
+      )}
+    </nav>
+
+    {relatedPosts.length > 0 && (
+      <section class="related reveal" aria-label="相关文章">
+        <h2 class="related-title">相关<span class="hl">文章</span></h2>
+        <div class="related-grid">
+          {relatedPosts.map(r => (
+            <a class="related-card" href={`/posts/${r.id}`}>
+              <span class="related-cat" style={`--ac:${r.data.categoryColor}; ${r.data.categoryTextColor ? `--actext:${r.data.categoryTextColor}` : ''}`}>{r.data.category}</span>
+              <span class="related-card-title">{r.data.title}</span>
+              <time class="related-meta mono">{r.data.date}</time>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
   </div>
 
   <Giscus />
@@ -359,6 +416,119 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
     color: var(--soft);
     text-decoration: none;
     transition: transform .2s, box-shadow .2s, color .2s;
+  }
+
+  /* 上一篇 / 下一篇 */
+  .post-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 8px 0 48px;
+  }
+  .pager-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 24px;
+    border: var(--bd);
+    background: var(--card);
+    box-shadow: 4px 4px 0 var(--ink);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .2s, box-shadow .2s, color .2s;
+    min-width: 0;
+  }
+  .pager-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+    color: var(--red);
+  }
+  .pager-next { text-align: right; }
+  .pager-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--soft);
+  }
+  .pager-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .pager-meta {
+    font-size: 12px;
+    color: var(--soft);
+  }
+
+  /* 相关文章推荐 */
+  .related {
+    margin-bottom: 48px;
+  }
+  .related-title {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: clamp(22px, 2.6vw, 28px);
+    margin-bottom: 20px;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .related-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    border: var(--bd);
+    background: var(--card);
+    box-shadow: 4px 4px 0 var(--ink);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .2s, box-shadow .2s;
+    min-width: 0;
+  }
+  .related-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .related-cat {
+    width: fit-content;
+    background: var(--ac);
+    color: var(--actext, #fff);
+    border: var(--bd);
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .related-card-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .related-meta {
+    font-size: 12px;
+    color: var(--soft);
+  }
+
+  @media (max-width: 768px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .back-bar:hover {

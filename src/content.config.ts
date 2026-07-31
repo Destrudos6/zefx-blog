@@ -28,6 +28,7 @@ const posts = defineCollection({
     comments: z.number(),
     coverImage: z.string().optional(),
     project: z.string().optional(),
+    tags: z.array(z.string()).default([]),
   }),
 });
 
