@@ -57,10 +57,13 @@ const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)
         var label = btn.dataset.label;
         var en = Object.entries(catMap).find(function(v) { return v[1] === label; })?.[0] || '';
         history.replaceState(null, '', en ? '#' + en : window.location.pathname);
+        var visibleCount = 0;
         items.forEach(function(item) {
-          item.style.display = (label === '全部' || item.dataset.category === label) ? '' : 'none';
+          var show = (label === '全部' || item.dataset.category === label);
+          item.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
         });
-        grid.style.setProperty('display', items.length > 0 ? 'grid' : 'none');
+        grid.style.setProperty('display', visibleCount > 0 ? 'grid' : 'none');
       });
     });
     var hash = window.location.hash.slice(1);

@@ -95,7 +95,7 @@ import BackToTop from '../components/BackToTop.astro';
       var PER_PAGE = 12;
       var page = parseInt(new URLSearchParams(location.search).get('page') || '1', 10);
       var totalPages = Math.ceil(results.length / PER_PAGE);
-      if (page < 1) page = 1;
+      if (isNaN(page) || page < 1) page = 1;
       if (page > totalPages) page = totalPages;
       var start = (page - 1) * PER_PAGE;
       var paged = results.slice(start, start + PER_PAGE);
@@ -136,7 +136,7 @@ import BackToTop from '../components/BackToTop.astro';
           + projectTag
           + '<time>' + escapeHtml(date) + '</time>'
           + '</div>'
-          + '<h3>' + highlight(item.title, searchTerm) + '</h3>'
+          + '<h3>' + highlight(escapeHtml(item.title), searchTerm) + '</h3>'
           + '<p>' + highlight(excerpt, searchTerm) + '</p>'
           + '</div></a>';
       }).join('');

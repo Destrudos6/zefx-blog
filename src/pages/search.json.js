@@ -1,9 +1,10 @@
-import { getAllPostsFromCollection, getAllProjects } from '../data/content';
+import { getAllProjects } from '../data/content';
 import { getMediaUrl } from '../utils/media';
+import { getCollection } from 'astro:content';
 
 export async function GET() {
   const [posts, projects] = await Promise.all([
-    getAllPostsFromCollection(),
+    getCollection('posts'),
     getAllProjects(),
   ]);
 
@@ -11,18 +12,19 @@ export async function GET() {
 
   const data = [
     ...posts.map(p => {
-      const proj = p.project && projectMap[p.project]
-        ? { title: projectMap[p.project].title, coverColor: projectMap[p.project].coverColor }
+      const proj = p.data.project && projectMap[p.data.project]
+        ? { title: projectMap[p.data.project].title, coverColor: projectMap[p.data.project].coverColor }
         : null;
       return {
         type: 'post',
-        slug: p.slug,
-        title: p.title,
-        category: p.category,
-        categoryColor: p.categoryColor,
-        date: p.date,
-        excerpt: p.excerpt,
-        coverImage: p.coverImage ? getMediaUrl(p.coverImage) : null,
+        slug: p.id,
+        title: p.data.title,
+        category: p.data.category,
+        categoryColor: p.data.categoryColor,
+        date: p.data.date,
+        excerpt: p.data.excerpt,
+        content: (p.body || '').replace(/\r\n/g, '\n').slice(0, 20000),
+        coverImage: p.data.coverImage ? getMediaUrl(p.data.coverImage) : null,
         project: proj,
       };
     }),

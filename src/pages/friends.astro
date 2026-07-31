@@ -24,7 +24,7 @@ const friends = await getFriendLinks();
                 friends.map((f) => (
                     <a
                         class="fl-card reveal"
-                        href={f.url}
+                        href={f.url || "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={`--c:${f.color}`}

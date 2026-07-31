@@ -1,3 +1,5 @@
+const MAX_PAGES = 10; // 最多拉取 10 页（1000 条讨论），防止意外死循环
+
 export async function onRequestGet(context) {
   const { env, request } = context;
 
@@ -20,21 +22,54 @@ export async function onRequestGet(context) {
     });
   }
 
-  const ghUrl = `https://api.github.com/repos/${owner}/${repo}/discussions?per_page=100`;
+  // 白名单校验：配置了 GITHUB_OWNER / GITHUB_REPO 时，只允许查询该仓库
+  if (env.GITHUB_OWNER && owner !== env.GITHUB_OWNER) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  if (env.GITHUB_REPO && repo !== env.GITHUB_REPO) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const headers = {
+    Authorization: `token ${token}`,
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'zefx-blog',
+  };
 
   try {
-    const resp = await fetch(ghUrl, {
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'zefx-blog',
-      },
-    });
+    // 分页拉取全部讨论，避免超过 100 条时评论数被静默截断
+    const all = [];
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const resp = await fetch(`https://api.github.com/repos/${owner}/${repo}/discussions?per_page=100&page=${page}`, { headers });
 
-    const data = await resp.json();
+      // 错误响应不设置 Cache-Control，避免把 GitHub 的错误结果缓存 5 分钟
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        return new Response(JSON.stringify(errData), {
+          status: resp.status,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
-    return new Response(JSON.stringify(data), {
-      status: resp.status,
+      const batch = await resp.json();
+      if (!Array.isArray(batch)) {
+        return new Response(JSON.stringify({ error: 'Unexpected response from GitHub' }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      all.push(...batch);
+      if (batch.length < 100) break;
+    }
+
+    return new Response(JSON.stringify(all), {
+      status: 200,
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=300, s-maxage=300',

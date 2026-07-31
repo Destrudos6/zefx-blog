@@ -32,7 +32,7 @@ const projectInfo = post.data.project ? projectMap[post.data.project] : null;
 <BaseLayout title={`${post.data.title} · ZEFX`} ogImage={post.data.coverImage ? getMediaUrl(post.data.coverImage) : undefined}>
   <Header />
   <div class="article-page">
-  <a class="back-bar reveal" href="/posts" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/posts'}">← 返回</a>
+  <a class="back-bar reveal" href="/posts" onclick="event.preventDefault();if(document.referrer&&new URL(document.referrer).origin===location.origin){window.history.back()}else{window.location.href='/posts'}">← 返回</a>
   <div class="article-header reveal">
     <div class="article-meta">
         <span class="cat" style={`--ac:${post.data.categoryColor}; ${post.data.categoryTextColor ? `--actext:${post.data.categoryTextColor}` : ''}`}>{post.data.category}</span>

@@ -35,6 +35,8 @@ const { posts } = Astro.props;
 <PreviewPopup visible={false} data={null} />
 
 <script>
+  import { getDiscussions } from '../utils/comments';
+
   document.addEventListener('DOMContentLoaded', () => {
     const items = document.querySelectorAll('#hot-list li');
     let hideTimer = null;
@@ -83,9 +85,8 @@ const { posts } = Astro.props;
     if (!repo || !owner) return;
 
     try {
-      const resp = await fetch(`/api/github-discussions?owner=${owner}&repo=${repo}`);
-      if (!resp.ok) return;
-      const discussions = await resp.json();
+      const discussions = await getDiscussions(owner, repo);
+      if (!discussions.length) return;
 
       const commentMap = new Map();
       discussions.forEach(d => {

@@ -56,6 +56,8 @@ const giscusRepo = giscusParts[1] || '';
 </html>
 
 <script>
+  import { getDiscussions } from '../utils/comments';
+
   // 主题切换
   const root = document.documentElement;
   requestAnimationFrame(() => root.classList.remove('preload'));
@@ -135,8 +137,7 @@ const giscusRepo = giscusParts[1] || '';
   const giscusMapping = document.documentElement.getAttribute('data-giscus-mapping') || 'pathname';
   const commentEls = document.querySelectorAll('[data-comment-slug]');
   if (giscusOwner && giscusRepo && commentEls.length) {
-    fetch(`/api/github-discussions?owner=${giscusOwner}&repo=${giscusRepo}`)
-      .then(r => r.ok ? r.json() : [])
+    getDiscussions(giscusOwner, giscusRepo)
       .then(discussions => {
         const map = new Map();
         discussions.forEach(d => {

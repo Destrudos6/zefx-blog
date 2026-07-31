@@ -32,6 +32,8 @@ export interface AboutData {
   bio: string;
   bioLong: string;
   facts: string[];
+  /** 网站起始日期（可选，格式 YYYY-MM-DD），用于计算"网站运行天数" */
+  startDate?: string;
   stats: { count: number; unit: string }[];
   timeline: { date: string; title: string; text: string }[];
 }
@@ -175,8 +177,10 @@ export async function getAboutData(): Promise<AboutData> {
 
   const articleCount = allPosts.length;
   const projectCount = allProjects.length;
-  const startDate = new Date('2026-07-28');
-  const daysRunning = Math.floor((Date.now() - startDate.getTime()) / 86400000);
+  // 优先使用 about.json 中配置的 startDate，缺省时回退到默认值
+  const startTs = data.startDate ? Date.parse(data.startDate) : NaN;
+  const startDate = isNaN(startTs) ? new Date('2026-07-28') : new Date(startTs);
+  const daysRunning = Math.max(0, Math.floor((Date.now() - startDate.getTime()) / 86400000));
 
   const result: AboutData = {
     ...data,

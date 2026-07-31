@@ -5,6 +5,11 @@ const siteData = await getSiteData();
 const { description, copyright, footerNav, categories, elsewhere } = siteData.site;
 
 const isExternal = (href: string) => /^https?:\/\//.test(href);
+
+// 构建时间使用本地时区，避免 toISOString()（UTC）在国内显示成前一天
+const now = new Date();
+const pad = (n: number) => String(n).padStart(2, '0');
+const buildDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 ---
 
 <footer>
@@ -29,6 +34,6 @@ const isExternal = (href: string) => /^https?:\/\//.test(href);
   </div>
   <div class="f-bottom">
     <span>{copyright}</span>
-    <span>构建时间 {new Date().toISOString().slice(0,10)}</span>
+    <span>构建时间 {buildDate}</span>
   </div>
 </footer>
