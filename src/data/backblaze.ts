@@ -92,6 +92,16 @@ export interface SiteData {
       themeDark?: string;
       lang?: string;
     };
+    /** Umami 网站统计（可选）。url 为 script.js 完整地址，websiteId 为站点 ID，hostUrl 仅自托管跨域时需要 */
+    umami?: {
+      url: string;
+      websiteId: string;
+      hostUrl?: string;
+      /** 公开分享的数据看板链接（可选），配置后导航栏显示"统计"入口 */
+      dashboardUrl?: string;
+      /** 看板入口的显示文字（可选，默认"统计"） */
+      dashboardLabel?: string;
+    };
   };
 }
 

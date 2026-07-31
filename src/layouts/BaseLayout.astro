@@ -10,7 +10,7 @@ interface Props {
 
 const siteData = (await getSiteData()).site;
 const { title = `${siteData.name}`, description = siteData.description, ogImage } = Astro.props;
-const { github, giscus } = siteData;
+const { github, giscus, umami } = siteData;
 const faviconUrl = siteData.favicon || '/favicon.ico';
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 
@@ -48,6 +48,9 @@ const giscusRepo = giscusParts[1] || '';
   <script is:inline>
     (function(){var t=localStorage.getItem('theme');if(t){document.documentElement.dataset.theme=t}else if(matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.dataset.theme='dark'}})();
   </script>
+  {umami?.url && umami.websiteId && import.meta.env.PROD && (
+    <script async defer src={umami.url} data-website-id={umami.websiteId} {...(umami.hostUrl ? { 'data-host-url': umami.hostUrl } : {})}></script>
+  )}
 </head>
 <body>
   <div id="progress"></div>
