@@ -73,9 +73,12 @@ import BackToTop from '../components/BackToTop.astro';
 
           // 时间衰减：仅对已匹配条目，根据新程度加分（最多 +2）
           if (score > 0 && item.date) {
-            var daysOld = (now - new Date(item.date).getTime()) / 86400000;
-            var timeBoost = Math.max(0, 1 - daysOld / 365);
-            score += timeBoost * 2;
+            var ts = parseDate(item.date);
+            if (ts !== null) {
+              var daysOld = (now - ts) / 86400000;
+              var timeBoost = Math.max(0, 1 - daysOld / 365);
+              score += timeBoost * 2;
+            }
           }
 
           return { ...item, score };
@@ -155,6 +158,19 @@ import BackToTop from '../components/BackToTop.astro';
       container.innerHTML = html;
     } catch (e) {
       container.innerHTML = `<p class="search-empty">搜索服务暂时不可用。请稍后再试。</p>`;
+    }
+
+    // Safari/WebKit 对 new Date(string) 的解析比 Chrome 严格：点号日期（如 2025.01.05）会返回 Invalid Date。
+    // 手动拆解 YYYY.MM.DD / YYYY-MM-DD / YYYY/MM/DD，失败时返回 null 而不是 NaN，避免污染评分。
+    function parseDate(str) {
+      if (!str) return null;
+      var m = /^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/.exec(String(str));
+      if (m) {
+        var d = new Date(+m[1], +m[2] - 1, +m[3]);
+        if (!isNaN(d.getTime())) return d.getTime();
+      }
+      var t = Date.parse(str);
+      return isNaN(t) ? null : t;
     }
 
     function escapeHtml(str) {
