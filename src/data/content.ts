@@ -8,6 +8,7 @@ export interface Post {
   excerpt: string;
   readTime: string;
   comments: number;
+  coverImage?: string;
   project?: string;
 }
 
@@ -84,4 +85,33 @@ export const POSTS_PER_PAGE = 8;
 export async function getProjectPosts(projectSlug: string) {
   const allPosts = await getAllPostsFromCollection();
   return allPosts.filter(p => p.project === projectSlug);
+}
+
+export async function getPostsPageData() {
+  const [allPosts, allProjects, allCategories, siteDataResult] = await Promise.all([
+    getAllPostsFromCollection(),
+    getAllProjects(),
+    (await import('../data/backblaze')).getCategories(),
+    (await import('../data/backblaze')).getSiteData(),
+  ]);
+
+  const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
+  const siteData = siteDataResult.site;
+  const postsTagline = siteData.postsTagline ?? '关于技术、生活、摄影和读书。不追热点,只写想写的。';
+
+  const categoryLabels = [...new Set(allPosts.map(p => p.category))];
+  const categories = [
+    { label: '全部', count: allPosts.length, active: true },
+    ...categoryLabels.map(label => ({
+      label,
+      count: allPosts.filter(p => p.category === label).length,
+      active: false,
+    })),
+  ];
+  const catMap = Object.fromEntries(allCategories.map(c => [c.slug, c.label]));
+  catMap.all = '全部';
+
+  const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+
+  return { allPosts, allProjects, projectMap, siteData, postsTagline, categories, catMap, totalPages };
 }

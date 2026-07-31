@@ -6,6 +6,7 @@ import BackToTop from '../../components/BackToTop.astro';
 import MobileActions from '../../components/MobileActions.astro';
 import Giscus from '../../components/Giscus.astro';
 import { getCollection, render } from 'astro:content';
+import { getMediaUrl } from '../../utils/media';
 
 const allProjects = await getCollection('projects');
 const projectMap = Object.fromEntries(allProjects.map(p => [p.id.split('/')[0], p]));
@@ -28,7 +29,7 @@ const { post, toc, Content } = Astro.props;
 const projectInfo = post.data.project ? projectMap[post.data.project] : null;
 ---
 
-<BaseLayout title={`${post.data.title} · ZEFX`}>
+<BaseLayout title={`${post.data.title} · ZEFX`} ogImage={post.data.coverImage ? getMediaUrl(post.data.coverImage) : undefined}>
   <Header />
   <div class="article-page">
   <a class="back-bar reveal" href="/posts" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/posts'}">← 返回</a>
@@ -95,19 +96,6 @@ const projectInfo = post.data.project ? projectMap[post.data.project] : null;
     border: var(--bd); padding: 3px 12px;
     font-size: 12px; font-weight: 700; letter-spacing: .08em;
     box-shadow: 2px 2px 0 var(--ink);
-  }
-
-  .project-tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    padding: 2px 8px;
-    background: var(--pc);
-    color: var(--ink);
-    border: 1px solid var(--ink);
-    box-shadow: 1px 1px 0 var(--ink);
-    white-space: nowrap;
   }
 
   .article-meta time {

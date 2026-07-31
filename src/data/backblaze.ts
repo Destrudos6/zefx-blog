@@ -105,14 +105,7 @@ export interface HotPost {
   project?: { title: string; coverColor: string } | null;
 }
 
-// ============================================================
-// 环境变量读取
-// ============================================================
-
-const USE_B2 = import.meta.env.USE_B2 === 'true' || import.meta.env.USE_B2 === true;
-const B2_PROXY_URL = import.meta.env.B2_PROXY_URL || '';
-const B2_BUCKET_NAME = import.meta.env.B2_BUCKET_NAME || '';
-const B2_PREFIX = import.meta.env.B2_PREFIX || '';
+import { isB2Enabled, getProxyUrl, getB2Prefix } from '../utils/config';
 
 // ============================================================
 // B2 远程数据获取
@@ -123,29 +116,15 @@ const B2_PREFIX = import.meta.env.B2_PREFIX || '';
  * @param path 文件路径（相对于存储桶根目录或 B2_PREFIX）
  */
 async function fetchJSONFromB2<T>(path: string): Promise<T> {
-  const fullPath = B2_PREFIX ? `${B2_PREFIX}/${path}` : path;
-  const url = `${B2_PROXY_URL}/${fullPath}`;
+  const prefix = getB2Prefix();
+  const fullPath = prefix ? `${prefix}/${path}` : path;
+  const url = `${getProxyUrl()}/${fullPath}`;
 
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${path} from B2: ${response.status} ${response.statusText}`);
   }
   return response.json();
-}
-
-/**
- * 从 B2 存储桶获取文本数据（Markdown 等）
- * @param path 文件路径
- */
-async function fetchTextFromB2(path: string): Promise<string> {
-  const fullPath = B2_PREFIX ? `${B2_PREFIX}/${path}` : path;
-  const url = `${B2_PROXY_URL}/${fullPath}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${path} from B2: ${response.status} ${response.statusText}`);
-  }
-  return response.text();
 }
 
 // ============================================================
@@ -163,7 +142,7 @@ async function loadLocalJSON<T>(fileName: string): Promise<T> {
 // ============================================================
 
 async function getData<T>(b2Path: string, localFileName: string): Promise<T> {
-  if (USE_B2 && B2_PROXY_URL) {
+  if (isB2Enabled()) {
     return fetchJSONFromB2<T>(b2Path);
   }
   return loadLocalJSON<T>(localFileName);
@@ -244,9 +223,3 @@ export async function getCategories(): Promise<CategoryDef[]> {
 // Markdown 内容获取（用于从 B2 拉取文章）
 // ============================================================
 
-/**
- * 获取 B2 代理的基础 URL（用于构建媒体资源 URL）
- */
-export function getB2ProxyUrl(): string {
-  return B2_PROXY_URL;
-}

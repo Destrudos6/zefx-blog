@@ -3,30 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BackToTop from '../../components/BackToTop.astro';
-import { getAllPostsFromCollection, getAllProjects, POSTS_PER_PAGE } from '../../data/content';
-import { getCategories, getSiteData } from '../../data/backblaze';
+import { getAllPostsFromCollection, POSTS_PER_PAGE, getPostsPageData } from '../../data/content';
 import PostCard from '../../components/PostCard.astro';
-
-const allPosts = await getAllPostsFromCollection();
-const allProjects = await getAllProjects();
-const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
-
-const siteData = (await getSiteData()).site;
-const postsTagline = siteData.postsTagline ?? '关于技术、生活、摄影和读书。不追热点,只写想写的。';
-
-// 从文章数据动态派生分类列表
-const allCategories = await getCategories();
-const categoryLabels = [...new Set(allPosts.map(p => p.category))];
-const categories = [
-  { label: '全部', count: allPosts.length, active: true },
-  ...categoryLabels.map(label => ({
-    label,
-    count: allPosts.filter(p => p.category === label).length,
-    active: false,
-  })),
-];
-const catMap = Object.fromEntries(allCategories.map(c => [c.slug, c.label]));
-catMap.all = '全部';
 
 export async function getStaticPaths() {
   const allPosts = await getAllPostsFromCollection();
@@ -37,7 +15,8 @@ export async function getStaticPaths() {
   }));
 }
 
-const { page = 1, totalPages } = Astro.props;
+const { allPosts, projectMap, postsTagline, categories, catMap, totalPages } = await getPostsPageData();
+const { page = 1 } = Astro.props;
 const start = (page - 1) * POSTS_PER_PAGE;
 const currentPosts = allPosts.slice(start, start + POSTS_PER_PAGE);
 

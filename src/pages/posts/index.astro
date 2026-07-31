@@ -4,30 +4,9 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BackToTop from '../../components/BackToTop.astro';
 import PostCard from '../../components/PostCard.astro';
-import { getAllPostsFromCollection, getAllProjects, POSTS_PER_PAGE } from '../../data/content';
-import { getCategories, getSiteData } from '../../data/backblaze';
+import { POSTS_PER_PAGE, getPostsPageData } from '../../data/content';
 
-const allPosts = await getAllPostsFromCollection();
-const allProjects = await getAllProjects();
-const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
-
-const siteData = (await getSiteData()).site;
-const postsTagline = siteData.postsTagline ?? '关于技术、生活、摄影和读书。不追热点,只写想写的。';
-
-const allCategories = await getCategories();
-const categoryLabels = [...new Set(allPosts.map(p => p.category))];
-const categories = [
-  { label: '全部', count: allPosts.length, active: true },
-  ...categoryLabels.map(label => ({
-    label,
-    count: allPosts.filter(p => p.category === label).length,
-    active: false,
-  })),
-];
-const catMap = Object.fromEntries(allCategories.map(c => [c.slug, c.label]));
-catMap.all = '全部';
-
-const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+const { allPosts, projectMap, postsTagline, categories, catMap, totalPages } = await getPostsPageData();
 const firstPagePosts = allPosts.slice(0, POSTS_PER_PAGE);
 const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)'];
 ---
