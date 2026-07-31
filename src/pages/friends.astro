@@ -25,10 +25,12 @@ const friends = await getFriendLinks();
                     <a
                         class="fl-card reveal"
                         href={f.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         style={`--c:${f.color}`}
                     >
                         <div class="fl-card-head">
-                            <i />
+                            <span class="fl-dot" />
                             <span class="fl-name">{f.name}</span>
                         </div>
                         <p class="fl-desc">{f.desc}</p>
@@ -49,9 +51,7 @@ const friends = await getFriendLinks();
                     请在邮件里附上你的博客地址、名称和一句简介。不过，在发送邮件之前，请在你的博客中为我的网站先添加上友链。我会在
                     48 小时内回复并添加。
                 </p>
-                <a class="btn" href="mailto:hi@zefx.site"
-                    >发邮件给我 <span>→</span></a
-                >
+                <a class="btn" href="mailto:hi@zefx.site">发邮件给我 <span>→</span></a>
             </div>
         </div>
     </section>
@@ -89,13 +89,14 @@ const friends = await getFriendLinks();
         align-items: center;
         gap: 12px;
     }
-    .fl-card-head i {
+    .fl-dot {
         width: 14px;
         height: 14px;
         border-radius: 50%;
         background: var(--c, var(--red));
         border: 2px solid var(--ink);
         flex-shrink: 0;
+        display: inline-block;
     }
     .fl-name {
         font-weight: 700;
@@ -146,4 +147,11 @@ const friends = await getFriendLinks();
     .flink-cta-inner p:last-of-type {
         margin-bottom: 32px;
     }
+    .btn {
+        display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+        background: var(--red); color: #fff; border: var(--bd); padding: 12px 24px;
+        font-weight: 700; font-size: 15px; box-shadow: 5px 5px 0 var(--ink);
+        transition: transform .2s, box-shadow .2s; text-decoration: none;
+    }
+    .btn:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--ink); }
 </style>

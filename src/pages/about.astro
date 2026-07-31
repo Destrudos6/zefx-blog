@@ -16,6 +16,7 @@ const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
 
   <div class="page-banner reveal">
     <h1>关于<span class="hl">站主</span></h1>
+    <p class="page-desc">记录、思考、分享</p>
   </div>
 
   <section class="section" style="padding-top:0">
@@ -79,8 +80,4 @@ const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
     font-size: clamp(18px,2.2vw,24px); margin-bottom: 8px;
   }
   .tl-content p { font-size: 14.5px; color: var(--soft); max-width: 36em; }
-
-  @media (max-width: 1000px) {
-    .about-grid { grid-template-columns: 1fr; gap: 36px; }
-  }
 </style>

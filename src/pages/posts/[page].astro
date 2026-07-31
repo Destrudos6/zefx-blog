@@ -37,7 +37,7 @@ const nextPage = page < totalPages ? `/posts/${page + 1}` : null;
   <section class="section" style="padding-top:0">
     <div class="cats reveal">
       {categories.map(cat => (
-        <button class={`cat-btn${cat.active ? ' on' : ''}`} data-label={cat.label}>{cat.label} {cat.count}</button>
+        <button type="button" class={`cat-btn${cat.active ? ' on' : ''}`} aria-pressed={cat.active ? 'true' : 'false'} data-label={cat.label}>{cat.label} {cat.count}</button>
       ))}
     </div>
 
@@ -65,54 +65,6 @@ const nextPage = page < totalPages ? `/posts/${page + 1}` : null;
 </BaseLayout>
 
 <style>
-  .posts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-  .posts-grid .post-card {
-    grid-template-columns: 240px 1fr;
-    height: 240px;
-  }
-  .posts-grid .post-cover {
-    width: 200px;
-    height: 200px;
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    margin-top: 56px;
-    padding-top: 36px;
-    border-top: 2px dashed var(--ink);
-  }
-  .page-btn {
-    font-family: var(--mono);
-    font-size: 14px; font-weight: 700;
-    padding: 10px 22px;
-    border: var(--bd);
-    background: var(--card);
-    box-shadow: 4px 4px 0 var(--ink);
-    transition: transform .2s, box-shadow .2s;
-    cursor: pointer;
-  }
-  .page-btn:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 var(--ink);
-    color: var(--red);
-  }
-  .page-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0 0 0 var(--ink);
-  }
-  .page-info {
-    font-size: 13px;
-    color: var(--soft);
-    letter-spacing: .08em;
-  }
-
   @media (max-width: 1000px) {
     .posts-grid { grid-template-columns: 1fr; }
   }
@@ -129,8 +81,8 @@ const nextPage = page < totalPages ? `/posts/${page + 1}` : null;
     var items = grid.querySelectorAll('.post-card');
     buttons.forEach(function(btn) {
       btn.addEventListener('click', function() {
-        buttons.forEach(function(b) { b.classList.remove('on'); });
-        btn.classList.add('on');
+        buttons.forEach(function(b) { b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
+        btn.classList.add('on'); btn.setAttribute('aria-pressed','true');
         var label = btn.dataset.label;
         var en = Object.entries(catMap).find(function(v) { return v[1] === label; })?.[0] || '';
         history.replaceState(null, '', en ? '#' + en : window.location.pathname);

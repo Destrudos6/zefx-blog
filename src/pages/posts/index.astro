@@ -22,7 +22,7 @@ const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)
   <section class="section" style="padding-top:0">
     <div class="cats reveal">
       {categories.map(cat => (
-        <button class={`cat-btn${cat.active ? ' on' : ''}`} data-label={cat.label}>{cat.label} {cat.count}</button>
+        <button type="button" class={`cat-btn${cat.active ? ' on' : ''}`} aria-pressed={cat.active ? 'true' : 'false'} data-label={cat.label}>{cat.label} {cat.count}</button>
       ))}
     </div>
 
@@ -52,8 +52,8 @@ const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)
     var items = grid.querySelectorAll('.post-card');
     buttons.forEach(function(btn) {
       btn.addEventListener('click', function() {
-        buttons.forEach(function(b) { b.classList.remove('on'); });
-        btn.classList.add('on');
+        buttons.forEach(function(b) { b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
+        btn.classList.add('on'); btn.setAttribute('aria-pressed','true');
         var label = btn.dataset.label;
         var en = Object.entries(catMap).find(function(v) { return v[1] === label; })?.[0] || '';
         history.replaceState(null, '', en ? '#' + en : window.location.pathname);

@@ -10,7 +10,7 @@
   --mono:"Space Mono","Courier New",monospace;
 }
 [data-theme="dark"]{
-  --paper:#171a24; --card:#20253400; --card:#202534; --ink:#efe8d8; --soft:#a29f92;
+  --paper:#171a24; --card:#202534; --ink:#efe8d8; --soft:#a29f92;
   --red:#ff6b52; --blue:#7f95ff; --green:#3fc396; --orange:#ffab4d;
   --ghostc:rgba(239,232,216,.12);
 }
@@ -39,8 +39,6 @@ body::after{
 }
 /* 顶部阅读进度 */
 #progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--red);z-index:600}
-
-/* 右侧竖排装饰 */
 
 /* 回到顶部 */
 .totop{
@@ -225,7 +223,7 @@ h1{display:flex; gap:16px; margin-bottom:26px}
 .hot-posts{border:var(--bd); background:var(--card); box-shadow:6px 6px 0 var(--ink); padding:20px; height:400px; display:flex; flex-direction:column; position:relative; min-width:0; overflow:hidden}
 .hot-label{font-family:var(--serif); font-size:15px; font-weight:900; letter-spacing:.1em; color:var(--red); display:block; margin-bottom:18px}
 .hot-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0; flex:1}
-.hot-list li{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 0; border-bottom:1px dashed var(--bd-color,var(--ink)); min-width:0}
+.hot-list li{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 0; border-bottom:1px dashed var(--ink); min-width:0}
 .hot-list li:last-child{border-bottom:none}
 .hot-list a{font-size:15px; font-weight:600; color:var(--ink); text-decoration:none; line-height:1.45; transition:color .2s; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .hot-list a:hover{color:var(--red)}
@@ -259,18 +257,18 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 
 /* --- 卡片容器 --- */
 .post-card{
-  display:grid; grid-template-columns:200px 1fr; height:200px;
+  display:grid; grid-template-columns:240px 1fr; height:240px;
   border:var(--bd); border-top:8px solid var(--ac,var(--blue));
   background:var(--card); box-shadow:6px 6px 0 var(--ink);
   overflow:hidden; transition:transform .28s, box-shadow .28s;
-  content-visibility:auto; contain-intrinsic-size:200px;
+  content-visibility:auto; contain-intrinsic-size:240px;
   text-decoration:none; color:inherit;
 }
 .post-card:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--ac)}
 
 /* --- 左侧正方形封面 --- */
 .post-cover{
-  position:relative; width:160px; height:160px; place-self:center;
+  position:relative; width:200px; height:200px; place-self:center;
   display:grid; place-items:center; overflow:hidden;
 }
 .cover-inner{
@@ -348,7 +346,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .project-desc{font-size:14.5px; color:var(--soft); line-height:1.6}
 
 /* 更新日志 */
-.project-updates{display:flex; flex-direction:column; gap:10px; padding:12px 0; border-top:2px dashed var(--bd-color,var(--ink)); border-bottom:2px dashed var(--bd-color,var(--ink))}
+.project-updates{display:flex; flex-direction:column; gap:10px; padding:12px 0; border-top:2px dashed var(--ink); border-bottom:2px dashed var(--ink)}
 .p-update{display:flex; gap:14px; align-items:baseline}
 .p-update time{font-family:var(--mono); font-size:11.5px; color:var(--soft); white-space:nowrap; min-width:4.2em}
 .p-update p{font-size:14px; line-height:1.55; color:var(--ink)}
@@ -391,28 +389,6 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .flink-note{font-family:var(--mono); font-size:13px; color:var(--soft)}
 .flink-note a{color:var(--red); border-bottom:2px solid var(--red)}
 
-/* ============ 订阅 ============ */
-.sub{
-  position:relative; overflow:hidden; background:var(--blue); color:var(--paper);
-  border:3px solid var(--ink); box-shadow:14px 14px 0 var(--ink);
-  padding:54px 56px; display:grid; grid-template-columns:1.15fr .85fr; gap:48px; align-items:center;
-}
-.sub::before{content:""; position:absolute; inset:0; background-image:radial-gradient(var(--paper) 1.4px, transparent 1.6px); background-size:16px 16px; opacity:.15; pointer-events:none}
-.sub-kicker{font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.2em; color:var(--lemon); display:block; margin-bottom:14px}
-.sub h2{font-size:clamp(28px,3.6vw,44px); margin-bottom:14px}
-.sub .copy{opacity:.9; font-size:15.5px; max-width:30em}
-.sub form{position:relative; display:flex; flex-direction:column; gap:14px}
-.sub label{font-family:var(--mono); font-size:12px; letter-spacing:.15em}
-.sub input{
-  padding:15px 18px; border:var(--bd); background:var(--paper); color:#1f2537;
-  font-size:15px; box-shadow:4px 4px 0 var(--ink);
-}
-.sub input:focus{outline:none; box-shadow:6px 6px 0 var(--ink)}
-.sub .btn{background:var(--lemon); color:#1f2537; justify-content:center}
-.sub .btn.ok{background:var(--green); color:#fff}
-.sub-note{font-family:var(--mono); font-size:11.5px; opacity:.75}
-.plane{position:absolute; right:-16px; bottom:-20px; width:130px; transform:rotate(-12deg); opacity:.9; pointer-events:none}
-
 /* ============ 页脚 ============ */
 footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden; position:relative}
 .f-ghost{
@@ -448,7 +424,6 @@ footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden;
   .hero-grid{grid-template-columns:1fr}
   .projects-grid{grid-template-columns:1fr; gap:36px}
   .about-grid{grid-template-columns:1fr; gap:36px}
-  .sub{grid-template-columns:1fr; padding:40px 30px}
   .f-cols{grid-template-columns:1fr 1fr}
   .search{display:none}
 }

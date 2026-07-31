@@ -303,7 +303,7 @@ const { hasToc = true, hasComments = true } = Astro.props;
     }
     tocBtn?.addEventListener('click', openToc);
     tocClose?.addEventListener('click', closeToc);
-    tocModal?.querySelector('.mobile-toc-overlay').addEventListener('click', closeToc);
+    tocModal?.querySelector('.mobile-toc-overlay')?.addEventListener('click', closeToc);
 
     // 评论区
     commentsBtn?.addEventListener('click', function() {

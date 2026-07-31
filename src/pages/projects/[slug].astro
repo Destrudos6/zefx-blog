@@ -18,9 +18,11 @@ const { project } = Astro.props;
 const projectPosts = await getProjectPosts(project.slug);
 
 const statusIcon = project.status === 'active' ? '▶' : project.status === 'done' ? '✓' : '⏸';
+const coverPath = project.coverImage || `projects/${project.slug}/cover.png`;
+const ogImage = getMediaUrl(coverPath);
 ---
 
-<BaseLayout title={`${project.title} · ZEFX`} ogImage={getMediaUrl(`projects/${project.slug}/cover.png`)}>
+<BaseLayout title={`${project.title} · ZEFX`} ogImage={ogImage}>
   <Header />
 
   <div class="project-hero reveal">
@@ -37,7 +39,7 @@ const statusIcon = project.status === 'active' ? '▶' : project.status === 'don
         ))}
       </div>
     </div>
-    <div class="project-hero-cover" style={`background-image:url(${getMediaUrl(`projects/${project.slug}/cover.png`)});background-size:cover;background-position:center`}>
+    <div class="project-hero-cover" aria-hidden="true" style={`background-image:url(${ogImage});background-size:cover;background-position:center`}>
     </div>
   </div>
 

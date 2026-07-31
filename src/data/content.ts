@@ -29,8 +29,6 @@ export interface Project {
   coverImage?: string;
 }
 
-/** 从 entry.id 提取 slug（与 [slug].astro 路由一致） */
-
 /**
  * 从 Content Collection 获取所有文章并转换为 Post[] 格式。
  * 只能在 .astro 文件的 frontmatter 中使用 (async 上下文)。

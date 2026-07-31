@@ -42,6 +42,7 @@ import BackToTop from '../components/BackToTop.astro';
   }
 
   (async () => {
+    const container = document.getElementById('search-results');
     try {
       const q = new URLSearchParams(window.location.search).get('q');
       if (!q || !q.trim()) return;
@@ -50,7 +51,6 @@ import BackToTop from '../components/BackToTop.astro';
       document.getElementById('page-desc').textContent = `正在搜索 "${qTrim}"`;
       document.getElementById('search-input').value = qTrim;
 
-      const container = document.getElementById('search-results');
       const status = document.getElementById('search-status');
       status.textContent = '正在搜索…';
 
@@ -112,7 +112,7 @@ import BackToTop from '../components/BackToTop.astro';
         var date = isPost && item.date ? item.date : (item.statusLabel || '');
 
         var coverStyle = item.coverImage
-          ? 'background-image:url(' + item.coverImage + ');background-size:cover;background-position:center'
+          ? 'background-image:url("' + escapeAttr(item.coverImage) + '");background-size:cover;background-position:center'
           : 'background:' + bg;
 
         var projectTag = isPost && item.project
@@ -195,7 +195,7 @@ import BackToTop from '../components/BackToTop.astro';
 </script>
 
 <style>
-  .search-box { margin-bottom: 36px; }
+  .search-box { margin-bottom: 36px; text-align: center; }
   .search-input {
     width: 100%; max-width: 500px; padding: 14px 18px;
     border: var(--bd); background: var(--card);
@@ -203,7 +203,9 @@ import BackToTop from '../components/BackToTop.astro';
     box-shadow: 4px 4px 0 var(--ink); transition: box-shadow .2s;
   }
   .search-input:focus { outline: none; box-shadow: 6px 6px 0 var(--ink); }
+</style>
 
+<style is:global>
   .search-status { font-size: 13px; color: var(--soft); margin-bottom: 24px; }
   .search-empty {
     font-size: 15px; color: var(--soft); padding: 40px 0;

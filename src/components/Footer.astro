@@ -3,6 +3,8 @@ import { getSiteData } from '../data/backblaze';
 
 const siteData = await getSiteData();
 const { description, copyright, footerNav, categories, elsewhere } = siteData.site;
+
+const isExternal = (href: string) => /^https?:\/\//.test(href);
 ---
 
 <footer>
@@ -14,15 +16,15 @@ const { description, copyright, footerNav, categories, elsewhere } = siteData.si
     </div>
     <div>
       <h4>导航</h4>
-      <ul>{footerNav.map(item => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+      <ul>{footerNav.map(item => <li><a href={item.href} target={isExternal(item.href) ? '_blank' : undefined} rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}>{item.label}</a></li>)}</ul>
     </div>
     <div>
       <h4>分类</h4>
-      <ul>{categories.map(item => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+      <ul>{categories.map(item => <li><a href={item.href} target={isExternal(item.href) ? '_blank' : undefined} rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}>{item.label}</a></li>)}</ul>
     </div>
     <div>
       <h4>ELSEWHERE</h4>
-      <ul>{elsewhere.map(item => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+      <ul>{elsewhere.map(item => <li><a href={item.href} target={isExternal(item.href) ? '_blank' : undefined} rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}>{item.label}</a></li>)}</ul>
     </div>
   </div>
   <div class="f-bottom">

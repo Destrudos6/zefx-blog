@@ -219,7 +219,3 @@ export async function getCategories(): Promise<CategoryDef[]> {
   return getData<CategoryDef[]>('data/categories.json', 'categories.json');
 }
 
-// ============================================================
-// Markdown 内容获取（用于从 B2 拉取文章）
-// ============================================================
-
