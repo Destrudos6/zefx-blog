@@ -36,7 +36,9 @@ import BackToTop from '../components/BackToTop.astro';
     if (!searchCache) {
       var resp = await fetch('/search.json');
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      searchCache = await resp.json();
+      var buf = await resp.arrayBuffer();
+      var text = new TextDecoder('utf-8').decode(buf);
+      searchCache = JSON.parse(text);
     }
     return searchCache;
   }
