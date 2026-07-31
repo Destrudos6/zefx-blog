@@ -36,8 +36,7 @@ import BackToTop from '../components/BackToTop.astro';
     if (!searchCache) {
       var resp = await fetch('/search.json');
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      var buf = await resp.arrayBuffer();
-      var text = new TextDecoder('utf-8').decode(buf);
+      var text = await resp.text();
       searchCache = JSON.parse(text);
     }
     return searchCache;
@@ -64,13 +63,13 @@ import BackToTop from '../components/BackToTop.astro';
         .map(item => {
           let score = 0;
 
-          if (item.title?.toLowerCase().includes(searchTerm)) { score += 10; }
-          if (item.category?.toLowerCase().includes(searchTerm)) { score += 5; }
-          if (item.excerpt?.toLowerCase().includes(searchTerm)) { score += 3; }
-          if (item.content?.toLowerCase().includes(searchTerm)) { score += 1; }
-          if (item.tags?.some(t => t.toLowerCase().includes(searchTerm))) { score += 5; }
-          if (item.description?.toLowerCase().includes(searchTerm)) { score += 3; }
-          if (item.statusLabel?.toLowerCase().includes(searchTerm)) { score += 2; }
+          if (item.title && item.title.toLowerCase().includes(searchTerm)) { score += 10; }
+          if (item.category && item.category.toLowerCase().includes(searchTerm)) { score += 5; }
+          if (item.excerpt && item.excerpt.toLowerCase().includes(searchTerm)) { score += 3; }
+          if (item.content && item.content.toLowerCase().includes(searchTerm)) { score += 1; }
+          if (item.tags && item.tags.some(t => t.toLowerCase().includes(searchTerm))) { score += 5; }
+          if (item.description && item.description.toLowerCase().includes(searchTerm)) { score += 3; }
+          if (item.statusLabel && item.statusLabel.toLowerCase().includes(searchTerm)) { score += 2; }
 
           // 时间衰减：仅对已匹配条目，根据新程度加分（最多 +2）
           if (score > 0 && item.date) {
