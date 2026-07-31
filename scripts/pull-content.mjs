@@ -13,7 +13,7 @@
  *   node scripts/pull-content.mjs --force  # 强制拉取（忽略 USE_B2 设置）
  */
 
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, rm, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -208,11 +208,24 @@ async function pullDefaultStructure() {
   }
 }
 
+async function hasLocalContent() {
+  if (!existsSync(CONTENT_DIR)) return false;
+  try {
+    const entries = await readdir(CONTENT_DIR);
+    return entries.length > 0;
+  } catch { return false; }
+}
+
 try {
   console.log('[pull-content] Starting content pull from B2...');
   await pullAllContent();
   console.log('[pull-content] Done!');
 } catch (err) {
-  console.error('[pull-content] Error:', err);
-  process.exit(1);
+  console.error('[pull-content] Error:', err.message);
+  if (await hasLocalContent()) {
+    console.warn('[pull-content] B2 fetch failed, but local content exists. Continuing with cached content.');
+  } else {
+    console.error('[pull-content] No local content available. Cannot continue.');
+    process.exit(1);
+  }
 }

@@ -263,6 +263,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   border:var(--bd); border-top:8px solid var(--ac,var(--blue));
   background:var(--card); box-shadow:6px 6px 0 var(--ink);
   overflow:hidden; transition:transform .28s, box-shadow .28s;
+  content-visibility:auto; contain-intrinsic-size:200px;
   text-decoration:none; color:inherit;
 }
 .post-card:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--ac)}

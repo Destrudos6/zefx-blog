@@ -52,7 +52,7 @@ import BackToTop from '../components/BackToTop.astro';
 
       const container = document.getElementById('search-results');
       const status = document.getElementById('search-status');
-      status.textContent = '正在搜索…';
+      container.innerHTML = '<div class="search-skeleton"><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div></div>';
 
       const allItems = await getSearchData();
 
@@ -211,4 +211,8 @@ import BackToTop from '../components/BackToTop.astro';
   }
   .search-empty strong { color: var(--ink); }
   mark { background: #fef08a; padding: 0 2px; border-radius: 2px; }
+  .search-skeleton { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .sk-card { height: 240px; background: var(--card); border: var(--bd); box-shadow: 4px 4px 0 var(--ink); animation: sk-pulse 1.2s ease-in-out infinite; }
+  @keyframes sk-pulse { 0%,100% { opacity: .4; } 50% { opacity: .8; } }
+  @media (max-width: 1000px) { .search-skeleton { grid-template-columns: 1fr; } }
 </style>

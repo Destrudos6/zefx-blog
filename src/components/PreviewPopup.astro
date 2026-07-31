@@ -11,7 +11,7 @@ const { visible, data } = Astro.props;
 const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `; --actext:${data.categoryTextColor}` : ''}` : '';
 ---
 
-<div class="preview-popup" id="preview-popup" data-visible={visible ? 'true' : 'false'}>
+<div class="preview-popup" id="preview-popup" role="tooltip" data-visible={visible ? 'true' : 'false'} aria-hidden="true">
   <div class="preview-cover" style={data ? (data.coverImage ? `background-image:url(${getMediaUrl(data.coverImage)});background-size:cover;background-position:center` : `background:${data.coverColor}`) : ''}>
     {!data?.coverImage && <div class="preview-svg" aria-hidden="true">📸</div>}
   </div>
@@ -76,10 +76,12 @@ const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `;
         popup.style.left = (rect.left - pw - gap) + 'px';
       }
       popup.classList.add('show');
+      popup.setAttribute('aria-hidden', 'false');
     }) as EventListener);
 
     document.addEventListener('preview-hide', (() => {
       popup.classList.remove('show');
+      popup.setAttribute('aria-hidden', 'true');
     }) as EventListener);
   }
 </script>

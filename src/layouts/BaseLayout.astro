@@ -47,7 +47,22 @@ const giscusRepo = giscusParts[1] || '';
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900;1,9..144,600;1,9..144,900&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <script is:inline>
     (function(){var t=localStorage.getItem('theme');if(t){document.documentElement.dataset.theme=t}else if(matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.dataset.theme='dark'}})();
-  </script>
+  // TOC scroll-spy
+  const tocNav = document.querySelector('.toc-nav');
+  if (tocNav) {
+    const tocLinks = tocNav.querySelectorAll('a');
+    const headings = Array.from(tocLinks).map(a => document.getElementById(a.getAttribute('href')?.slice(1))).filter(Boolean);
+    function updateToc() {
+      let activeIdx = -1;
+      for (let i = headings.length - 1; i >= 0; i--) {
+        if (headings[i].getBoundingClientRect().top <= 120) { activeIdx = i; break; }
+      }
+      tocLinks.forEach((a, i) => a.classList.toggle('active', i === activeIdx));
+    }
+    addEventListener('scroll', updateToc, { passive: true });
+    updateToc();
+  }
+</script>
 </head>
 <body>
   <div id="progress"></div>
@@ -59,10 +74,11 @@ const giscusRepo = giscusParts[1] || '';
   // 主题切换
   const root = document.documentElement;
   requestAnimationFrame(() => root.classList.remove('preload'));
-  document.getElementById('themeToggle')?.addEventListener('click', () => {
+  document.getElementById('themeToggle')?.addEventListener('click', function() {
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
     localStorage.setItem('theme', next);
+    this.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
   });
 
   // 阅读进度 + 回到顶部
