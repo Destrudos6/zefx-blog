@@ -46,7 +46,11 @@ const coverStyle = coverImage ? `background-image:url(${getMediaUrl(coverImage)}
     <h2><span class="hl-text">{title}</span></h2>
     <p>{excerpt}</p>
   </div>
-  <div class="latest-cover" aria-hidden="true" style={coverStyle}></div>
+  <div class={`latest-cover${coverImage ? ' has-img' : ''}`} aria-hidden="true">
+    {coverImage && (
+      <img class="cover-img" src={getMediaUrl(coverImage)} alt="" loading="lazy" decoding="async" sizes="(max-width: 1000px) 100vw, 300px" />
+    )}
+  </div>
 </a>
 
 <style>
@@ -122,7 +126,14 @@ const coverStyle = coverImage ? `background-image:url(${getMediaUrl(coverImage)}
     background: var(--ac, var(--blue));
     overflow: hidden;
   }
-  .latest-cover[style*="background-image"]::before {
+  .latest-cover img.cover-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .latest-cover[style*="background-image"]::before,
+  .latest-cover.has-img::before {
     display: none;
   }
   .latest-cover::before {

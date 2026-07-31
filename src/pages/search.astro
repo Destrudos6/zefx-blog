@@ -123,12 +123,14 @@ import BackToTop from '../components/BackToTop.astro';
           ? '<span class="project-tag" style="--pc:' + item.project.coverColor + '">' + item.project.title + '</span>'
           : '';
 
-        return '<a class="post-card" href="' + escapeAttr(href) + '" style="--ac:' + ac + act + '">'
-          + '<div class="post-cover" style="' + coverStyle + '">'
-          + (item.coverImage ? '' : '<div class="cover-inner">'
-          + '<span class="cover-icon">' + (isPost ? '📸' : '📂') + '</span>'
-          + '<span class="cover-label mono">' + escapeHtml(label) + '</span>'
-          + '</div>')
+        return '<a class="post-card" href="' + escapeAttr(href) + '" style="--ac:' + ac + '; --cover-bg:' + bg + act + '">'
+          + '<div class="post-cover' + (item.coverImage ? ' has-img' : '') + '">'
+          + (item.coverImage
+              ? '<img class="cover-img" src="' + escapeAttr(item.coverImage) + '" alt="' + escapeAttr(item.title) + '" loading="lazy" decoding="async" sizes="200px">'
+              : '<div class="cover-inner">'
+              + '<span class="cover-icon">' + (isPost ? '📸' : '📂') + '</span>'
+              + '<span class="cover-label mono">' + escapeHtml(label) + '</span>'
+              + '</div>')
           + '</div>'
           + '<div class="post-body">'
           + '<div class="post-meta-row">'

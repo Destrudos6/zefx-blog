@@ -13,9 +13,11 @@ const { post, projectMap, color, index } = Astro.props;
 const coverImage = post.coverImage ? getMediaUrl(post.coverImage) : null;
 ---
 
-<a class="post-card reveal" href={`/posts/${post.slug}`} style={`--ac:${post.categoryColor}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}`} data-category={post.category}>
-  <div class="post-cover" style={coverImage ? `background-image:url(${coverImage});background-size:cover;background-position:center` : `background:${color}`}>
-    {!coverImage && (
+<a class="post-card reveal" href={`/posts/${post.slug}`} style={`--ac:${post.categoryColor}; --cover-bg:${color}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}`} data-category={post.category}>
+  <div class={`post-cover${coverImage ? ' has-img' : ''}`}>
+    {coverImage ? (
+      <img class="cover-img" src={coverImage} alt={post.title} loading="lazy" decoding="async" width="200" height="200" sizes="200px" />
+    ) : (
       <div class="cover-inner">
         <span class="cover-icon">📸</span>
         <span class="cover-label mono">IMG_{String(index + 1).padStart(4, '0')}</span>
