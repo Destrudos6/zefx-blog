@@ -18,7 +18,7 @@ const totalComments = allPosts.reduce((sum, p) => sum + (p.comments || 0), 0);
 const stats = aboutData.stats;
 
 // 用户名配置（数据在运行时通过 Pages Functions 获取）
-const githubUser = siteData.site.github?.owner || '';
+// GitHub 用户名由 API 从环境变量 GITHUB_OWNER 读取，前端不依赖 site.json
 const leetcodeUser = siteData.site.leetcode?.username || '';
 
 // 微信读书（示例数据，API 待接入）
@@ -65,7 +65,7 @@ const weread = {
       <section class="stat-card stat-wide">
         <div class="stat-card-head">
           <h2>GitHub <span class="hl">贡献日历</span></h2>
-          <span class="mono stat-tag" id="gh-tag">{githubUser ? '加载中…' : '未配置用户名'}</span>
+          <span class="mono stat-tag" id="gh-tag">加载中…</span>
         </div>
         <div class="gh-calendar" id="gh-calendar" aria-label="GitHub 贡献日历"></div>
         <div class="gh-legend mono">
@@ -77,7 +77,7 @@ const weread = {
           <span class="gh-cell c4"></span>
           <span>多</span>
         </div>
-        <div class="stat-card-foot mono" id="gh-foot">GitHub · {githubUser || '未配置'}</div>
+        <div class="stat-card-foot mono" id="gh-foot">GitHub</div>
       </section>
 
       <!-- 微信读书（示例数据） -->
@@ -182,7 +182,7 @@ const weread = {
   <BackToTop />
 </BaseLayout>
 
-<script define:vars={{ githubUser, leetcodeUser }}>
+<script define:vars={{ leetcodeUser }}>
   (function () {
     // ---------- 热力图渲染工具 ----------
     var MAX_LEVEL = 4;
@@ -242,21 +242,20 @@ const weread = {
     }
 
     // ---------- GitHub ----------
-    if (githubUser) {
-      fetch('/api/stats-github?username=' + encodeURIComponent(githubUser))
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
-        .then(function (data) {
-          var tag = document.getElementById('gh-tag');
-          var foot = document.getElementById('gh-foot');
-          if (tag) tag.textContent = '共 ' + data.totalContributions + ' 次贡献';
-          if (foot) foot.textContent = 'GitHub · ' + githubUser + '（过去一年）';
-          renderHeatmap(document.getElementById('gh-calendar'), data.weeks, data.totalContributions / 52);
-        })
-        .catch(function () {
-          var tag = document.getElementById('gh-tag');
-          if (tag) tag.textContent = '加载失败';
-        });
-    }
+    // 用户名由 API 从环境变量 GITHUB_OWNER 读取，前端无需传参
+    fetch('/api/stats-github')
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+      .then(function (data) {
+        var tag = document.getElementById('gh-tag');
+        var foot = document.getElementById('gh-foot');
+        if (tag) tag.textContent = '共 ' + data.totalContributions + ' 次贡献';
+        if (foot) foot.textContent = 'GitHub · ' + data.username + '（过去一年）';
+        renderHeatmap(document.getElementById('gh-calendar'), data.weeks, data.totalContributions / 52);
+      })
+      .catch(function () {
+        var tag = document.getElementById('gh-tag');
+        if (tag) tag.textContent = '加载失败';
+      });
 
     // ---------- 力扣 ----------
     if (leetcodeUser) {

@@ -40,9 +40,10 @@ export async function onRequestGet(context) {
   }
 
   const url = new URL(request.url);
-  const username = (url.searchParams.get('username') || '').trim();
+  // 优先使用显式传入的 username，缺省时回退到环境变量 GITHUB_OWNER（与评论数接口共用的用户名配置）
+  const username = (url.searchParams.get('username') || env.GITHUB_OWNER || '').trim();
   if (!username) {
-    return new Response(JSON.stringify({ error: 'Missing username' }), {
+    return new Response(JSON.stringify({ error: 'Missing username (set GITHUB_OWNER or pass ?username=)' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });

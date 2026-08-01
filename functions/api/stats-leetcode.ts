@@ -12,6 +12,8 @@ const LEETCODE_GRAPHQL = 'https://leetcode.com/graphql';
 const STATS_QUERY = `
   query($username: String!) {
     matchedUser(username: $username) {
+      username
+      submissionCalendar
       submitStatsGlobal {
         acSubmissionNum {
           difficulty
@@ -23,20 +25,17 @@ const STATS_QUERY = `
       difficulty
       count
     }
-    userProfileCalendar(username: $username) {
-      submissionCalendar
-      totalActiveDays
-    }
   }
 `;
 
 export async function onRequestGet(context) {
-  const { request } = context;
+  const { env, request } = context;
 
   const url = new URL(request.url);
-  const username = (url.searchParams.get('username') || '').trim();
+  // 优先使用显式传入的 username，缺省时回退到环境变量 LEETCODE_USERNAME
+  const username = (url.searchParams.get('username') || env.LEETCODE_USERNAME || '').trim();
   if (!username) {
-    return new Response(JSON.stringify({ error: 'Missing username' }), {
+    return new Response(JSON.stringify({ error: 'Missing username (set LEETCODE_USERNAME or pass ?username=)' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -88,7 +87,7 @@ export async function onRequestGet(context) {
 
     // 提交日历：字符串化的 {时间戳: 提交数}，解析为对象供前端渲染热力图
     let submissionCalendar = {};
-    const raw = data.data?.userProfileCalendar?.submissionCalendar;
+    const raw = matched.submissionCalendar;
     if (raw) {
       try {
         submissionCalendar = JSON.parse(raw);
@@ -99,7 +98,7 @@ export async function onRequestGet(context) {
 
     return new Response(
       JSON.stringify({
-        username,
+        username: matched.username || username,
         totalSolved: ac.all ?? 0,
         totalQuestions: all.all ?? 0,
         easySolved: ac.easy ?? 0,
