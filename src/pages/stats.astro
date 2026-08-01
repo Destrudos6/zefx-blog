@@ -652,8 +652,8 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         box.appendChild(empty);
         return;
       }
-      // 默认只显示前 8 本（约两行），其余通过"展开全部"查看
-      var SHOWN = 8;
+      // 默认只显示一行（约 7 本），其余通过"展开全部"查看
+      var SHOWN = 7;
       var shown = wrFinishedExpanded ? finished : finished.slice(0, SHOWN);
       shown.forEach(function (b) {
         var card = document.createElement('button');
