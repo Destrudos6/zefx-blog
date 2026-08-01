@@ -255,6 +255,20 @@ const weread = {
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
+    // 兼容两种 API 结构，统一为 [{ date, days }]：
+    //   新结构：{ date: "YYYY-MM-DD", days: [7 个数] }
+    //   旧结构：纯数组 [7 个数]（wrangler 缓存旧编译时可能返回）
+    function normalizeWeeks(weeks) {
+      if (!Array.isArray(weeks)) return [];
+      return weeks.map(function (w) {
+        if (Array.isArray(w)) return { date: null, days: w };        // 旧结构：纯数组
+        if (w && typeof w === 'object') {
+          return { date: w.date || null, days: Array.isArray(w.days) ? w.days : [] };
+        }
+        return { date: null, days: [] };
+      });
+    }
+
     // weeks: [{ date: "YYYY-MM-DD"(该周周日), days: [7 个数] }]，max 用于颜色分级。
     // 渲染 GitHub 官方风格的日历：顶部月份/年份标签 + 左侧星期标签 + 每格日期 tooltip。
     function renderHeatmap(container, weeks, max) {
@@ -363,8 +377,8 @@ const weread = {
         var foot = document.getElementById('gh-foot');
         if (tag) tag.textContent = '共 ' + data.totalContributions + ' 次贡献';
         if (foot) foot.textContent = 'GitHub · ' + data.username + '（过去一年）';
-        // 颜色分级用矩阵实际最大值，而非平均值
-        var weeks = data.weeks || [];
+        // 归一化新旧两种结构，再计算颜色分级与渲染
+        var weeks = normalizeWeeks(data.weeks);
         var max = 1;
         weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
         renderHeatmap(document.getElementById('gh-calendar'), weeks, max);
@@ -404,8 +418,8 @@ const weread = {
           setBar('lc-mid', 'lc-mid-n', data.mediumSolved);
           setBar('lc-hard', 'lc-hard-n', data.hardSolved);
 
-          // 提交日历热力图
-          var weeks = calendarToWeeks(data.submissionCalendar || {});
+          // 提交日历热力图（归一化新旧两种结构后渲染）
+          var weeks = normalizeWeeks(calendarToWeeks(data.submissionCalendar || {}));
           var max = 1;
           weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
           renderHeatmap(document.getElementById('lc-calendar'), weeks, max);
