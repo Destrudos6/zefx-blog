@@ -20,14 +20,6 @@ const stats = aboutData.stats;
 // 用户名配置（数据在运行时通过 Pages Functions 获取）
 // GitHub 用户名由 API 从环境变量 GITHUB_OWNER 读取，前端不依赖 site.json
 const leetcodeUser = siteData.site.leetcode?.username || '';
-
-// 微信读书（示例数据，API 待接入）
-const weread = {
-  days: 128,
-  books: 42,
-  hours: 156,
-  recent: '《置身事内：中国政府与经济发展》',
-};
 ---
 
 <BaseLayout title="统计 · ZEFX">
@@ -136,29 +128,62 @@ const weread = {
         <div class="stat-card-foot mono">数据源：LeetCode 官方 API</div>
       </section>
 
-      <!-- 微信读书（示例数据，独占一行预留空间） -->
+      <!-- 微信读书（客户端加载真实数据） -->
       <section class="stat-card stat-wide">
         <div class="stat-card-head">
           <h2>微信<span class="hl">读书</span></h2>
-          <span class="mono stat-tag">示例数据</span>
+          <span class="mono stat-tag" id="wr-tag">加载中…</span>
         </div>
-        <div class="mini-stats">
-          <div class="mini-item">
-            <div class="mini-num">{weread.days}</div>
-            <small class="mono">天阅读</small>
+
+        <!-- 阅读统计：周/月/年/总 -->
+        <div class="wr-stats">
+          <div class="wr-tabs mono" id="wr-tabs">
+            <button type="button" data-mode="weekly">本周</button>
+            <button type="button" data-mode="monthly" class="active">本月</button>
+            <button type="button" data-mode="annually">今年</button>
+            <button type="button" data-mode="overall">总计</button>
           </div>
-          <div class="mini-item">
-            <div class="mini-num">{weread.books}</div>
-            <small class="mono">本读完</small>
+          <div class="wr-cards" id="wr-cards">
+            <div class="wr-card">
+              <div class="lbl">阅读天数</div>
+              <div class="num" id="wr-days">–</div>
+            </div>
+            <div class="wr-card">
+              <div class="lbl">阅读时长</div>
+              <div class="num" id="wr-time">–</div>
+            </div>
+            <div class="wr-card">
+              <div class="lbl">日均阅读</div>
+              <div class="num" id="wr-avg">–</div>
+            </div>
+            <div class="wr-card">
+              <div class="lbl">对比上期</div>
+              <div class="num" id="wr-compare">–</div>
+            </div>
           </div>
-          <div class="mini-item">
-            <div class="mini-num">{weread.hours}</div>
-            <small class="mono">小时</small>
-          </div>
+          <div class="wr-longest" id="wr-longest"></div>
         </div>
-        <p class="stat-line">最近在读：{weread.recent}</p>
-        <div class="stat-card-foot mono">数据源：微信读书 API</div>
+
+        <!-- 已读完书架 -->
+        <div class="wr-section">
+          <div class="wr-section-head mono">已读完 · <span id="wr-finished-count">0</span> 本</div>
+          <div class="wr-grid" id="wr-finished"></div>
+        </div>
+
+        <!-- 最近在读 -->
+        <div class="wr-section">
+          <div class="wr-section-head mono">最近在读</div>
+          <div class="wr-recent" id="wr-recent"></div>
+        </div>
+
+        <div class="stat-card-foot mono">数据源：微信读书官方 API</div>
       </section>
+
+      <!-- 书籍详情弹层 -->
+      <div class="wr-modal" id="wr-modal" hidden>
+        <div class="wr-modal-mask" id="wr-modal-mask"></div>
+        <div class="wr-modal-box" id="wr-modal-box"></div>
+      </div>
 
       <!-- 扩展占位 -->
       <section class="stat-card stat-placeholder">
@@ -177,7 +202,7 @@ const weread = {
       <p>
         本页各模块数据来源不同：<b>概览区</b>来自本站内容（真实数据）；
         <b>GitHub 贡献日历</b>与<b>力扣</b>通过本站 API 实时获取（数据按小时缓存）；
-        <b>微信读书</b>目前展示示例数据，待 API 接入后替换；
+        <b>微信读书</b>通过微信读书官方 API 实时获取（需配置 <code>WEREAD_TOKEN</code> 环境变量）；
         <b>Umami</b> 为访问统计看板内嵌。
       </p>
       <p>
@@ -498,6 +523,277 @@ const weread = {
           if (tag) tag.textContent = '加载失败：' + (e && e.message ? e.message : e);
         });
     }
+
+    // ---------- 微信读书 ----------
+    var wrData = null;
+    var wrMode = 'monthly';
+
+    function wrDur(sec) {
+      sec = Number(sec) || 0;
+      var h = Math.floor(sec / 3600);
+      var m = Math.round((sec % 3600) / 60);
+      if (h >= 100) return h + ' 小时';
+      if (h > 0) return h + ' 时 ' + m + ' 分';
+      return m + ' 分钟';
+    }
+    function wrDate(ts) {
+      if (!ts) return '';
+      var d = new Date(Number(ts) * 1000);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function wrCover(b) {
+      if (b && b.cover) return b.cover;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="140"><rect width="100" height="140" fill="#eee"/><text x="50" y="75" font-size="11" text-anchor="middle" fill="#999">' + ((b && b.title) || '书') + '</text></svg>');
+    }
+
+    function wrRenderStats() {
+      var s = wrData && wrData.stats ? wrData.stats[wrMode] : null;
+      if (!s) return;
+      function set(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+      set('wr-days', (s.readDays || 0) + ' 天');
+      set('wr-time', wrDur(s.totalReadTime));
+      set('wr-avg', wrDur(s.dayAverageReadTime));
+      var cmp = s.compare == null ? '–' : (s.compare > 0 ? '↑ ' + Math.round(s.compare * 100) + '%' : (s.compare < 0 ? '↓ ' + Math.round(Math.abs(s.compare) * 100) + '%' : '持平'));
+      set('wr-compare', cmp);
+      var box = document.getElementById('wr-longest');
+      if (!box) return;
+      box.innerHTML = '';
+      var longest = s.readLongest || [];
+      if (!longest.length) return;
+      var head = document.createElement('div');
+      head.className = 'wr-longest-head mono';
+      head.textContent = '读书排行 · 读得最多';
+      box.appendChild(head);
+      var max = 1;
+      longest.forEach(function (x) { var v = Number(x.readTime) || 0; if (v > max) max = v; });
+      longest.slice(0, 8).forEach(function (x) {
+        var name = x.book ? x.book.title : (x.albumInfo ? x.albumInfo.name : '未知');
+        var sub = x.book ? x.book.author : (x.albumInfo ? x.albumInfo.authorName : '');
+        var row = document.createElement('div');
+        row.className = 'wr-bar-row';
+        var lab = document.createElement('span');
+        lab.className = 'wr-bar-label';
+        lab.textContent = name;
+        row.appendChild(lab);
+        var track = document.createElement('span');
+        track.className = 'wr-bar-track';
+        var fill = document.createElement('span');
+        fill.className = 'wr-bar-fill';
+        fill.style.width = Math.max(2, Math.round((Number(x.readTime) || 0) / max * 100)) + '%';
+        track.appendChild(fill);
+        row.appendChild(track);
+        var val = document.createElement('span');
+        val.className = 'wr-bar-val mono';
+        val.textContent = wrDur(x.readTime);
+        row.appendChild(val);
+        if (sub) {
+          var mini = document.createElement('div');
+          mini.className = 'wr-bar-mini';
+          mini.textContent = sub;
+          lab.appendChild(mini);
+        }
+        box.appendChild(row);
+      });
+    }
+
+    function wrOpenBook(bookId) {
+      var modal = document.getElementById('wr-modal');
+      var box = document.getElementById('wr-modal-box');
+      if (!modal || !box) return;
+      modal.hidden = false;
+      box.innerHTML = '<div class="wr-modal-loading mono">加载中…</div>';
+      fetchTimeout('/api/stats-weread/book?bookId=' + encodeURIComponent(bookId), 15000)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (d) {
+          if (d.error) throw new Error(d.error);
+          var info = d.info || {};
+          var prog = d.progress || {};
+          box.innerHTML = '';
+          var head = document.createElement('div');
+          head.className = 'wr-modal-head';
+          var img = document.createElement('img');
+          img.className = 'wr-modal-cover';
+          img.src = wrCover(info);
+          img.alt = info.title || '';
+          head.appendChild(img);
+          var meta = document.createElement('div');
+          meta.className = 'wr-modal-meta';
+          var t = document.createElement('h3');
+          t.textContent = info.title || '未知书名';
+          meta.appendChild(t);
+          var byline = document.createElement('p');
+          byline.textContent = [info.author, info.publisher].filter(Boolean).join(' · ');
+          meta.appendChild(byline);
+          if (info.newRating) {
+            var rating = document.createElement('p');
+            rating.className = 'wr-modal-rating';
+            rating.textContent = '★ ' + Number(info.newRating).toFixed(1) + (info.newRatingCount ? '（' + info.newRatingCount + ' 人评分）' : '');
+            meta.appendChild(rating);
+          }
+          if (prog.progress != null) {
+            var pbar = document.createElement('div');
+            pbar.className = 'wr-modal-progress';
+            pbar.textContent = '阅读进度：' + (prog.progress === 100 ? '已完成' : prog.progress + '%');
+            meta.appendChild(pbar);
+          }
+          head.appendChild(meta);
+          box.appendChild(head);
+          if (info.intro) {
+            var intro = document.createElement('p');
+            intro.className = 'wr-modal-intro';
+            intro.textContent = info.intro;
+            box.appendChild(intro);
+          }
+          var close = document.createElement('button');
+          close.type = 'button';
+          close.className = 'wr-modal-close mono';
+          close.textContent = '关闭';
+          close.addEventListener('click', function () { modal.hidden = true; });
+          box.appendChild(close);
+        })
+        .catch(function (e) {
+          box.innerHTML = '<div class="wr-modal-loading mono">加载失败：' + (e && e.message ? e.message : e) + '</div>';
+        });
+    }
+
+    function wrRenderFinished() {
+      var box = document.getElementById('wr-finished');
+      var count = document.getElementById('wr-finished-count');
+      if (!box || !wrData) return;
+      box.innerHTML = '';
+      var finished = (wrData.books || []).filter(function (b) { return b.finishReading; });
+      if (count) count.textContent = String(finished.length);
+      if (!finished.length) {
+        var empty = document.createElement('span');
+        empty.className = 'wr-empty mono';
+        empty.textContent = '暂无已读完的书';
+        box.appendChild(empty);
+        return;
+      }
+      finished.forEach(function (b) {
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'wr-book';
+        var img = document.createElement('img');
+        img.className = 'wr-book-cover';
+        img.src = wrCover(b);
+        img.alt = b.title || '';
+        img.loading = 'lazy';
+        card.appendChild(img);
+        var meta = document.createElement('span');
+        meta.className = 'wr-book-meta';
+        var t = document.createElement('b');
+        t.textContent = b.title || '';
+        meta.appendChild(t);
+        var a = document.createElement('small');
+        a.textContent = b.author || '';
+        meta.appendChild(a);
+        card.appendChild(meta);
+        card.addEventListener('click', function () { wrOpenBook(b.bookId); });
+        box.appendChild(card);
+      });
+    }
+
+    function wrRenderRecent() {
+      var box = document.getElementById('wr-recent');
+      if (!box || !wrData) return;
+      box.innerHTML = '';
+      var books = (wrData.books || []).slice().sort(function (a, b) { return (b.readUpdateTime || 0) - (a.readUpdateTime || 0); });
+      var recent = books.filter(function (b) { return !b.finishReading; }).slice(0, 5);
+      if (!recent.length) {
+        var empty = document.createElement('span');
+        empty.className = 'wr-empty mono';
+        empty.textContent = '暂无在读的书';
+        box.appendChild(empty);
+        return;
+      }
+      recent.forEach(function (b) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'wr-recent-row';
+        var img = document.createElement('img');
+        img.className = 'wr-recent-cover';
+        img.src = wrCover(b);
+        img.alt = b.title || '';
+        row.appendChild(img);
+        var body = document.createElement('span');
+        body.className = 'wr-recent-body';
+        var t = document.createElement('b');
+        t.textContent = b.title || '';
+        body.appendChild(t);
+        var a = document.createElement('small');
+        a.textContent = (b.author || '') + (b.readUpdateTime ? ' · 最近阅读 ' + wrDate(b.readUpdateTime) : '');
+        body.appendChild(a);
+        var prog = document.createElement('span');
+        prog.className = 'wr-recent-prog mono';
+        prog.textContent = '进度…';
+        body.appendChild(prog);
+        row.appendChild(body);
+        row.addEventListener('click', function () { wrOpenBook(b.bookId); });
+        box.appendChild(row);
+        // 异步补充每本进度
+        (function (el, id) {
+          fetchTimeout('/api/stats-weread/book?bookId=' + encodeURIComponent(id), 15000)
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+            .then(function (d) {
+              if (d.progress && d.progress.progress != null) {
+                el.textContent = '进度 ' + (d.progress.progress === 100 ? '已完成' : d.progress.progress + '%');
+              }
+            })
+            .catch(function () { el.textContent = ''; });
+        })(prog, b.bookId);
+      });
+    }
+
+    function wrLoad() {
+      var tag = document.getElementById('wr-tag');
+      fetchTimeout('/api/stats-weread', 15000)
+        .then(function (r) {
+          if (r.status === 503) throw new Error('WEREAD_TOKEN 未配置（环境变量）');
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          if (data.error) throw new Error(data.error);
+          wrData = data;
+          if (tag) tag.textContent = '数据已加载';
+          wrRenderStats();
+          wrRenderFinished();
+          wrRenderRecent();
+        })
+        .catch(function (e) {
+          diagError('Weread', e);
+          if (tag) tag.textContent = '加载失败：' + (e && e.message ? e.message : e);
+          var c = document.getElementById('wr-cards');
+          if (c) {
+            var p = document.createElement('div');
+            p.className = 'wr-empty mono';
+            p.textContent = '请检查环境变量 WEREAD_TOKEN 是否已配置';
+            c.appendChild(p);
+          }
+        });
+    }
+
+    // tab 切换
+    var tabs = document.getElementById('wr-tabs');
+    if (tabs) {
+      tabs.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('button');
+        if (!btn || !btn.dataset || !btn.dataset.mode) return;
+        wrMode = btn.dataset.mode;
+        Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        wrRenderStats();
+      });
+    }
+    // 弹层遮罩点击关闭
+    var maskEl = document.getElementById('wr-modal-mask');
+    if (maskEl) {
+      maskEl.addEventListener('click', function () { var m = document.getElementById('wr-modal'); if (m) m.hidden = true; });
+    }
+
+    wrLoad();
   })();
 </script>
 
@@ -857,4 +1153,146 @@ const weread = {
     font-size: 12px;
     color: var(--soft);
   }
+
+  /* 微信读书模块：书籍卡片/弹层等由 JS 动态创建（无 scoped 属性），样式必须全局生效 */
+  .wr-stats { display: flex; flex-direction: column; gap: 14px; }
+  .wr-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .wr-tabs button {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--soft);
+    background: var(--paper);
+    border: var(--bd);
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .wr-tabs button:hover { color: var(--ink); }
+  .wr-tabs button.active {
+    background: var(--red);
+    color: var(--paper);
+    border-color: var(--red);
+  }
+  .wr-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .wr-card {
+    border: var(--bd);
+    background: var(--paper);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .wr-card .lbl { font-size: 11px; color: var(--soft); }
+  .wr-card .num { font-size: 20px; font-weight: 800; color: var(--green); }
+  .wr-longest { display: flex; flex-direction: column; gap: 6px; }
+  .wr-longest-head { font-size: 11px; color: var(--red); letter-spacing: .08em; }
+  .wr-bar-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 90px;
+    align-items: center;
+    gap: 10px;
+  }
+  .wr-bar-label {
+    font-size: 12.5px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+  }
+  .wr-bar-mini { font-size: 10.5px; color: var(--soft); }
+  .wr-bar-track { height: 10px; background: var(--paper); border: var(--bd); overflow: hidden; }
+  .wr-bar-fill { display: block; height: 100%; background: var(--green); }
+  .wr-bar-val { font-size: 11px; color: var(--soft); text-align: right; }
+
+  .wr-section { border-top: 2px dashed rgba(128,128,128,.25); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .wr-section-head { font-size: 11px; color: var(--red); letter-spacing: .08em; }
+  .wr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .wr-book {
+    border: var(--bd);
+    background: var(--paper);
+    padding: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .wr-book:hover { transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--ink); }
+  .wr-book-cover {
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    object-fit: cover;
+    background: var(--paper);
+    border: 1px solid rgba(128,128,128,.15);
+  }
+  .wr-book-meta { display: flex; flex-direction: column; gap: 2px; }
+  .wr-book-meta b { font-size: 12.5px; color: var(--ink); line-height: 1.4; }
+  .wr-book-meta small { font-size: 10.5px; color: var(--soft); }
+  .wr-empty { font-size: 12px; color: var(--soft); }
+
+  .wr-recent { display: flex; flex-direction: column; gap: 8px; }
+  .wr-recent-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: var(--bd);
+    background: var(--paper);
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .wr-recent-row:hover { transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--ink); }
+  .wr-recent-cover { width: 36px; height: 50px; object-fit: cover; border: 1px solid rgba(128,128,128,.15); flex-shrink: 0; }
+  .wr-recent-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .wr-recent-body b { font-size: 13px; color: var(--ink); }
+  .wr-recent-body small { font-size: 11px; color: var(--soft); }
+  .wr-recent-prog { font-size: 11px; color: var(--green); white-space: nowrap; }
+
+  /* 书籍详情弹层 */
+  .wr-modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .wr-modal[hidden] { display: none; }
+  .wr-modal-mask { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+  .wr-modal-box {
+    position: relative;
+    background: var(--card);
+    border: var(--bd);
+    box-shadow: 8px 8px 0 var(--ink);
+    max-width: 480px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .wr-modal-head { display: flex; gap: 16px; flex-wrap: wrap; }
+  .wr-modal-cover { width: 110px; aspect-ratio: 5 / 7; object-fit: cover; border: 1px solid rgba(128,128,128,.15); flex-shrink: 0; }
+  .wr-modal-meta { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
+  .wr-modal-meta h3 { font-size: 18px; margin: 0; }
+  .wr-modal-meta p { font-size: 12.5px; color: var(--soft); margin: 0; }
+  .wr-modal-rating { color: var(--orange) !important; }
+  .wr-modal-progress { font-size: 12px; color: var(--green); border: 1px solid currentColor; padding: 2px 8px; align-self: flex-start; }
+  .wr-modal-intro { font-size: 13px; line-height: 1.8; color: var(--soft); }
+  .wr-modal-close {
+    align-self: flex-end;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--paper);
+    background: var(--red);
+    border: 1px solid var(--red);
+    padding: 4px 16px;
+    cursor: pointer;
+  }
+  .wr-modal-loading { font-size: 13px; color: var(--soft); }
 </style>
