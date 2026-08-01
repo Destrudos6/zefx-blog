@@ -59,6 +59,26 @@ const weread = {
       </div>
     </div>
 
+    <!-- Umami 子模块：内嵌浏览（置于统计网格上方） -->
+    {umami?.dashboardUrl && (
+      <section class="umami-section reveal" style="--d:.15s">
+        <div class="stat-card-head">
+          <h2>Umami <span class="hl">访问统计</span></h2>
+          <a class="mono umami-open" href={umami.dashboardUrl} target="_blank" rel="noopener noreferrer">在新窗口打开 ↗</a>
+        </div>
+        <div class="umami-frame-wrap">
+          <iframe
+            class="umami-frame"
+            src={umami.dashboardUrl}
+            title="Umami 访问统计"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            allow="clipboard-write"
+          ></iframe>
+        </div>
+      </section>
+    )}
+
     <!-- 模块网格 -->
     <div class="stats-grid reveal" style="--d:.1s">
       <!-- GitHub 贡献日历（客户端加载真实数据） -->
@@ -76,6 +96,11 @@ const weread = {
           <span class="gh-cell c3"></span>
           <span class="gh-cell c4"></span>
           <span>多</span>
+        </div>
+        <!-- 公开仓库列表（客户端加载真实数据） -->
+        <div class="gh-repos" id="gh-repos">
+          <div class="gh-repos-head mono">公开仓库</div>
+          <div class="gh-repos-list" id="gh-repos-list"></div>
         </div>
         <div class="stat-card-foot mono" id="gh-foot">GitHub</div>
       </section>
@@ -145,26 +170,6 @@ const weread = {
         <div class="stat-card-foot mono">敬请期待</div>
       </section>
     </div>
-
-    <!-- Umami 子模块：内嵌浏览 -->
-    {umami?.dashboardUrl && (
-      <section class="umami-section reveal" style="--d:.15s">
-        <div class="stat-card-head">
-          <h2>Umami <span class="hl">访问统计</span></h2>
-          <a class="mono umami-open" href={umami.dashboardUrl} target="_blank" rel="noopener noreferrer">在新窗口打开 ↗</a>
-        </div>
-        <div class="umami-frame-wrap">
-          <iframe
-            class="umami-frame"
-            src={umami.dashboardUrl}
-            title="Umami 访问统计"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            allow="clipboard-write"
-          ></iframe>
-        </div>
-      </section>
-    )}
 
     <!-- 数据说明 -->
     <div class="stats-note reveal" style="--d:.2s">
@@ -399,6 +404,45 @@ const weread = {
         var max = 1;
         weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
         renderHeatmap(document.getElementById('gh-calendar'), weeks, max);
+        // 公开仓库列表（点击跳转对应仓库页）
+        var listEl = document.getElementById('gh-repos-list');
+        if (listEl && Array.isArray(data.repos) && data.repos.length) {
+          data.repos.forEach(function (r) {
+            var item = document.createElement('a');
+            item.className = 'gh-repo';
+            item.href = r.url;
+            item.target = '_blank';
+            item.rel = 'noopener noreferrer';
+            var name = document.createElement('span');
+            name.className = 'gh-repo-name mono';
+            name.textContent = r.name;
+            item.appendChild(name);
+            if (r.language) {
+              var lang = document.createElement('span');
+              lang.className = 'gh-repo-lang';
+              lang.textContent = r.language;
+              item.appendChild(lang);
+            }
+            if (r.stars > 0) {
+              var stars = document.createElement('span');
+              stars.className = 'gh-repo-stars mono';
+              stars.textContent = '★ ' + r.stars;
+              item.appendChild(stars);
+            }
+            if (r.description) {
+              var desc = document.createElement('span');
+              desc.className = 'gh-repo-desc';
+              desc.textContent = r.description;
+              item.appendChild(desc);
+            }
+            listEl.appendChild(item);
+          });
+        } else if (listEl) {
+          var empty = document.createElement('span');
+          empty.className = 'gh-repo-empty mono';
+          empty.textContent = '暂无公开仓库';
+          listEl.appendChild(empty);
+        }
       })
       .catch(function (e) {
         diagError('GitHub', e);
@@ -625,6 +669,64 @@ const weread = {
     height: 480px;
     border: none;
     background: var(--paper);
+  }
+
+  /* 公开仓库列表 */
+  .gh-repos {
+    border-top: 2px dashed rgba(128,128,128,.25);
+    padding-top: 14px;
+  }
+  .gh-repos-head {
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+  }
+  .gh-repos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .gh-repo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    border: var(--bd);
+    background: var(--paper);
+    padding: 8px 12px;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .gh-repo:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .gh-repo-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .gh-repo-lang {
+    font-size: 10px;
+    color: var(--blue);
+    border: 1px solid currentColor;
+    padding: 0 6px;
+    line-height: 1.5;
+  }
+  .gh-repo-stars {
+    font-size: 10px;
+    color: var(--orange);
+  }
+  .gh-repo-desc {
+    flex-basis: 100%;
+    font-size: 11.5px;
+    color: var(--soft);
+    line-height: 1.5;
+  }
+  .gh-repo-empty {
+    font-size: 12px;
+    color: var(--soft);
   }
 
   /* 数据说明 */

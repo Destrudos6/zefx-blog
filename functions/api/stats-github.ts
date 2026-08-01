@@ -24,6 +24,16 @@ const CALENDAR_QUERY = `
           }
         }
       }
+      repositories(first: 12, privacy: PUBLIC, orderBy: { field: UPDATED_AT, direction: DESC }) {
+        nodes {
+          name
+          description
+          url
+          primaryLanguage { name }
+          stargazerCount
+          forkCount
+        }
+      }
     }
   }
 `;
@@ -91,11 +101,22 @@ export async function onRequestGet(context) {
       };
     });
 
+    // 公开仓库列表（按最近更新排序，供前端展示与跳转）
+    const repos = (data.data?.user?.repositories?.nodes || []).map(r => ({
+      name: r.name,
+      description: r.description || '',
+      url: r.url,
+      language: r.primaryLanguage?.name || '',
+      stars: r.stargazerCount || 0,
+      forks: r.forkCount || 0,
+    }));
+
     return new Response(
       JSON.stringify({
         username,
         totalContributions: cal.totalContributions,
         weeks,
+        repos,
       }),
       {
         status: 200,
