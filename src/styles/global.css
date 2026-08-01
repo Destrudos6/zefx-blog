@@ -258,7 +258,15 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 }
 .post-card:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--ac)}
 
-/* --- 上方横幅封面：基础比例/居中/img 定位/占位符由 Cover 组件统一提供，此处只留场景差异 --- */
+/* --- 文章卡片封面：基础规则需全局生效，因为搜索页用 JS 动态生成 post-cover（无 Cover 组件的 .cover 类）--- */
+.post-cover{
+  position:relative; width:100%; aspect-ratio:var(--cover-ratio);
+  display:grid; place-items:center; overflow:hidden;
+}
+.post-cover img.cover-img{
+  display:block; width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0; object-position:center;
+}
 .post-cover:not(.has-img){ background:var(--cover-bg, var(--blue)); }
 /* PostCard 占位符在移动端的场景覆盖（Cover 组件内默认纵向） */
 @media (max-width: 640px) {
@@ -389,7 +397,11 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .project-updates{display:flex; flex-direction:column; gap:8px; padding:10px 0; border-top:2px dashed var(--ink); border-bottom:2px dashed var(--ink)}
 .p-update{display:flex; gap:10px; align-items:baseline}
 .p-update time{font-family:var(--mono); font-size:11px; color:var(--soft); white-space:nowrap; min-width:4.2em}
-.p-update p{font-size:13px; line-height:1.5; color:var(--ink)}
+.p-update p{
+  font-size:13px; line-height:1.5; color:var(--ink);
+  /* 日志长文本最多 2 行，防止单条日志把项目卡片拉高 */
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
 .project-tags{display:flex; gap:8px; flex-wrap:wrap}
 .project .tag{font-family:var(--mono); font-size:11px; color:var(--red); background:var(--paper); border:var(--bd); padding:2px 8px; font-weight:700}
 
