@@ -15,6 +15,7 @@ import { getFriendLinks, getTickerItems, getAboutData } from '../data/backblaze'
 const allPosts = await getAllPostsFromCollection();
 const latest = allPosts[0] ?? null;
 const secondLatest = allPosts[1] ?? null;
+const thirdLatest = allPosts[2] ?? null;
 const friendLinks = await getFriendLinks();
 const tickerItems = await getTickerItems();
 const aboutData = await getAboutData();
@@ -63,6 +64,21 @@ const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
           project={secondLatest.project ? projectMap[secondLatest.project] ?? null : null}
         />
       )}
+      {thirdLatest && (
+        <LatestPost
+          category={thirdLatest.category}
+          categoryColor={thirdLatest.categoryColor}
+          categoryTextColor={thirdLatest.categoryTextColor}
+          date={thirdLatest.date}
+          title={thirdLatest.title}
+          excerpt={thirdLatest.excerpt}
+          readTime={thirdLatest.readTime}
+          comments={thirdLatest.comments}
+          href={`/posts/${thirdLatest.slug}`}
+          coverImage={thirdLatest.coverImage}
+          project={thirdLatest.project ? projectMap[thirdLatest.project] ?? null : null}
+        />
+      )}
     </div>
   </section>
 
@@ -98,7 +114,7 @@ const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
   .project-link { text-decoration: none; color: inherit; }
   .latest-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
   @media (max-width: 1000px) {

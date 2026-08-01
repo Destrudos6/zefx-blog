@@ -340,7 +340,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .project:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--red)}
 /* 项目卡片封面（1200×630 横幅，位于内容上方） */
 .project-cover{
-  position:relative; width:100%; aspect-ratio:var(--cover-ratio);
+  position:relative; width:auto; aspect-ratio:var(--cover-ratio);
   overflow:hidden; border:var(--bd);
   margin:-24px -24px 0; /* 贴齐卡片顶部，与 padding 相抵 */
 }
