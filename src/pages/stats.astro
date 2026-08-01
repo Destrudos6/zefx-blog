@@ -250,7 +250,11 @@ const weread = {
         var foot = document.getElementById('gh-foot');
         if (tag) tag.textContent = '共 ' + data.totalContributions + ' 次贡献';
         if (foot) foot.textContent = 'GitHub · ' + data.username + '（过去一年）';
-        renderHeatmap(document.getElementById('gh-calendar'), data.weeks, data.totalContributions / 52);
+        // 颜色分级用矩阵实际最大值，而非平均值
+        var weeks = data.weeks || [];
+        var max = 1;
+        weeks.forEach(function (col) { col.forEach(function (v) { if (v > max) max = v; }); });
+        renderHeatmap(document.getElementById('gh-calendar'), weeks, max);
       })
       .catch(function () {
         var tag = document.getElementById('gh-tag');
@@ -363,7 +367,8 @@ const weread = {
     padding-top: 12px;
   }
 
-  /* 热力图 */
+  /* 热力图（容器与图例是模板静态元素，保留 scoped；.gh-col/.gh-cell 由 JS 动态创建，
+     样式必须全局生效，见下方 <style is:global>） */
   .gh-calendar,
   .lc-calendar {
     display: flex;
@@ -371,20 +376,6 @@ const weread = {
     overflow-x: auto;
     padding-bottom: 6px;
   }
-  .gh-col { display: flex; flex-direction: column; gap: 3px; }
-  .gh-cell {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    background: var(--paper);
-    border: 1px solid rgba(128,128,128,.15);
-    flex-shrink: 0;
-  }
-  .gh-cell.c0 { background: rgba(128,128,128,.12); border-color: transparent; }
-  .gh-cell.c1 { background: #9be9a8; border-color: transparent; }
-  .gh-cell.c2 { background: #40c463; border-color: transparent; }
-  .gh-cell.c3 { background: #30a14e; border-color: transparent; }
-  .gh-cell.c4 { background: #216e39; border-color: transparent; }
   .gh-legend {
     display: flex;
     align-items: center;
@@ -502,4 +493,22 @@ const weread = {
     .stats-overview { grid-template-columns: 1fr 1fr; }
     .umami-frame { height: 360px; }
   }
+</style>
+
+<style is:global>
+  /* 热力图格子由 JS 动态创建（无 Astro scoped 属性），样式必须全局生效 */
+  .gh-col { display: flex; flex-direction: column; gap: 3px; }
+  .gh-cell {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--paper);
+    border: 1px solid rgba(128,128,128,.15);
+    flex-shrink: 0;
+  }
+  .gh-cell.c0 { background: rgba(128,128,128,.12); border-color: transparent; }
+  .gh-cell.c1 { background: #9be9a8; border-color: transparent; }
+  .gh-cell.c2 { background: #40c463; border-color: transparent; }
+  .gh-cell.c3 { background: #30a14e; border-color: transparent; }
+  .gh-cell.c4 { background: #216e39; border-color: transparent; }
 </style>
