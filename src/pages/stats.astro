@@ -175,6 +175,13 @@ const weread = {
         <b>微信读书</b>目前展示示例数据，待 API 接入后替换；
         <b>Umami</b> 为访问统计看板内嵌。
       </p>
+      <p>
+        <b>GitHub 贡献数说明</b>：贡献日历仅统计 <code>GITHUB_TOKEN</code> 可见范围内的仓库
+        （即 token 有权限访问的公开/私有仓库）。若 token 未授权某些私有仓库，这些仓库的贡献
+        不会计入，数字会小于 GitHub 个人页面（页面登录后显示全部贡献）。如需完整统计，请在
+        GitHub 生成 token 时授予对应仓库的访问权限（fine-grained token 需勾选仓库并授予
+        <code>Contents: Read</code> 等权限）。
+      </p>
     </div>
 
     <!-- 诊断日志：加载异常时展开，复制内容反馈给开发者 -->
@@ -283,21 +290,31 @@ const weread = {
       head.appendChild(labelsSpace);
       var months = document.createElement('div');
       months.className = 'gh-months';
-      var lastMonth = -1;
-      var lastYear = -1;
+
+      // 按月份跨度分组渲染标签：每个标签横跨其所属月份的所有列宽，避免文字互相重叠
+      var CELL_W = 10;  // 与 .gh-cell 宽度一致
+      var GAP = 3;      // 与 .gh-col gap 一致
+      var monthGroups = [];
       weeks.forEach(function (week) {
         var d = parseDay(week.date);
+        var key = d ? (d.getFullYear() + '-' + d.getMonth()) : 'none';
+        var last = monthGroups[monthGroups.length - 1];
+        if (last && last.key === key) {
+          last.count++;
+        } else {
+          monthGroups.push({ key: key, count: 1, date: d });
+        }
+      });
+      monthGroups.forEach(function (g) {
         var span = document.createElement('span');
         span.className = 'gh-month';
-        if (d) {
-          if (d.getFullYear() !== lastYear) {
-            span.textContent = String(d.getFullYear()); // 跨年时显示年份
-            lastYear = d.getFullYear();
-            lastMonth = -1;
-          } else if (d.getMonth() !== lastMonth) {
-            span.textContent = (d.getMonth() + 1) + '月';
+        span.style.width = (g.count * (CELL_W + GAP) - GAP) + 'px';
+        if (g.date) {
+          if (g.date.getMonth() === 0) {
+            span.textContent = String(g.date.getFullYear()) + '年'; // 每年 1 月显示年份
+          } else {
+            span.textContent = (g.date.getMonth() + 1) + '月';
           }
-          lastMonth = d.getMonth();
         }
         months.appendChild(span);
       });
@@ -508,6 +525,7 @@ const weread = {
   .lc-calendar {
     display: flex;
     flex-direction: column;
+    align-items: center; /* 日历内容居中，避免卡片内右侧大片留白 */
     gap: 6px;
     overflow-x: auto;
     padding-bottom: 6px;
@@ -650,6 +668,9 @@ const weread = {
   @media (max-width: 1000px) {
     .stats-grid { grid-template-columns: 1fr; }
     .stat-wide { grid-column: 1; }
+    /* 内容可能超宽需要横向滚动：居中会裁掉左侧，改为左对齐 */
+    .gh-calendar,
+    .lc-calendar { align-items: flex-start; }
   }
   @media (max-width: 640px) {
     .stats-overview { grid-template-columns: 1fr 1fr; }
