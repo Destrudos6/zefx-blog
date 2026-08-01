@@ -163,10 +163,13 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   <BackToTop />
 </BaseLayout>
 
-<script define:vars={{ leetcodeUser }}>
+<script is:inline set:html={`window.__LEETCODE_USER__ = ${JSON.stringify(leetcodeUser)};`}></script>
+
+<script>
   import { fetchTimeout, normalizeWeeks, calendarToWeeks, renderHeatmap } from '../scripts/heatmap';
   import { initWeread } from '../scripts/weread';
   (function () {
+    var leetcodeUser = window.__LEETCODE_USER__ || '';
     // ---------- 热力图渲染工具已抽离至 src/scripts/heatmap.ts ----------
 
     // ---------- GitHub ----------
