@@ -27,8 +27,8 @@ export async function onRequestGet(context) {
     ]);
     const prog = progress.book || {};
 
-    // 热门划线：官方固定返回前 20 条，展示前 10 条
-    const highlights = (best.items || []).slice(0, 10).map((it) => ({
+    // 热门划线：官方固定返回前 20 条，展示前 5 条
+    const highlights = (best.items || []).slice(0, 5).map((it) => ({
       text: it.markText || '',
       count: it.totalCount || 0,
       chapter: it.chapterUid != null ? it.chapterUid : null,
