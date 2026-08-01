@@ -610,7 +610,9 @@ const weread = {
     border: 1px solid rgba(128,128,128,.15);
     flex-shrink: 0;
   }
-  .gh-cell.c0 { background: rgba(128,128,128,.12); border-color: transparent; }
+  .gh-cell.c0 { background: #ebedf0; border-color: transparent; }
+  /* 暗色主题下无贡献格子用 GitHub 官方暗色灰，保证网格可见 */
+  html[data-theme="dark"] .gh-cell.c0 { background: #21262d; }
   .gh-cell.c1 { background: #9be9a8; border-color: transparent; }
   .gh-cell.c2 { background: #40c463; border-color: transparent; }
   .gh-cell.c3 { background: #30a14e; border-color: transparent; }
