@@ -419,12 +419,6 @@ const weread = {
             name.className = 'gh-repo-name mono';
             name.textContent = r.name;
             item.appendChild(name);
-            if (r.language) {
-              var lang = document.createElement('span');
-              lang.className = 'gh-repo-lang';
-              lang.textContent = r.language;
-              item.appendChild(lang);
-            }
             if (r.stars > 0) {
               var stars = document.createElement('span');
               stars.className = 'gh-repo-stars mono';
@@ -708,13 +702,6 @@ const weread = {
     font-size: 13px;
     font-weight: 700;
     color: var(--ink);
-  }
-  .gh-repo-lang {
-    font-size: 10px;
-    color: var(--blue);
-    border: 1px solid currentColor;
-    padding: 0 6px;
-    line-height: 1.5;
   }
   .gh-repo-stars {
     font-size: 10px;
