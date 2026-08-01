@@ -164,16 +164,16 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           <div class="wr-longest" id="wr-longest"></div>
         </div>
 
+        <!-- 最近在读（优先级高于已读完，放在上方） -->
+        <div class="wr-section">
+          <div class="wr-section-head mono">最近在读</div>
+          <div class="wr-recent" id="wr-recent"></div>
+        </div>
+
         <!-- 已读完书架 -->
         <div class="wr-section">
           <div class="wr-section-head mono">已读完 · <span id="wr-finished-count">0</span> 本</div>
           <div class="wr-grid" id="wr-finished"></div>
-        </div>
-
-        <!-- 最近在读 -->
-        <div class="wr-section">
-          <div class="wr-section-head mono">最近在读</div>
-          <div class="wr-recent" id="wr-recent"></div>
         </div>
 
         <div class="stat-card-foot mono">数据源：微信读书官方 API</div>
@@ -759,8 +759,8 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           wrData = data;
           if (tag) tag.textContent = '数据已加载';
           wrRenderStats();
-          wrRenderFinished();
           wrRenderRecent();
+          wrRenderFinished();
         })
         .catch(function (e) {
           diagError('Weread', e);
