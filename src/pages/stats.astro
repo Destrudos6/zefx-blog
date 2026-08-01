@@ -136,16 +136,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         <div class="wr-modal-mask" id="wr-modal-mask"></div>
         <div class="wr-modal-box" id="wr-modal-box"></div>
       </div>
-
-      <!-- 扩展占位 -->
-      <section class="stat-card stat-placeholder">
-        <div class="stat-card-head">
-          <h2>更多<span class="hl">数据</span></h2>
-        </div>
-        <p class="stat-line">更多维度的统计数据正在接入中……</p>
-        <p class="stat-line mono dim">例如：观影记录、音乐、运动、书签</p>
-        <div class="stat-card-foot mono">敬请期待</div>
-      </section>
     </div>
 
     <!-- Umami 子模块：内嵌浏览（置于页面最下方） -->
@@ -184,12 +174,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         <code>Contents: Read</code> 等权限）。
       </p>
     </div>
-
-    <!-- 诊断日志：加载异常时展开，复制内容反馈给开发者 -->
-    <details class="stats-diag reveal" style="--d:.25s">
-      <summary class="mono">诊断日志（反馈问题时请展开并复制此内容）</summary>
-      <pre id="diag-output" class="diag-pre mono"></pre>
-    </details>
   </section>
 
   <Footer />
@@ -213,37 +197,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           setTimeout(function () { reject(new Error('请求超时（' + ms + 'ms）')); }, ms);
         }),
       ]);
-    }
-
-    // ---------- 诊断日志 ----------
-    // 记录 API 响应结构的关键信息，页面底部"诊断日志"可展开查看；
-    // 反馈问题时复制该内容，避免自然语言描述产生歧义。
-    var diagLines = [];
-
-    function diagAppend(line) {
-      diagLines.push(line);
-      var pre = document.getElementById('diag-output');
-      if (pre) pre.textContent = diagLines.join('\n');
-    }
-
-    function diagRecord(source, kind, detail) {
-      var t = new Date().toLocaleTimeString();
-      try {
-        var d = detail || {};
-        diagAppend('[' + t + '] ' + source + ' ' + kind + ': ' +
-          'keys=' + JSON.stringify(Object.keys(d)) +
-          ' | weeks类型=' + (d.weeks == null ? 'null/undefined' : Array.isArray(d.weeks) ? 'array(' + d.weeks.length + ')' : typeof d.weeks) +
-          ' | 首项keys=' + (Array.isArray(d.weeks) && d.weeks[0] ? JSON.stringify(Object.keys(d.weeks[0])) : 'N/A') +
-          ' | days类型=' + (Array.isArray(d.weeks) && d.weeks[0] ? (d.weeks[0].days == null ? 'null/undefined' : Array.isArray(d.weeks[0].days) ? 'array(' + d.weeks[0].days.length + ')' : typeof d.weeks[0].days) : 'N/A') +
-          ' | repos=' + (d.repos == null ? 'null/undefined' : Array.isArray(d.repos) ? 'array(' + d.repos.length + ')' : typeof d.repos) +
-          (Array.isArray(d.repos) && d.repos[0] ? ' | 首仓库=' + (d.repos[0].name || '?') : ''));
-      } catch (e) {
-        diagAppend('[' + t + '] ' + source + ' ' + kind + ' 诊断失败: ' + e.message);
-      }
-    }
-
-    function diagError(source, err) {
-      diagAppend('[' + new Date().toLocaleTimeString() + '] ' + source + ' ERROR: ' + (err && err.message ? err.message : String(err)));
     }
 
     function levelClass(v, max) {
@@ -392,7 +345,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         return r.json();
       })
       .then(function (data) {
-        diagRecord('GitHub', 'OK', data);
         var tag = document.getElementById('gh-tag');
         var foot = document.getElementById('gh-foot');
         if (tag) tag.textContent = '共 ' + data.totalContributions + ' 次贡献';
@@ -448,7 +400,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         }
       })
       .catch(function (e) {
-        diagError('GitHub', e);
         var tag = document.getElementById('gh-tag');
         var foot = document.getElementById('gh-foot');
         if (tag) tag.textContent = '加载失败：' + (e && e.message ? e.message : e);
@@ -463,7 +414,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           return r.json();
         })
         .then(function (data) {
-          diagRecord('LeetCode', 'OK', data);
           var tag = document.getElementById('lc-tag');
           if (tag) tag.textContent = '总题数 ' + data.totalQuestions;
           var solved = document.getElementById('lc-solved');
@@ -489,7 +439,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           renderHeatmap(document.getElementById('lc-calendar'), weeks, max);
         })
         .catch(function (e) {
-          diagError('LeetCode', e);
           var tag = document.getElementById('lc-tag');
           if (tag) tag.textContent = '加载失败：' + (e && e.message ? e.message : e);
         });
@@ -687,6 +636,8 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         });
     }
 
+    var wrFinishedExpanded = false;
+
     function wrRenderFinished() {
       var box = document.getElementById('wr-finished');
       var count = document.getElementById('wr-finished-count');
@@ -701,7 +652,10 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         box.appendChild(empty);
         return;
       }
-      finished.forEach(function (b) {
+      // 默认只显示前 8 本（约两行），其余通过"展开全部"查看
+      var SHOWN = 8;
+      var shown = wrFinishedExpanded ? finished : finished.slice(0, SHOWN);
+      shown.forEach(function (b) {
         var card = document.createElement('button');
         card.type = 'button';
         card.className = 'wr-book';
@@ -723,6 +677,20 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         card.addEventListener('click', function () { wrOpenBook(b.bookId); });
         box.appendChild(card);
       });
+      // 展开/收起切换
+      if (finished.length > SHOWN) {
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'wr-toggle mono';
+        toggle.textContent = wrFinishedExpanded
+          ? '收起 ↑'
+          : '展开全部 ' + finished.length + ' 本 ↓';
+        toggle.addEventListener('click', function () {
+          wrFinishedExpanded = !wrFinishedExpanded;
+          wrRenderFinished();
+        });
+        box.appendChild(toggle);
+      }
     }
 
     function wrRenderRecent() {
@@ -793,7 +761,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           wrRenderFinished();
         })
         .catch(function (e) {
-          diagError('Weread', e);
           if (tag) tag.textContent = '加载失败：' + (e && e.message ? e.message : e);
           var c = document.getElementById('wr-cards');
           if (c) {
@@ -970,13 +937,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   .lc-hard { background: var(--red); }
   .lc-val { font-size: 11px; color: var(--soft); text-align: right; }
 
-  /* 占位卡片 */
-  .stat-placeholder {
-    border-style: dashed;
-    box-shadow: none;
-    background: transparent;
-  }
-
   /* Umami 内嵌 */
   .umami-section {
     border: var(--bd);
@@ -1014,32 +974,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   .stats-note h3 { font-size: 12px; color: var(--red); margin-bottom: 8px; }
   .stats-note p { font-size: 13.5px; color: var(--soft); line-height: 1.8; }
   .stats-note b { color: var(--ink); }
-
-  /* 诊断日志 */
-  .stats-diag {
-    margin-top: 24px;
-    border: 2px dashed var(--soft);
-    padding: 12px 16px;
-    background: var(--paper);
-  }
-  .stats-diag summary {
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--red);
-    font-weight: 700;
-    letter-spacing: .08em;
-    user-select: none;
-  }
-  .diag-pre {
-    margin-top: 12px;
-    font-size: 11px;
-    line-height: 1.7;
-    color: var(--soft);
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 240px;
-    overflow-y: auto;
-  }
 
   /* 响应式 */
   @media (max-width: 1000px) {
@@ -1260,6 +1194,19 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
     transition: transform .15s, box-shadow .15s;
   }
   .wr-book:hover { transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--ink); }
+  .wr-toggle {
+    grid-column: 1 / -1;
+    justify-self: center;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--red);
+    background: transparent;
+    border: 1px solid var(--red);
+    padding: 4px 18px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .wr-toggle:hover { background: var(--red); color: var(--paper); }
   .wr-book-cover {
     width: 100%;
     aspect-ratio: 5 / 7;
