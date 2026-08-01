@@ -163,7 +163,8 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
 
   .article-cover {
     position: relative;
-    min-height: 260px;
+    width: 100%;
+    aspect-ratio: var(--cover-ratio);
     display: grid;
     place-items: center;
     border: var(--bd);

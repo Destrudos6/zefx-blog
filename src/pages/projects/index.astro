@@ -28,6 +28,7 @@ const allProjects = await getAllProjects();
             description={project.description}
             logs={project.logs.slice(0, 2)}
             tags={project.tags}
+            coverImage={project.coverImage || `projects/${project.slug}/cover.png`}
           />
         </a>
       ))}

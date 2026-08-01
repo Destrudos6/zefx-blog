@@ -4,6 +4,8 @@
   --red:#e8432d; --blue:#2b46d4; --lemon:#ffd23f; --green:#1e7a5c; --orange:#f28c1b;
   --bd:2px solid var(--ink);
   --ghostc:rgba(31,37,55,.13);
+  /* 封面统一比例：主流 730×310 横幅（约 2.35:1） */
+  --cover-ratio:730/310;
   --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --serif:"Noto Serif SC","Songti SC","SimSun",serif;
   --disp:"Fraunces","Noto Serif SC",serif;
@@ -257,18 +259,18 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 
 /* --- 卡片容器 --- */
 .post-card{
-  display:grid; grid-template-columns:240px 1fr; height:240px;
+  display:flex; flex-direction:column;
   border:var(--bd); border-top:8px solid var(--ac,var(--blue));
   background:var(--card); box-shadow:6px 6px 0 var(--ink);
   overflow:hidden; transition:transform .28s, box-shadow .28s;
-  content-visibility:auto; contain-intrinsic-size:240px;
+  content-visibility:auto; contain-intrinsic-size:240px 420px;
   text-decoration:none; color:inherit;
 }
 .post-card:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--ac)}
 
-/* --- 左侧正方形封面 --- */
+/* --- 上方横幅封面（730×310 比例，适配主流封面图） --- */
 .post-cover{
-  position:relative; width:200px; height:200px; place-self:center;
+  position:relative; width:100%; aspect-ratio:var(--cover-ratio);
   display:grid; place-items:center; overflow:hidden;
 }
 .post-cover:not(.has-img){ background:var(--cover-bg, var(--blue)); }
@@ -286,9 +288,10 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   border:1px solid var(--paper); padding:2px 6px;
 }
 
-/* --- 右侧内容区 --- */
+/* --- 下方内容区 --- */
 .post-body{
   padding:16px 18px; display:flex; flex-direction:column; gap:6px; overflow:hidden;
+  flex:1;
 }
 .post-meta-row{
   display:flex; justify-content:space-between; align-items:center; gap:8px;
@@ -331,9 +334,18 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   border:3px solid var(--ink); background:var(--card);
   box-shadow:6px 6px 0 var(--ink);
   padding:24px; display:flex; flex-direction:column; gap:16px;
-  height:380px; transition:transform .28s, box-shadow .28s;
+  transition:transform .28s, box-shadow .28s;
 }
 .project:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--red)}
+/* 项目卡片封面（730×310 横幅，位于内容上方） */
+.project-cover{
+  width:100%; aspect-ratio:var(--cover-ratio);
+  overflow:hidden; border:var(--bd);
+  margin:-24px -24px 0; /* 贴齐卡片顶部，与 padding 相抵 */
+}
+.project-cover img.cover-img{
+  display:block; width:100%; height:100%; object-fit:cover;
+}
 .project-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
 .project-head h3{font-family:var(--serif); font-weight:900; font-size:clamp(18px,2.2vw,24px); letter-spacing:-.02em}
 
@@ -458,8 +470,7 @@ footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden;
   .word{font-size:clamp(36px,10vw,52px); border-width:2px; box-shadow:5px 5px 0 var(--ink)}
   .ch{width:clamp(60px,18vw,86px); font-size:clamp(40px,12vw,54px); border-width:2px; box-shadow:5px 5px 0 var(--ink)}
   .tagline{font-size:15px}
-  .post-card{grid-template-columns:1fr; height:auto}
-  .post-cover{width:100%; height:160px; place-self:stretch}
+  .post-cover{width:100%}
   .cover-inner{flex-direction:row; gap:8px}
   .posts-grid{gap:18px}
   .page-banner{padding:56px 18px 32px}

@@ -133,7 +133,8 @@ const ogImage = getMediaUrl(coverPath);
   }
 
   .project-hero-cover {
-    position: relative; min-height: 280px;
+    position: relative; width: 100%;
+    aspect-ratio: var(--cover-ratio);
     display: grid; place-items: center;
     border: var(--bd); box-shadow: 10px 10px 0 var(--ink);
     overflow: hidden;

@@ -1,4 +1,5 @@
 ---
+import { getMediaUrl } from '../utils/media';
 import type { ProjectLog } from '../data/content';
 
 interface Props {
@@ -8,12 +9,19 @@ interface Props {
   description: string;
   logs: ProjectLog[];
   tags: string[];
+  coverImage?: string;
 }
 
-const { title, status, statusLabel, description, logs, tags } = Astro.props;
+const { title, status, statusLabel, description, logs, tags, coverImage } = Astro.props;
+const coverUrl = coverImage ? getMediaUrl(coverImage) : null;
 ---
 
 <div class="project reveal">
+  {coverUrl && (
+    <div class="project-cover">
+      <img class="cover-img" src={coverUrl} alt={title} loading="lazy" decoding="async" width="730" height="310" sizes="(max-width: 1000px) 100vw, 500px" />
+    </div>
+  )}
   <div class="project-head">
     <h3>{title}</h3>
     <span class={`project-status ${status}`}>{statusLabel}</span>
