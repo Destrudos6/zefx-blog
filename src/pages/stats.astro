@@ -62,7 +62,7 @@ const weread = {
     <!-- 模块网格 -->
     <div class="stats-grid reveal" style="--d:.1s">
       <!-- GitHub 贡献日历（客户端加载真实数据） -->
-      <section class="stat-card stat-wide">
+      <section class="stat-card">
         <div class="stat-card-head">
           <h2>GitHub <span class="hl">贡献日历</span></h2>
           <span class="mono stat-tag" id="gh-tag">加载中…</span>
@@ -78,30 +78,6 @@ const weread = {
           <span>多</span>
         </div>
         <div class="stat-card-foot mono" id="gh-foot">GitHub</div>
-      </section>
-
-      <!-- 微信读书（示例数据） -->
-      <section class="stat-card">
-        <div class="stat-card-head">
-          <h2>微信<span class="hl">读书</span></h2>
-          <span class="mono stat-tag">示例数据</span>
-        </div>
-        <div class="mini-stats">
-          <div class="mini-item">
-            <div class="mini-num">{weread.days}</div>
-            <small class="mono">天阅读</small>
-          </div>
-          <div class="mini-item">
-            <div class="mini-num">{weread.books}</div>
-            <small class="mono">本读完</small>
-          </div>
-          <div class="mini-item">
-            <div class="mini-num">{weread.hours}</div>
-            <small class="mono">小时</small>
-          </div>
-        </div>
-        <p class="stat-line">最近在读：{weread.recent}</p>
-        <div class="stat-card-foot mono">数据源：微信读书 API</div>
       </section>
 
       <!-- 力扣（客户端加载真实数据） -->
@@ -133,6 +109,30 @@ const weread = {
         </div>
         <div class="lc-calendar" id="lc-calendar" aria-label="LeetCode 提交日历"></div>
         <div class="stat-card-foot mono">数据源：LeetCode 官方 API</div>
+      </section>
+
+      <!-- 微信读书（示例数据，独占一行预留空间） -->
+      <section class="stat-card stat-wide">
+        <div class="stat-card-head">
+          <h2>微信<span class="hl">读书</span></h2>
+          <span class="mono stat-tag">示例数据</span>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-item">
+            <div class="mini-num">{weread.days}</div>
+            <small class="mono">天阅读</small>
+          </div>
+          <div class="mini-item">
+            <div class="mini-num">{weread.books}</div>
+            <small class="mono">本读完</small>
+          </div>
+          <div class="mini-item">
+            <div class="mini-num">{weread.hours}</div>
+            <small class="mono">小时</small>
+          </div>
+        </div>
+        <p class="stat-line">最近在读：{weread.recent}</p>
+        <div class="stat-card-foot mono">数据源：微信读书 API</div>
       </section>
 
       <!-- 扩展占位 -->
@@ -699,6 +699,7 @@ const weread = {
     color: var(--soft);
     white-space: nowrap;
     overflow: visible;
+    text-align: center; /* 文字在月份跨度内居中，避免窄月份溢出压到相邻标签 */
   }
   .gh-body {
     display: flex;
