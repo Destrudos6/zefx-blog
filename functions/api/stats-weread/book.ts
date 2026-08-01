@@ -20,34 +20,19 @@ export async function onRequestGet(context) {
   }
 
   try {
-    const [info, progress, best, reviewsResp] = await Promise.all([
+    const [info, progress, best] = await Promise.all([
       gateway(env, '/book/info', { bookId }),
       gateway(env, '/book/getprogress', { bookId }),
       gateway(env, '/book/bestbookmarks', { bookId }),
-      gateway(env, '/review/list', { bookId, count: 10 }),
     ]);
     const prog = progress.book || {};
 
-    // 热门划线：固定前 20 条，展示前 5 条
-    const highlights = (best.items || []).slice(0, 5).map((it) => ({
+    // 热门划线：官方固定返回前 20 条，展示前 10 条
+    const highlights = (best.items || []).slice(0, 10).map((it) => ({
       text: it.markText || '',
       count: it.totalCount || 0,
       chapter: it.chapterUid != null ? it.chapterUid : null,
     }));
-
-    // 公开点评：取前 5 条
-    const reviews = (reviewsResp.reviews || []).slice(0, 5).map((r) => {
-      const rv = (r.review && r.review.review) || {};
-      const au = rv.author || {};
-      return {
-        name: au.name || '匿名',
-        avatar: au.avatar || '',
-        star: rv.star || 0,
-        isFinish: !!rv.isFinish,
-        content: (rv.content || '').slice(0, 400),
-        createTime: rv.createTime || 0,
-      };
-    });
 
     return new Response(
       JSON.stringify({
@@ -60,7 +45,6 @@ export async function onRequestGet(context) {
           updateTime: prog.updateTime || 0,
         },
         highlights,
-        reviews,
       }),
       {
         status: 200,

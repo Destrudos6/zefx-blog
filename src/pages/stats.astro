@@ -582,21 +582,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           var prog = d.progress || {};
           box.innerHTML = '';
 
-          // 顶部 sticky 关闭栏：滚动时始终可见，方便随时关闭
-          var topbar = document.createElement('div');
-          topbar.className = 'wr-modal-topbar';
-          var topTitle = document.createElement('span');
-          topTitle.className = 'wr-modal-topbar-title mono';
-          topTitle.textContent = '书籍详情';
-          topbar.appendChild(topTitle);
-          var closeBtn = document.createElement('button');
-          closeBtn.type = 'button';
-          closeBtn.className = 'wr-modal-close mono';
-          closeBtn.textContent = '关闭 ✕';
-          closeBtn.addEventListener('click', function () { modal.hidden = true; });
-          topbar.appendChild(closeBtn);
-          box.appendChild(topbar);
-
           // 头部：封面 + 基本信息
           var head = document.createElement('div');
           head.className = 'wr-modal-head';
@@ -666,11 +651,7 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
             box.appendChild(intro);
           }
 
-          // 热门划线 + 公开点评：桌面端横向两栏，移动端单列
-          var cols = document.createElement('div');
-          cols.className = 'wr-modal-cols';
-
-          // 热门划线
+          // 热门划线（占满弹窗宽度；桌面端横向排版，移动端竖向）
           if (d.highlights && d.highlights.length) {
             var hSec = document.createElement('div');
             hSec.className = 'wr-modal-sec';
@@ -690,59 +671,16 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
               blk.appendChild(tl);
               hSec.appendChild(blk);
             });
-            cols.appendChild(hSec);
+            box.appendChild(hSec);
           }
 
-          // 公开点评
-          if (d.reviews && d.reviews.length) {
-            var rSec = document.createElement('div');
-            rSec.className = 'wr-modal-sec';
-            var rTitle = document.createElement('div');
-            rTitle.className = 'wr-modal-sec-title mono';
-            rTitle.textContent = '公开点评';
-            rSec.appendChild(rTitle);
-            d.reviews.forEach(function (rv) {
-              var blk = document.createElement('div');
-              blk.className = 'wr-review';
-              var who = document.createElement('div');
-              who.className = 'wr-review-who';
-              if (rv.avatar) {
-                var av = document.createElement('img');
-                av.className = 'wr-review-avatar';
-                av.src = rv.avatar;
-                av.alt = '';
-                who.appendChild(av);
-              }
-              var nm = document.createElement('b');
-              nm.textContent = rv.name || '匿名';
-              who.appendChild(nm);
-              if (rv.star) {
-                var st = document.createElement('span');
-                st.className = 'wr-review-star';
-                st.textContent = '★ ' + rv.star;
-                who.appendChild(st);
-              }
-              if (rv.isFinish) {
-                var fin = document.createElement('span');
-                fin.className = 'wr-review-finish mono';
-                fin.textContent = '已读完';
-                who.appendChild(fin);
-              }
-              blk.appendChild(who);
-              if (rv.content) {
-                var ct = document.createElement('p');
-                ct.textContent = rv.content;
-                blk.appendChild(ct);
-              }
-              rSec.appendChild(blk);
-            });
-            cols.appendChild(rSec);
-          }
-
-          // 两栏容器挂载到弹窗
-          if (cols.children.length) {
-            box.appendChild(cols);
-          }
+          // 关闭按钮（置于底部）
+          var close = document.createElement('button');
+          close.type = 'button';
+          close.className = 'wr-modal-close mono';
+          close.textContent = '关闭';
+          close.addEventListener('click', function () { modal.hidden = true; });
+          box.appendChild(close);
         })
         .catch(function (e) {
           box.innerHTML = '<div class="wr-modal-loading mono">加载失败：' + (e && e.message ? e.message : e) + '</div>';
@@ -1373,21 +1311,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
     .wr-modal-box { max-width: 480px; }
   }
   .wr-modal-head { display: flex; gap: 16px; flex-wrap: wrap; }
-  .wr-modal-topbar {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    background: var(--card);
-    margin: -24px -24px 0;
-    padding: 10px 0;
-    border-bottom: 2px dashed rgba(128,128,128,.2);
-  }
-  .wr-modal-topbar-title { font-size: 11px; color: var(--soft); letter-spacing: .08em; }
-  .wr-modal-topbar .wr-modal-close { align-self: auto; margin: 0; }
   .wr-modal-cover { width: 110px; aspect-ratio: 5 / 7; object-fit: cover; border: 1px solid rgba(128,128,128,.15); flex-shrink: 0; }
   .wr-modal-meta { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
   .wr-modal-meta h3 { font-size: 18px; margin: 0; }
@@ -1408,16 +1331,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   }
   .wr-modal-open:hover { filter: brightness(1.08); }
   .wr-modal-intro { font-size: 13px; line-height: 1.8; color: var(--soft); }
-  /* 划线/点评横向两栏：充分利用桌面端横向空间 */
-  .wr-modal-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    align-items: start;
-  }
-  @media (max-width: 640px) {
-    .wr-modal-cols { grid-template-columns: 1fr; }
-  }
   .wr-modal-sec { border-top: 2px dashed rgba(128,128,128,.25); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
   .wr-modal-sec-title { font-size: 11px; color: var(--red); letter-spacing: .08em; }
   .wr-quote {
@@ -1430,13 +1343,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   }
   .wr-quote p { font-size: 12.5px; color: var(--ink); line-height: 1.7; margin: 0; }
   .wr-quote-meta { font-size: 10.5px; color: var(--soft); }
-  .wr-review { border: var(--bd); background: var(--paper); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
-  .wr-review-who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .wr-review-who b { font-size: 12px; color: var(--ink); }
-  .wr-review-avatar { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(128,128,128,.2); }
-  .wr-review-star { font-size: 11px; color: var(--orange); }
-  .wr-review-finish { font-size: 10px; color: var(--green); border: 1px solid currentColor; padding: 0 5px; }
-  .wr-review p { font-size: 12.5px; color: var(--soft); line-height: 1.7; margin: 0; }
   .wr-modal-close {
     align-self: flex-end;
     font-family: inherit;
