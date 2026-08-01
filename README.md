@@ -275,13 +275,19 @@ zefx/
 │   ├── pull-content.mjs    # B2 数据拉取脚本
 │   └── generate-index.mjs  # 索引文件生成器
 ├── functions/api/          # Cloudflare Pages Functions
-│   └── github-discussions.ts  # GitHub Discussions API 代理（评论数）
+│   ├── github-discussions.ts  # GitHub Discussions API 代理（评论数）
+│   ├── stats-github.ts        # 统计页 GitHub 贡献 / 公开仓库
+│   ├── stats-leetcode.ts      # 统计页力扣数据
+│   ├── stats-weread.ts        # 统计页微信读书聚合
+│   ├── stats-weread/book.ts   # 微信读书单本书详情
+│   └── _weread-shared.ts      # 微信读书共享逻辑（非路由）
 ├── src/
-│   ├── components/         # UI 组件（Header、PostCard、Giscus 等）
+│   ├── components/         # UI 组件（Header、PostCard、Cover、Giscus 等）
 │   ├── data/               # 数据加载层（B2 / 本地双模式）
 │   ├── layouts/            # BaseLayout（全站布局，含 Umami、主题切换）
-│   ├── pages/              # 页面（index、posts、projects、search、tags、rss）
+│   ├── pages/              # 页面（index、posts、projects、search、tags、stats、rss）
 │   ├── content/            # 内容集合（构建时从 B2 拉取）
+│   ├── scripts/            # 前端脚本模块（heatmap 热力图工具、weread 微信读书）
 │   ├── styles/             # 全局样式
 │   └── utils/              # 工具（媒体 URL、配置、评论共享缓存）
 └── public/                 # 静态资源（头像、favicon、giscus 主题）
