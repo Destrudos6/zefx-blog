@@ -315,7 +315,7 @@ const weread = {
         // 颜色分级用矩阵实际最大值，而非平均值
         var weeks = data.weeks || [];
         var max = 1;
-        weeks.forEach(function (col) { col.forEach(function (v) { if (v > max) max = v; }); });
+        weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
         renderHeatmap(document.getElementById('gh-calendar'), weeks, max);
       })
       .catch(function () {
@@ -349,7 +349,7 @@ const weread = {
           // 提交日历热力图
           var weeks = calendarToWeeks(data.submissionCalendar || {});
           var max = 1;
-          weeks.forEach(function (col) { col.forEach(function (v) { if (v > max) max = v; }); });
+          weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
           renderHeatmap(document.getElementById('lc-calendar'), weeks, max);
         })
         .catch(function () {
