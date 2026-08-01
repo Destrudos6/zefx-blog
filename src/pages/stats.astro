@@ -190,6 +190,17 @@ const weread = {
     // 左侧星期标签显示的行（周一、周三、周五，与 GitHub 官方一致）
     var LABEL_ROWS = [1, 3, 5];
 
+    // 带超时的 fetch：GitHub GraphQL 可能较慢，15s 未响应按失败处理并给出明确提示。
+    // 用 Promise.race 实现，不依赖 AbortController（跨 jsdom/浏览器/Node 环境都兼容）。
+    function fetchTimeout(url, ms) {
+      return Promise.race([
+        fetch(url),
+        new Promise(function (_, reject) {
+          setTimeout(function () { reject(new Error('请求超时（' + ms + 'ms）')); }, ms);
+        }),
+      ]);
+    }
+
     function levelClass(v, max) {
       if (v <= 0) return 'c0';
       var r = v / (max || 1);
@@ -305,7 +316,7 @@ const weread = {
 
     // ---------- GitHub ----------
     // 用户名由 API 从环境变量 GITHUB_OWNER 读取，前端无需传参
-    fetch('/api/stats-github')
+    fetchTimeout('/api/stats-github', 15000)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
       .then(function (data) {
         var tag = document.getElementById('gh-tag');
@@ -318,14 +329,16 @@ const weread = {
         weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
         renderHeatmap(document.getElementById('gh-calendar'), weeks, max);
       })
-      .catch(function () {
+      .catch(function (e) {
         var tag = document.getElementById('gh-tag');
-        if (tag) tag.textContent = '加载失败';
+        var foot = document.getElementById('gh-foot');
+        if (tag) tag.textContent = '加载失败：' + (e && e.message ? e.message : e);
+        if (foot) foot.textContent = 'GitHub · 数据加载失败，请稍后重试';
       });
 
     // ---------- 力扣 ----------
     if (leetcodeUser) {
-      fetch('/api/stats-leetcode?username=' + encodeURIComponent(leetcodeUser))
+      fetchTimeout('/api/stats-leetcode?username=' + encodeURIComponent(leetcodeUser), 15000)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
         .then(function (data) {
           var tag = document.getElementById('lc-tag');
