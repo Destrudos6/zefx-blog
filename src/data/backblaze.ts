@@ -79,6 +79,10 @@ export interface SiteData {
       owner: string;
       repo: string;
     };
+    /** LeetCode 用户名（可选），用于统计页刷题数据 */
+    leetcode?: {
+      username: string;
+    };
     giscus?: {
       repo: string;
       repoId: string;

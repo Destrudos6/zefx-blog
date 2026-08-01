@@ -17,43 +17,17 @@ const umami = siteData.site.umami;
 const totalComments = allPosts.reduce((sum, p) => sum + (p.comments || 0), 0);
 const stats = aboutData.stats;
 
-// GitHub 贡献日历：示例数据（确定性伪随机，每次构建结果一致，后续替换为 API 数据）
-const CONTRIB_MAX = 5;
-const cells = Array.from({ length: 364 }, (_, i) => {
-  const v = ((i * 2654435761) % 1000) / 1000; // 简单哈希，稳定分布
-  const r = ((i * 97) % 13) / 12;             // 季节波动
-  return v * (0.35 + r) * CONTRIB_MAX;
-});
+// 用户名配置（数据在运行时通过 Pages Functions 获取）
+const githubUser = siteData.site.github?.owner || '';
+const leetcodeUser = siteData.site.leetcode?.username || '';
 
-// 力扣难度分布（示例数据）
-const leetcode = {
-  total: 326,
-  easy: 148,
-  medium: 137,
-  hard: 41,
-  submissions: 1287,
-};
-
-// 微信读书（示例数据）
+// 微信读书（示例数据，API 待接入）
 const weread = {
   days: 128,
   books: 42,
   hours: 156,
   recent: '《置身事内：中国政府与经济发展》',
 };
-
-// 按列展开贡献热力图（53 周 × 7 天）
-const weeks = Array.from({ length: 53 }, (_, w) =>
-  Array.from({ length: 7 }, (_, d) => cells[(w * 7 + d) % 364])
-);
-
-function cellClass(v: number): string {
-  if (v <= 0) return 'c0';
-  if (v < CONTRIB_MAX * 0.3) return 'c1';
-  if (v < CONTRIB_MAX * 0.6) return 'c2';
-  if (v < CONTRIB_MAX * 0.9) return 'c3';
-  return 'c4';
-}
 ---
 
 <BaseLayout title="统计 · ZEFX">
@@ -87,21 +61,13 @@ function cellClass(v: number): string {
 
     <!-- 模块网格 -->
     <div class="stats-grid reveal" style="--d:.1s">
-      <!-- GitHub 贡献日历 -->
+      <!-- GitHub 贡献日历（客户端加载真实数据） -->
       <section class="stat-card stat-wide">
         <div class="stat-card-head">
           <h2>GitHub <span class="hl">贡献日历</span></h2>
-          <span class="mono stat-tag">示例数据 · API 待接入</span>
+          <span class="mono stat-tag" id="gh-tag">{githubUser ? '加载中…' : '未配置用户名'}</span>
         </div>
-        <div class="gh-calendar" aria-label="GitHub 贡献日历（示例）">
-          {weeks.map(week => (
-            <div class="gh-col">
-              {week.map((v, d) => (
-                <span class={`gh-cell ${cellClass(v)}`} title={`${Math.round(v)} contributions`} />
-              ))}
-            </div>
-          ))}
-        </div>
+        <div class="gh-calendar" id="gh-calendar" aria-label="GitHub 贡献日历"></div>
         <div class="gh-legend mono">
           <span>少</span>
           <span class="gh-cell c0"></span>
@@ -111,12 +77,10 @@ function cellClass(v: number): string {
           <span class="gh-cell c4"></span>
           <span>多</span>
         </div>
-        <div class="stat-card-foot mono">
-          <span>GitHub · {siteData.site.github.owner}/{siteData.site.github.repo}</span>
-        </div>
+        <div class="stat-card-foot mono" id="gh-foot">GitHub · {githubUser || '未配置'}</div>
       </section>
 
-      <!-- 微信读书 -->
+      <!-- 微信读书（示例数据） -->
       <section class="stat-card">
         <div class="stat-card-head">
           <h2>微信<span class="hl">读书</span></h2>
@@ -140,35 +104,35 @@ function cellClass(v: number): string {
         <div class="stat-card-foot mono">数据源：微信读书 API</div>
       </section>
 
-      <!-- 力扣 -->
+      <!-- 力扣（客户端加载真实数据） -->
       <section class="stat-card">
         <div class="stat-card-head">
           <h2>力<span class="hl">扣</span></h2>
-          <span class="mono stat-tag">示例数据</span>
+          <span class="mono stat-tag" id="lc-tag">{leetcodeUser ? '加载中…' : '未配置用户名'}</span>
         </div>
         <div class="lc-total">
-          <span class="lc-num">{leetcode.total}</span>
-          <small class="mono">题已解</small>
+          <span class="lc-num" id="lc-solved">–</span>
+          <small class="mono" id="lc-totalq">题已解</small>
         </div>
         <div class="lc-bars">
           <div class="lc-bar-row">
             <span class="lc-label mono">简单</span>
-            <div class="lc-track"><div class="lc-fill lc-easy" style={`width:${Math.round(leetcode.easy / leetcode.total * 100)}%`}></div></div>
-            <span class="mono lc-val">{leetcode.easy}</span>
+            <div class="lc-track"><div class="lc-fill lc-easy" id="lc-easy" style="width:0%"></div></div>
+            <span class="mono lc-val" id="lc-easy-n">–</span>
           </div>
           <div class="lc-bar-row">
             <span class="lc-label mono">中等</span>
-            <div class="lc-track"><div class="lc-fill lc-mid" style={`width:${Math.round(leetcode.medium / leetcode.total * 100)}%`}></div></div>
-            <span class="mono lc-val">{leetcode.medium}</span>
+            <div class="lc-track"><div class="lc-fill lc-mid" id="lc-mid" style="width:0%"></div></div>
+            <span class="mono lc-val" id="lc-mid-n">–</span>
           </div>
           <div class="lc-bar-row">
             <span class="lc-label mono">困难</span>
-            <div class="lc-track"><div class="lc-fill lc-hard" style={`width:${Math.round(leetcode.hard / leetcode.total * 100)}%`}></div></div>
-            <span class="mono lc-val">{leetcode.hard}</span>
+            <div class="lc-track"><div class="lc-fill lc-hard" id="lc-hard" style="width:0%"></div></div>
+            <span class="mono lc-val" id="lc-hard-n">–</span>
           </div>
         </div>
-        <p class="stat-line mono">累计提交 {leetcode.submissions} 次</p>
-        <div class="stat-card-foot mono">数据源：LeetCode API</div>
+        <div class="lc-calendar" id="lc-calendar" aria-label="LeetCode 提交日历"></div>
+        <div class="stat-card-foot mono">数据源：LeetCode 官方 API</div>
       </section>
 
       <!-- 扩展占位 -->
@@ -207,8 +171,9 @@ function cellClass(v: number): string {
       <h3 class="mono">数据说明</h3>
       <p>
         本页各模块数据来源不同：<b>概览区</b>来自本站内容（真实数据）；
-        <b>GitHub / 微信读书 / 力扣</b>目前展示示例数据，待对应 API 接入后替换；
-        <b>Umami</b> 为访问统计看板内嵌。数据源接入进度见各卡片标注。
+        <b>GitHub 贡献日历</b>与<b>力扣</b>通过本站 API 实时获取（数据按小时缓存）；
+        <b>微信读书</b>目前展示示例数据，待 API 接入后替换；
+        <b>Umami</b> 为访问统计看板内嵌。
       </p>
     </div>
   </section>
@@ -216,6 +181,119 @@ function cellClass(v: number): string {
   <Footer />
   <BackToTop />
 </BaseLayout>
+
+<script define:vars={{ githubUser, leetcodeUser }}>
+  (function () {
+    // ---------- 热力图渲染工具 ----------
+    var MAX_LEVEL = 4;
+
+    function levelClass(v, max) {
+      if (v <= 0) return 'c0';
+      var r = v / (max || 1);
+      if (r < 0.25) return 'c1';
+      if (r < 0.5) return 'c2';
+      if (r < 0.75) return 'c3';
+      return 'c4';
+    }
+
+    // weeks: 53 列 × 7 行 的数值矩阵；max 用于颜色分级
+    function renderHeatmap(container, weeks, max) {
+      if (!container) return;
+      container.innerHTML = '';
+      weeks.forEach(function (col) {
+        var colEl = document.createElement('div');
+        colEl.className = 'gh-col';
+        col.forEach(function (v) {
+          var cell = document.createElement('span');
+          cell.className = 'gh-cell ' + levelClass(v, max);
+          cell.title = v + ' contributions';
+          colEl.appendChild(cell);
+        });
+        container.appendChild(colEl);
+      });
+    }
+
+    // LeetCode submissionCalendar {时间戳秒: 当日提交数} → 最近一年的 53×7 矩阵
+    function calendarToWeeks(calendar) {
+      var byDay = {};
+      Object.keys(calendar).forEach(function (ts) {
+        var d = new Date(Number(ts) * 1000);
+        var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        byDay[key] = (byDay[key] || 0) + calendar[ts];
+      });
+      var today = new Date();
+      var start = new Date(today);
+      start.setDate(start.getDate() - 363);
+      // 对齐到周日，保证与 GitHub 日历相同的列结构
+      start.setDate(start.getDate() - start.getDay());
+      var weeks = [];
+      for (var w = 0; w < 53; w++) {
+        var col = [];
+        for (var d = 0; d < 7; d++) {
+          var date = new Date(start);
+          date.setDate(start.getDate() + w * 7 + d);
+          if (date > today) { col.push(0); continue; }
+          var key = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
+          col.push(byDay[key] || 0);
+        }
+        weeks.push(col);
+      }
+      return weeks;
+    }
+
+    // ---------- GitHub ----------
+    if (githubUser) {
+      fetch('/api/stats-github?username=' + encodeURIComponent(githubUser))
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+        .then(function (data) {
+          var tag = document.getElementById('gh-tag');
+          var foot = document.getElementById('gh-foot');
+          if (tag) tag.textContent = '共 ' + data.totalContributions + ' 次贡献';
+          if (foot) foot.textContent = 'GitHub · ' + githubUser + '（过去一年）';
+          renderHeatmap(document.getElementById('gh-calendar'), data.weeks, data.totalContributions / 52);
+        })
+        .catch(function () {
+          var tag = document.getElementById('gh-tag');
+          if (tag) tag.textContent = '加载失败';
+        });
+    }
+
+    // ---------- 力扣 ----------
+    if (leetcodeUser) {
+      fetch('/api/stats-leetcode?username=' + encodeURIComponent(leetcodeUser))
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+        .then(function (data) {
+          var tag = document.getElementById('lc-tag');
+          if (tag) tag.textContent = '总题数 ' + data.totalQuestions;
+          var solved = document.getElementById('lc-solved');
+          var totalq = document.getElementById('lc-totalq');
+          if (solved) solved.textContent = String(data.totalSolved);
+          if (totalq) totalq.textContent = '/ ' + data.totalQuestions + ' 题已解';
+
+          var pct = function (n) { return data.totalSolved ? Math.round(n / data.totalSolved * 100) : 0; };
+          var setBar = function (id, nid, solvedN) {
+            var bar = document.getElementById(id);
+            var num = document.getElementById(nid);
+            if (bar) bar.style.width = pct(solvedN) + '%';
+            if (num) num.textContent = String(solvedN);
+          };
+          setBar('lc-easy', 'lc-easy-n', data.easySolved);
+          setBar('lc-mid', 'lc-mid-n', data.mediumSolved);
+          setBar('lc-hard', 'lc-hard-n', data.hardSolved);
+
+          // 提交日历热力图
+          var weeks = calendarToWeeks(data.submissionCalendar || {});
+          var max = 1;
+          weeks.forEach(function (col) { col.forEach(function (v) { if (v > max) max = v; }); });
+          renderHeatmap(document.getElementById('lc-calendar'), weeks, max);
+        })
+        .catch(function () {
+          var tag = document.getElementById('lc-tag');
+          if (tag) tag.textContent = '加载失败';
+        });
+    }
+  })();
+</script>
 
 <style>
   /* 概览区 */
@@ -286,8 +364,9 @@ function cellClass(v: number): string {
     padding-top: 12px;
   }
 
-  /* GitHub 贡献日历 */
-  .gh-calendar {
+  /* 热力图 */
+  .gh-calendar,
+  .lc-calendar {
     display: flex;
     gap: 3px;
     overflow-x: auto;
@@ -300,6 +379,7 @@ function cellClass(v: number): string {
     border-radius: 2px;
     background: var(--paper);
     border: 1px solid rgba(128,128,128,.15);
+    flex-shrink: 0;
   }
   .gh-cell.c0 { background: rgba(128,128,128,.12); border-color: transparent; }
   .gh-cell.c1 { background: #9be9a8; border-color: transparent; }
