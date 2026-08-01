@@ -1208,6 +1208,10 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
   }
+  /* 手机端：2×2 网格，避免 4 列被挤成竖条 */
+  @media (max-width: 640px) {
+    .wr-cards { grid-template-columns: repeat(2, 1fr); }
+  }
   .wr-card {
     border: var(--bd);
     background: var(--paper);
