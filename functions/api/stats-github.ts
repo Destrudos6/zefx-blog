@@ -24,7 +24,7 @@ const CALENDAR_QUERY = `
           }
         }
       }
-      repositories(first: 12, privacy: PUBLIC, orderBy: { field: UPDATED_AT, direction: DESC }) {
+      repositories(first: 30, privacy: PUBLIC, orderBy: { field: STARGAZERS, direction: DESC }) {
         nodes {
           name
           description

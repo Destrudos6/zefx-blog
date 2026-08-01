@@ -406,10 +406,11 @@ const weread = {
         var max = 1;
         weeks.forEach(function (week) { (week.days || []).forEach(function (v) { if (v > max) max = v; }); });
         renderHeatmap(document.getElementById('gh-calendar'), weeks, max);
-        // 公开仓库列表（点击跳转对应仓库页）
+        // 公开仓库列表（按 star 从高到低只展示前 5 个，防止卡片被撑长形变）
+        var MAX_REPOS = 5;
         var listEl = document.getElementById('gh-repos-list');
         if (listEl && Array.isArray(data.repos) && data.repos.length) {
-          data.repos.forEach(function (r) {
+          data.repos.slice(0, MAX_REPOS).forEach(function (r) {
             var item = document.createElement('a');
             item.className = 'gh-repo';
             item.href = r.url;
@@ -433,6 +434,16 @@ const weread = {
             }
             listEl.appendChild(item);
           });
+          // 仓库数量超出上限时，提供查看全部入口
+          if (data.repos.length > MAX_REPOS) {
+            var more = document.createElement('a');
+            more.className = 'gh-repo-more mono';
+            more.href = 'https://github.com/' + encodeURIComponent(data.username || '') + '?tab=repositories';
+            more.target = '_blank';
+            more.rel = 'noopener noreferrer';
+            more.textContent = '查看全部 ' + data.repos.length + ' 个公开仓库 →';
+            listEl.appendChild(more);
+          }
         } else if (listEl) {
           var empty = document.createElement('span');
           empty.className = 'gh-repo-empty mono';
@@ -682,6 +693,16 @@ const weread = {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* 限高防形变：仓库多时内部滚动，不撑长卡片 */
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .gh-repo-more {
+    font-size: 11px;
+    color: var(--red);
+    text-decoration: underline;
+    padding: 2px 0;
   }
   .gh-repo {
     display: flex;
