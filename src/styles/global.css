@@ -4,8 +4,8 @@
   --red:#e8432d; --blue:#2b46d4; --lemon:#ffd23f; --green:#1e7a5c; --orange:#f28c1b;
   --bd:2px solid var(--ink);
   --ghostc:rgba(31,37,55,.13);
-  /* 封面统一比例：主流 730×310 横幅（约 2.35:1） */
-  --cover-ratio:730/310;
+  /* 封面统一比例：1200×630 横幅（约 1.9:1，OG 标准，比 730×310 更饱满） */
+  --cover-ratio:1200/630;
   --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --serif:"Noto Serif SC","Songti SC","SimSun",serif;
   --disp:"Fraunces","Noto Serif SC",serif;
@@ -268,7 +268,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 }
 .post-card:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--ac)}
 
-/* --- 上方横幅封面（730×310 比例，适配主流封面图） --- */
+/* --- 上方横幅封面（1200×630 比例，适配主流封面图） --- */
 .post-cover{
   position:relative; width:100%; aspect-ratio:var(--cover-ratio);
   display:grid; place-items:center; overflow:hidden;
@@ -276,6 +276,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .post-cover:not(.has-img){ background:var(--cover-bg, var(--blue)); }
 .post-cover img.cover-img{
   display:block; width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0; object-position:center;
 }
 .cover-inner{
   position:relative; display:flex; flex-direction:column;
@@ -337,14 +338,15 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   transition:transform .28s, box-shadow .28s;
 }
 .project:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--red)}
-/* 项目卡片封面（730×310 横幅，位于内容上方） */
+/* 项目卡片封面（1200×630 横幅，位于内容上方） */
 .project-cover{
-  width:100%; aspect-ratio:var(--cover-ratio);
+  position:relative; width:100%; aspect-ratio:var(--cover-ratio);
   overflow:hidden; border:var(--bd);
   margin:-24px -24px 0; /* 贴齐卡片顶部，与 padding 相抵 */
 }
 .project-cover img.cover-img{
   display:block; width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0; object-position:center;
 }
 .project-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
 .project-head h3{font-family:var(--serif); font-weight:900; font-size:clamp(18px,2.2vw,24px); letter-spacing:-.02em}
