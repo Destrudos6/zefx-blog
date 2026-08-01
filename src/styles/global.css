@@ -297,9 +297,10 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .post-meta-row{
   display:flex; justify-content:space-between; align-items:center; gap:8px;
 }
-/* --- 文章网格列表 --- */
-.posts-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px}
-@media(max-width:1000px){.posts-grid{grid-template-columns:1fr}}
+/* --- 文章网格列表（桌面三列，平板两列，手机单列） --- */
+.posts-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:24px}
+@media(max-width:1000px){.posts-grid{grid-template-columns:repeat(2, 1fr)}}
+@media(max-width:640px){.posts-grid{grid-template-columns:1fr}}
 
 .pagination{display:flex; justify-content:center; align-items:center; gap:24px; margin-top:56px; padding-top:36px; border-top:2px dashed var(--ink)}
 .page-btn{font-family:var(--mono); font-size:14px; font-weight:700; padding:10px 22px; border:var(--bd); background:var(--card); box-shadow:4px 4px 0 var(--ink); transition:transform .2s, box-shadow .2s; cursor:pointer; text-decoration:none; color:inherit}
