@@ -13,6 +13,7 @@
 - ⏮️ **上一篇 / 下一篇** — 文章底部导航卡片，快速切换相邻文章
 - 💬 **Giscus 评论** — 基于 GitHub Discussions，支持明暗主题同步
 - 📊 **Umami 统计** — 轻量隐私友好的网站分析，可配置公开看板入口
+- 📈 **统计页（`/stats`）** — 聚合 GitHub 贡献日历、公开仓库、LeetCode 刷题、微信读书阅读数据
 - 🌙 **暗色模式** — localStorage 记忆 + 系统偏好检测
 - 📱 **响应式布局** — 桌面 / 平板 / 手机三端适配
 - 📡 **RSS / Sitemap** — 自动生成订阅源与站点地图
@@ -72,8 +73,10 @@ npm run preview
 | `USE_B2` | `true` 从 B2 远程拉取内容；`false` 使用本地文件（开发） |
 | `B2_PROXY_URL` | Cloudflare Worker 代理地址，**必须带 `https://`** |
 | `B2_BUCKET_NAME` | Backblaze B2 存储桶名称 |
-| `GITHUB_TOKEN` | GitHub Token，用于评论数统计 |
+| `GITHUB_TOKEN` | GitHub Token，用于评论数与统计页贡献日历（运行时读取） |
 | `GITHUB_OWNER` / `GITHUB_REPO` | 可选白名单，限制 GitHub API 可查询的仓库 |
+| `LEETCODE_USERNAME` | 可选，LeetCode 用户名（统计页刷题数据；也可在 site.json 配置） |
+| `WEREAD_TOKEN` | 微信读书 Token（统计页阅读数据，官方 Agent API 所需） |
 
 ## 站点配置（site.json）
 
@@ -110,6 +113,25 @@ npm run preview
 ```
 
 > ⚠️ **请勿在公开仓库中填写真实的 `repoId`、`categoryId`、Umami `websiteId` 或看板链接**——这些属于隐私信息，只应存放在 B2 私有存储桶的 `site.json` 中。上面的示例均为占位符。
+
+## 统计页（/stats）
+
+统计页通过 **Cloudflare Pages Functions** 在运行时拉取数据（非构建时快照），聚合以下模块：
+
+| 模块 | 数据来源 | 所需配置 |
+|------|----------|----------|
+| **GitHub 贡献日历** | GitHub GraphQL（最近一年热力图） | `GITHUB_TOKEN`、`GITHUB_OWNER`（运行时读取，无需 site.json） |
+| **公开仓库** | 同上，按 Star 数排序展示前 5 个 | 同上 |
+| **力扣** | LeetCode 官方 GraphQL（已解题数、难度分布、提交日历） | `LEETCODE_USERNAME` 或 site.json 的 `leetcode.username` |
+| **微信读书** | 微信读书官方 Agent API（阅读统计周/月/年/总、最近在读、已读完书架、书籍详情） | `WEREAD_TOKEN`（官方 API 所需，运行时读取） |
+| **Umami** | 站点访问统计看板内嵌 | site.json 的 `umami.dashboardUrl`（可选） |
+
+### 配置要点
+
+- **token 均为运行时环境变量**：在 Cloudflare Pages 项目的"设置 → 环境变量"中配置（本地开发时写入 `.env`，`wrangler pages dev` 会自动读取）。修改 token 后无需重新构建。
+- **缓存策略**：所有统计接口响应缓存 **4 小时**（`Cache-Control: max-age=14400`），数据按 4 小时粒度刷新。
+- **GitHub 贡献数说明**：贡献日历只统计 `GITHUB_TOKEN` 可见范围内的仓库。若 token 未授权某些私有仓库，这些仓库的贡献不会计入，数字会小于 GitHub 个人页面（页面登录后显示全部贡献）。如需完整统计，生成 fine-grained token 时勾选对应仓库并授予 `Contents: Read` 权限。
+- **微信读书 token 获取**：参考 [weread-dashboard](https://github.com/Destrudos6/WeChatReading) 项目的说明，从微信读书网页端抓取。
 
 ## 写文章
 

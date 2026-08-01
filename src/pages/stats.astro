@@ -157,23 +157,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
         </div>
       </section>
     )}
-
-    <!-- 数据说明 -->
-    <div class="stats-note reveal" style="--d:.2s">
-      <h3 class="mono">数据说明</h3>
-      <p>
-        本页各模块数据来源不同：<b>GitHub 贡献日历</b>与<b>力扣</b>通过本站 API 实时获取（数据按小时缓存）；
-        <b>微信读书</b>通过微信读书官方 API 实时获取（需配置 <code>WEREAD_TOKEN</code> 环境变量）；
-        <b>Umami</b> 为访问统计看板内嵌。
-      </p>
-      <p>
-        <b>GitHub 贡献数说明</b>：贡献日历仅统计 <code>GITHUB_TOKEN</code> 可见范围内的仓库
-        （即 token 有权限访问的公开/私有仓库）。若 token 未授权某些私有仓库，这些仓库的贡献
-        不会计入，数字会小于 GitHub 个人页面（页面登录后显示全部贡献）。如需完整统计，请在
-        GitHub 生成 token 时授予对应仓库的访问权限（fine-grained token 需勾选仓库并授予
-        <code>Contents: Read</code> 等权限）。
-      </p>
-    </div>
   </section>
 
   <Footer />
@@ -965,17 +948,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
     border: none;
     background: var(--paper);
   }
-
-  /* 数据说明 */
-  .stats-note {
-    border: var(--bd);
-    background: var(--card);
-    box-shadow: 4px 4px 0 var(--ink);
-    padding: 20px 24px;
-  }
-  .stats-note h3 { font-size: 12px; color: var(--red); margin-bottom: 8px; }
-  .stats-note p { font-size: 13.5px; color: var(--soft); line-height: 1.8; }
-  .stats-note b { color: var(--ink); }
 
   /* 响应式 */
   @media (max-width: 1000px) {

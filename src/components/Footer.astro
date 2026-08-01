@@ -21,7 +21,10 @@ const buildDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.get
     </div>
     <div>
       <h4>导航</h4>
-      <ul>{footerNav.map(item => <li><a href={item.href} target={isExternal(item.href) ? '_blank' : undefined} rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}>{item.label}</a></li>)}</ul>
+      <ul>
+        {footerNav.map(item => <li><a href={item.href} target={isExternal(item.href) ? '_blank' : undefined} rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}>{item.label}</a></li>)}
+        <li><a href="/stats">统计</a></li>
+      </ul>
     </div>
     <div>
       <h4>分类</h4>
