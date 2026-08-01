@@ -3,19 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BackToTop from '../components/BackToTop.astro';
-import { getAllPostsFromCollection, getAllProjects } from '../data/content';
-import { getSiteData, getAboutData } from '../data/backblaze';
+import { getSiteData } from '../data/backblaze';
 
-const [allPosts, allProjects, siteData, aboutData] = await Promise.all([
-  getAllPostsFromCollection(),
-  getAllProjects(),
-  getSiteData(),
-  getAboutData(),
-]);
+const siteData = await getSiteData();
 
 const umami = siteData.site.umami;
-const totalComments = allPosts.reduce((sum, p) => sum + (p.comments || 0), 0);
-const stats = aboutData.stats;
 
 // 用户名配置（数据在运行时通过 Pages Functions 获取）
 // GitHub 用户名由 API 从环境变量 GITHUB_OWNER 读取，前端不依赖 site.json
@@ -31,46 +23,6 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   </div>
 
   <section class="section" style="padding-top:0">
-    <!-- 概览区：真实数据 -->
-    <div class="stats-overview reveal">
-      <div class="ov-item">
-        <div class="ov-num">{stats[0]?.count ?? allPosts.length}</div>
-        <small class="mono">{stats[0]?.unit ?? '篇文章'}</small>
-      </div>
-      <div class="ov-item">
-        <div class="ov-num">{allProjects.length}</div>
-        <small class="mono">个项目</small>
-      </div>
-      <div class="ov-item">
-        <div class="ov-num">{stats[1]?.count ?? 0}</div>
-        <small class="mono">{stats[1]?.unit ?? '天网站运行'}</small>
-      </div>
-      <div class="ov-item">
-        <div class="ov-num">{totalComments}</div>
-        <small class="mono">条评论</small>
-      </div>
-    </div>
-
-    <!-- Umami 子模块：内嵌浏览（置于统计网格上方） -->
-    {umami?.dashboardUrl && (
-      <section class="umami-section reveal" style="--d:.15s">
-        <div class="stat-card-head">
-          <h2>Umami <span class="hl">访问统计</span></h2>
-          <a class="mono umami-open" href={umami.dashboardUrl} target="_blank" rel="noopener noreferrer">在新窗口打开 ↗</a>
-        </div>
-        <div class="umami-frame-wrap">
-          <iframe
-            class="umami-frame"
-            src={umami.dashboardUrl}
-            title="Umami 访问统计"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            allow="clipboard-write"
-          ></iframe>
-        </div>
-      </section>
-    )}
-
     <!-- 模块网格 -->
     <div class="stats-grid reveal" style="--d:.1s">
       <!-- GitHub 贡献日历（客户端加载真实数据） -->
@@ -196,12 +148,31 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
       </section>
     </div>
 
+    <!-- Umami 子模块：内嵌浏览（置于页面最下方） -->
+    {umami?.dashboardUrl && (
+      <section class="umami-section reveal" style="--d:.15s">
+        <div class="stat-card-head">
+          <h2>Umami <span class="hl">访问统计</span></h2>
+          <a class="mono umami-open" href={umami.dashboardUrl} target="_blank" rel="noopener noreferrer">在新窗口打开 ↗</a>
+        </div>
+        <div class="umami-frame-wrap">
+          <iframe
+            class="umami-frame"
+            src={umami.dashboardUrl}
+            title="Umami 访问统计"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            allow="clipboard-write"
+          ></iframe>
+        </div>
+      </section>
+    )}
+
     <!-- 数据说明 -->
     <div class="stats-note reveal" style="--d:.2s">
       <h3 class="mono">数据说明</h3>
       <p>
-        本页各模块数据来源不同：<b>概览区</b>来自本站内容（真实数据）；
-        <b>GitHub 贡献日历</b>与<b>力扣</b>通过本站 API 实时获取（数据按小时缓存）；
+        本页各模块数据来源不同：<b>GitHub 贡献日历</b>与<b>力扣</b>通过本站 API 实时获取（数据按小时缓存）；
         <b>微信读书</b>通过微信读书官方 API 实时获取（需配置 <code>WEREAD_TOKEN</code> 环境变量）；
         <b>Umami</b> 为访问统计看板内嵌。
       </p>
@@ -1388,14 +1359,18 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
     background: var(--card);
     border: var(--bd);
     box-shadow: 8px 8px 0 var(--ink);
-    max-width: 480px;
+    max-width: 860px; /* 桌面端横向长方形，容纳两栏划线/点评 */
     width: 100%;
-    max-height: 80vh;
+    max-height: 82vh;
     overflow-y: auto;
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 14px;
+  }
+  /* 移动端窄屏回退为紧凑单列 */
+  @media (max-width: 640px) {
+    .wr-modal-box { max-width: 480px; }
   }
   .wr-modal-head { display: flex; gap: 16px; flex-wrap: wrap; }
   .wr-modal-topbar {
