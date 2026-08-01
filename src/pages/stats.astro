@@ -238,7 +238,9 @@ const weread = {
           'keys=' + JSON.stringify(Object.keys(d)) +
           ' | weeks类型=' + (d.weeks == null ? 'null/undefined' : Array.isArray(d.weeks) ? 'array(' + d.weeks.length + ')' : typeof d.weeks) +
           ' | 首项keys=' + (Array.isArray(d.weeks) && d.weeks[0] ? JSON.stringify(Object.keys(d.weeks[0])) : 'N/A') +
-          ' | days类型=' + (Array.isArray(d.weeks) && d.weeks[0] ? (d.weeks[0].days == null ? 'null/undefined' : Array.isArray(d.weeks[0].days) ? 'array(' + d.weeks[0].days.length + ')' : typeof d.weeks[0].days) : 'N/A'));
+          ' | days类型=' + (Array.isArray(d.weeks) && d.weeks[0] ? (d.weeks[0].days == null ? 'null/undefined' : Array.isArray(d.weeks[0].days) ? 'array(' + d.weeks[0].days.length + ')' : typeof d.weeks[0].days) : 'N/A') +
+          ' | repos=' + (d.repos == null ? 'null/undefined' : Array.isArray(d.repos) ? 'array(' + d.repos.length + ')' : typeof d.repos) +
+          (Array.isArray(d.repos) && d.repos[0] ? ' | 首仓库=' + (d.repos[0].name || '?') : ''));
       } catch (e) {
         diagAppend('[' + t + '] ' + source + ' ' + kind + ' 诊断失败: ' + e.message);
       }
