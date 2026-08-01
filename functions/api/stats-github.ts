@@ -82,10 +82,14 @@ export async function onRequestGet(context) {
     }
 
     // 规范化为 53 周 × 7 天的贡献矩阵，保留每周起始日期供前端渲染月份/年份标签
-    const weeks = cal.weeks.map(w => ({
-      date: w.contributionDays[0]?.date || null, // 该周第一天（周日）的日期，如 "2025-07-27"
-      days: w.contributionDays.map(d => d.contributionCount),
-    }));
+    // 防御：contributionDays 缺失时兜底为空数组，保证 days 恒为数组
+    const weeks = cal.weeks.map(w => {
+      const days = (w.contributionDays || []).map(d => d.contributionCount);
+      return {
+        date: (w.contributionDays && w.contributionDays[0]?.date) || null,
+        days,
+      };
+    });
 
     return new Response(
       JSON.stringify({

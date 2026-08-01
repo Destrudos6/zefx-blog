@@ -274,7 +274,8 @@ const weread = {
         var colEl = document.createElement('div');
         colEl.className = 'gh-col';
         var base = parseDay(week.date);
-        week.days.forEach(function (v, di) {
+        // 防御：API 返回异常结构（无 days 字段）时不崩溃
+        (week.days || []).forEach(function (v, di) {
           var cell = document.createElement('span');
           cell.className = 'gh-cell ' + levelClass(v, max);
           var day = base ? fmtDay(new Date(base.getFullYear(), base.getMonth(), base.getDate() + di)) : '';
