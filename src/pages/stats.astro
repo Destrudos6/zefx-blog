@@ -611,6 +611,21 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           var prog = d.progress || {};
           box.innerHTML = '';
 
+          // 顶部 sticky 关闭栏：滚动时始终可见，方便随时关闭
+          var topbar = document.createElement('div');
+          topbar.className = 'wr-modal-topbar';
+          var topTitle = document.createElement('span');
+          topTitle.className = 'wr-modal-topbar-title mono';
+          topTitle.textContent = '书籍详情';
+          topbar.appendChild(topTitle);
+          var closeBtn = document.createElement('button');
+          closeBtn.type = 'button';
+          closeBtn.className = 'wr-modal-close mono';
+          closeBtn.textContent = '关闭 ✕';
+          closeBtn.addEventListener('click', function () { modal.hidden = true; });
+          topbar.appendChild(closeBtn);
+          box.appendChild(topbar);
+
           // 头部：封面 + 基本信息
           var head = document.createElement('div');
           head.className = 'wr-modal-head';
@@ -680,6 +695,10 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
             box.appendChild(intro);
           }
 
+          // 热门划线 + 公开点评：桌面端横向两栏，移动端单列
+          var cols = document.createElement('div');
+          cols.className = 'wr-modal-cols';
+
           // 热门划线
           if (d.highlights && d.highlights.length) {
             var hSec = document.createElement('div');
@@ -700,7 +719,7 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
               blk.appendChild(tl);
               hSec.appendChild(blk);
             });
-            box.appendChild(hSec);
+            cols.appendChild(hSec);
           }
 
           // 公开点评
@@ -746,15 +765,13 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
               }
               rSec.appendChild(blk);
             });
-            box.appendChild(rSec);
+            cols.appendChild(rSec);
           }
 
-          var close = document.createElement('button');
-          close.type = 'button';
-          close.className = 'wr-modal-close mono';
-          close.textContent = '关闭';
-          close.addEventListener('click', function () { modal.hidden = true; });
-          box.appendChild(close);
+          // 两栏容器挂载到弹窗
+          if (cols.children.length) {
+            box.appendChild(cols);
+          }
         })
         .catch(function (e) {
           box.innerHTML = '<div class="wr-modal-loading mono">加载失败：' + (e && e.message ? e.message : e) + '</div>';
@@ -1381,6 +1398,21 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
     gap: 14px;
   }
   .wr-modal-head { display: flex; gap: 16px; flex-wrap: wrap; }
+  .wr-modal-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--card);
+    margin: -24px -24px 0;
+    padding: 10px 0;
+    border-bottom: 2px dashed rgba(128,128,128,.2);
+  }
+  .wr-modal-topbar-title { font-size: 11px; color: var(--soft); letter-spacing: .08em; }
+  .wr-modal-topbar .wr-modal-close { align-self: auto; margin: 0; }
   .wr-modal-cover { width: 110px; aspect-ratio: 5 / 7; object-fit: cover; border: 1px solid rgba(128,128,128,.15); flex-shrink: 0; }
   .wr-modal-meta { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
   .wr-modal-meta h3 { font-size: 18px; margin: 0; }
@@ -1401,6 +1433,16 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   }
   .wr-modal-open:hover { filter: brightness(1.08); }
   .wr-modal-intro { font-size: 13px; line-height: 1.8; color: var(--soft); }
+  /* 划线/点评横向两栏：充分利用桌面端横向空间 */
+  .wr-modal-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .wr-modal-cols { grid-template-columns: 1fr; }
+  }
   .wr-modal-sec { border-top: 2px dashed rgba(128,128,128,.25); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
   .wr-modal-sec-title { font-size: 11px; color: var(--red); letter-spacing: .08em; }
   .wr-quote {
