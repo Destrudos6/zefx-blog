@@ -5,6 +5,7 @@ import Footer from '../../components/Footer.astro';
 import BackToTop from '../../components/BackToTop.astro';
 import MobileActions from '../../components/MobileActions.astro';
 import Giscus from '../../components/Giscus.astro';
+import Cover from '../../components/Cover.astro';
 import { getCollection, render } from 'astro:content';
 import { getMediaUrl } from '../../utils/media';
 
@@ -72,16 +73,14 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
         <h1>{post.data.title}</h1>
         <p class="article-excerpt">{post.data.excerpt}</p>
     </div>
-    {coverImage ? (
-      <div class="article-cover has-img">
-        <img class="cover-img" src={coverImage} alt={post.data.title} fetchpriority="high" decoding="async" sizes="(max-width: 1000px) 100vw, 340px" />
-      </div>
-    ) : (
-      <div class="article-cover placeholder" style={`--ac:${post.data.categoryColor};background:${post.data.categoryColor}`}>
-        <span class="cover-icon">📸</span>
-        <span class="cover-label mono">{post.data.category}</span>
-      </div>
-    )}
+    <Cover
+      src={coverImage}
+      alt={post.data.title}
+      class="article-cover"
+      icon="📸"
+      label={post.data.category}
+      loading="eager"
+    />
   </div>
 
     <div class="article-body">
@@ -161,48 +160,6 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
     min-width: 0;
   }
 
-  .article-cover {
-    position: relative;
-    width: 100%;
-    aspect-ratio: var(--cover-ratio);
-    display: grid;
-    place-items: center;
-    border: var(--bd);
-    box-shadow: 8px 8px 0 var(--ink);
-    overflow: hidden;
-    background-size: cover;
-    background-position: center;
-  }
-  .article-cover img.cover-img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    inset: 0;
-  }
-  .article-cover::before {
-    content: "";
-    position: absolute; inset: 0;
-    background-image: radial-gradient(var(--paper) 1.4px, transparent 1.6px);
-    background-size: 14px 14px;
-    opacity: .25;
-  }
-  .article-cover[style*="background-image"]::before,
-  .article-cover.has-img::before {
-    display: none;
-  }
-  .cover-icon {
-    position: relative;
-    font-size: 44px;
-    filter: grayscale(.15);
-  }
-  .cover-label {
-    position: relative;
-    font-family: var(--mono);
-    font-size: 12px; font-weight: 700;
-    letter-spacing: .08em;
-  }
 
   .article-meta {
     display: flex;
@@ -559,11 +516,6 @@ const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : nu
     .article-header {
       grid-template-columns: 1fr;
       gap: 28px;
-    }
-    .article-cover {
-      min-height: 0;
-      aspect-ratio: 16 / 9;
-      order: -1;
     }
     .article-body {
       grid-template-columns: 1fr;

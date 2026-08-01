@@ -1,4 +1,5 @@
 ---
+import Cover from './Cover.astro';
 import { getMediaUrl } from '../utils/media';
 import type { Post, Project } from '../data/content';
 
@@ -14,16 +15,7 @@ const coverImage = post.coverImage ? getMediaUrl(post.coverImage) : null;
 ---
 
 <a class="post-card reveal" href={`/posts/${post.slug}`} style={`--ac:${post.categoryColor}; --cover-bg:${color}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}`} data-category={post.category}>
-  <div class={`post-cover${coverImage ? ' has-img' : ''}`}>
-    {coverImage ? (
-      <img class="cover-img" src={coverImage} alt={post.title} loading="lazy" decoding="async" width="1200" height="630" sizes="(max-width: 1000px) 100vw, 500px" />
-    ) : (
-      <div class="cover-inner">
-        <span class="cover-icon">📸</span>
-        <span class="cover-label mono">IMG_{String(index + 1).padStart(4, '0')}</span>
-      </div>
-    )}
-  </div>
+  <Cover src={coverImage} alt={post.title} class="post-cover" icon="📸" label={`IMG_${String(index + 1).padStart(4, '0')}`} />
   <div class="post-body">
     <div class="post-meta-row">
       <span class="cat">{post.category}</span>

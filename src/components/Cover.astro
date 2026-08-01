@@ -1,0 +1,87 @@
+---
+/**
+ * 封面组件：统一"横幅比例容器 + 居中填满图片 + 占位符"三件事。
+ *
+ * 设计目的：
+ * - 所有封面（文章卡片、首页大卡、项目卡片、详情页）共用同一套核心机制，
+ *   消除此前各容器各自实现 img 绝对定位/object-fit/object-position 的重复，
+ *   从根源上避免"某处封面错位/比例不统一"这类 bug。
+ * - 场景差异（负 margin 贴顶、斑点装饰、边框阴影、占位样式）通过额外 class
+ *   或 props 传入，不污染核心逻辑。
+ *
+ * 用法：
+ *   <Cover src={coverImage} alt={title} class="post-cover" icon="📸" label="IMG_0001" />
+ */
+
+interface Props {
+  /** 封面图地址；为空时显示占位符（需同时给 icon） */
+  src?: string | null;
+  alt?: string;
+  /** 追加到 .cover 上的场景类（如 post-cover / project-cover），用于装饰差异 */
+  class?: string;
+  /** 无图占位符图标（emoji） */
+  icon?: string;
+  /** 无图占位符标签 */
+  label?: string;
+  /** 图片加载策略，默认 lazy */
+  loading?: 'lazy' | 'eager';
+}
+
+const { src = null, alt = '', class: extraClass = '', icon, label, loading = 'lazy' } = Astro.props;
+---
+
+<div class={`cover${extraClass ? ' ' + extraClass : ''}${src ? ' has-img' : ''}`}>
+  {src ? (
+    <img class="cover-img" src={src} alt={alt} loading={loading} decoding="async" width="1200" height="630" />
+  ) : (
+    icon && (
+      <div class="cover-inner">
+        <span class="cover-icon">{icon}</span>
+        {label && <span class="cover-label mono">{label}</span>}
+      </div>
+    )
+  )}
+</div>
+
+<style>
+  /* 封面基础：横幅比例 + 居中填满 + 裁切。
+     width 不在此声明（block 默认撑满父容器），让场景类（如 .project-cover
+     的 width:auto + 负 margin 贴顶）能自由覆盖，避免特异性冲突。 */
+  .cover {
+    position: relative;
+    aspect-ratio: var(--cover-ratio);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  .cover img.cover-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    position: absolute;
+    inset: 0;
+  }
+  /* 占位符 */
+  .cover-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 1;
+  }
+  .cover-icon {
+    font-size: 30px;
+    filter: grayscale(.2);
+  }
+  .cover-label {
+    font-size: 9px;
+    letter-spacing: .1em;
+    color: var(--paper);
+    opacity: .7;
+    border: 1px solid var(--paper);
+    padding: 2px 6px;
+  }
+</style>

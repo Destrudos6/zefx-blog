@@ -1,4 +1,5 @@
 ---
+import Cover from './Cover.astro';
 import { getMediaUrl } from '../utils/media';
 
 interface Props {
@@ -30,15 +31,11 @@ const {
 } = Astro.props;
 
 const styleAttr = `--ac:${categoryColor}${categoryTextColor ? `; --actext:${categoryTextColor}` : ''}`;
-const coverStyle = coverImage ? `background-image:url(${getMediaUrl(coverImage)});background-size:cover;background-position:center` : '';
+const coverUrl = coverImage ? getMediaUrl(coverImage) : null;
 ---
 
 <a class="latest-post" href={href} style={styleAttr}>
-  <div class={`latest-cover${coverImage ? ' has-img' : ''}`} aria-hidden="true">
-    {coverImage && (
-      <img class="cover-img" src={getMediaUrl(coverImage)} alt="" loading="lazy" decoding="async" sizes="(max-width: 1000px) 100vw, 900px" />
-    )}
-  </div>
+  <Cover src={coverUrl} class="latest-cover" />
   <div class="latest-body">
     <div class="latest-meta">
       <span class="cat">{category}</span>
@@ -116,37 +113,6 @@ const coverStyle = coverImage ? `background-image:url(${getMediaUrl(coverImage)}
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  /* ---- 上方横幅封面（1200×630 比例） ---- */
-  .latest-cover {
-    position: relative;
-    width: 100%;
-    aspect-ratio: var(--cover-ratio);
-    background: var(--ac, var(--blue));
-    overflow: hidden;
-  }
-  .latest-cover img.cover-img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    position: absolute;
-    inset: 0;
-  }
-  .latest-cover[style*="background-image"]::before,
-  .latest-cover.has-img::before {
-    display: none;
-  }
-  .latest-cover::before {
-    content: "";
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-image: radial-gradient(var(--paper) 1.4px, transparent 1.6px);
-    background-size: 15px 15px;
-    opacity: .28;
   }
 
   /* ---- 响应式 ---- */

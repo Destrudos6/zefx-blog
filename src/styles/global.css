@@ -185,18 +185,8 @@ nav a:hover::after{transform:scaleX(1)}
 .chip{border:var(--bd); background:var(--card); padding:5px 13px; font-size:12.5px; box-shadow:3px 3px 0 var(--ink)}
 .chip.hot{background:var(--red); color:#fff}
 h1{display:flex; gap:16px; margin-bottom:26px}
-.ch{
-  display:grid; place-items:center; width:clamp(86px,12.5vw,148px); aspect-ratio:1;
-  border:3px solid var(--ink); background:var(--card);
-  font-family:var(--serif); font-weight:900; font-size:clamp(54px,8.5vw,100px);
-  box-shadow:8px 8px 0 var(--ink); transition:transform .28s, box-shadow .28s;
-}
-.ch:nth-child(1){transform:rotate(-2.5deg)}
-.ch:nth-child(2){transform:rotate(1.5deg)}
-.ch:nth-child(3){transform:rotate(-1deg); background:var(--lemon)}
-.ch:hover{transform:translateY(-10px) rotate(0deg); box-shadow:10px 14px 0 var(--red)}
 
-/* 英文单词胶囊块 */
+/* 站名刊头：整词一体（非逐字卡片），杂志刊头式大字重 + 负字距 */
 .word{
   display:inline-flex; align-items:center; padding:.15em .55em;
   border:3px solid var(--ink); background:var(--card);
@@ -268,25 +258,58 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 }
 .post-card:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--ac)}
 
-/* --- 上方横幅封面（1200×630 比例，适配主流封面图） --- */
-.post-cover{
-  position:relative; width:100%; aspect-ratio:var(--cover-ratio);
-  display:grid; place-items:center; overflow:hidden;
-}
+/* --- 上方横幅封面：基础比例/居中/img 定位/占位符由 Cover 组件统一提供，此处只留场景差异 --- */
 .post-cover:not(.has-img){ background:var(--cover-bg, var(--blue)); }
-.post-cover img.cover-img{
-  display:block; width:100%; height:100%; object-fit:cover;
-  position:absolute; inset:0; object-position:center;
+/* PostCard 占位符在移动端的场景覆盖（Cover 组件内默认纵向） */
+@media (max-width: 640px) {
+  .post-cover .cover-inner{flex-direction:row; gap:8px}
 }
-.cover-inner{
-  position:relative; display:flex; flex-direction:column;
-  align-items:center; gap:4px; z-index:1;
+
+/* LatestPost 首页大卡封面：背景色 + 斑点装饰（Cover 输出 div，需全局规则） */
+.latest-cover{
+  background:var(--ac, var(--blue));
 }
-.cover-icon{font-size:30px; filter:grayscale(.2)}
-.cover-label{
-  font-size:9px; letter-spacing:.1em;
-  color:var(--paper); opacity:.7;
-  border:1px solid var(--paper); padding:2px 6px;
+.latest-cover::before{
+  content:""; display:block; width:100%; height:100%;
+  background-image:radial-gradient(var(--paper) 1.4px, transparent 1.6px);
+  background-size:15px 15px; opacity:.28;
+}
+.latest-cover.has-img::before{display:none}
+
+/* 文章详情页封面：边框阴影 + 斑点装饰 + 大号占位图标（Cover 输出 div，需全局规则） */
+.article-cover{
+  border:var(--bd);
+  box-shadow:8px 8px 0 var(--ink);
+}
+.article-cover::before{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(var(--paper) 1.4px, transparent 1.6px);
+  background-size:14px 14px; opacity:.25;
+}
+.article-cover.has-img::before{display:none}
+.article-cover .cover-icon{font-size:44px; filter:grayscale(.15)}
+.article-cover .cover-label{
+  font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.08em;
+}
+/* 文章详情页移动端单列：封面排到最上方 */
+@media (max-width: 1000px) {
+  .article-cover { order: -1; }
+}
+
+/* 项目详情页封面：边框阴影 + 斑点装饰（Cover 输出 div，需全局规则） */
+.project-hero-cover{
+  border:var(--bd);
+  box-shadow:10px 10px 0 var(--ink);
+}
+.project-hero-cover::before{
+  content:""; position:absolute; inset:0;
+  background-image:radial-gradient(var(--paper) 1.4px, transparent 1.6px);
+  background-size:14px 14px; opacity:.25;
+}
+.project-hero-cover.has-img::before{display:none}
+/* 项目详情页移动端单列：封面排到最上方 */
+@media (max-width: 1000px) {
+  .project-hero-cover { order: -1; }
 }
 
 /* --- 下方内容区 --- */
@@ -340,14 +363,10 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 }
 .project:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--red)}
 /* 项目卡片封面（1200×630 横幅，位于内容上方） */
+/* 项目卡片封面：仅保留场景差异（贴顶负 margin + 边框）；img 定位由 Cover 组件统一处理 */
 .project-cover{
-  position:relative; width:auto; aspect-ratio:var(--cover-ratio);
-  overflow:hidden; border:var(--bd);
+  border:var(--bd);
   margin:-24px -24px 0; /* 贴齐卡片顶部，与 padding 相抵 */
-}
-.project-cover img.cover-img{
-  display:block; width:100%; height:100%; object-fit:cover;
-  position:absolute; inset:0; object-position:center;
 }
 .project-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
 .project-head h3{font-family:var(--serif); font-weight:900; font-size:clamp(18px,2.2vw,24px); letter-spacing:-.02em}
@@ -471,10 +490,7 @@ footer{border-top:3px solid var(--ink); padding:64px 24px 34px; overflow:hidden;
   .logo small{display:none}
   .hero{padding:40px 18px 36px}
   .word{font-size:clamp(36px,10vw,52px); border-width:2px; box-shadow:5px 5px 0 var(--ink)}
-  .ch{width:clamp(60px,18vw,86px); font-size:clamp(40px,12vw,54px); border-width:2px; box-shadow:5px 5px 0 var(--ink)}
   .tagline{font-size:15px}
-  .post-cover{width:100%}
-  .cover-inner{flex-direction:row; gap:8px}
   .posts-grid{gap:18px}
   .page-banner{padding:56px 18px 32px}
   .page-banner h1{font-size:clamp(28px,8vw,42px)}
