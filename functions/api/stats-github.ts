@@ -123,7 +123,7 @@ export async function onRequestGet(context) {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           // 贡献数据按天更新，缓存 1 小时降低 GraphQL 配额消耗
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+          'Cache-Control': 'public, max-age=14400, s-maxage=14400',
         },
       }
     );

@@ -40,7 +40,7 @@ export async function onRequestGet(context) {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           // 数据变动不频繁，缓存 1 小时
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+          'Cache-Control': 'public, max-age=14400, s-maxage=14400',
         },
       }
     );

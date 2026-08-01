@@ -610,6 +610,8 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           var info = d.info || {};
           var prog = d.progress || {};
           box.innerHTML = '';
+
+          // 头部：封面 + 基本信息
           var head = document.createElement('div');
           head.className = 'wr-modal-head';
           var img = document.createElement('img');
@@ -623,28 +625,130 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
           t.textContent = info.title || '未知书名';
           meta.appendChild(t);
           var byline = document.createElement('p');
-          byline.textContent = [info.author, info.publisher].filter(Boolean).join(' · ');
+          byline.textContent = [info.author, info.translator ? '译 ' + info.translator : '', info.publisher].filter(Boolean).join(' · ');
           meta.appendChild(byline);
-          if (info.newRating) {
-            var rating = document.createElement('p');
-            rating.className = 'wr-modal-rating';
-            rating.textContent = '★ ' + Number(info.newRating).toFixed(1) + (info.newRatingCount ? '（' + info.newRatingCount + ' 人评分）' : '');
-            meta.appendChild(rating);
+          // 分类 + 评分 + ISBN 标签
+          var chips = document.createElement('div');
+          chips.className = 'wr-modal-chips';
+          if (info.category) {
+            var chip = document.createElement('span');
+            chip.className = 'wr-chip';
+            chip.textContent = info.category;
+            chips.appendChild(chip);
           }
+          if (info.newRating) {
+            var rating = document.createElement('span');
+            rating.className = 'wr-chip wr-chip-rating';
+            rating.textContent = '★ ' + Number(info.newRating).toFixed(1) + (info.newRatingCount ? '（' + info.newRatingCount + ' 人）' : '');
+            chips.appendChild(rating);
+          }
+          if (info.isbn) {
+            var isbn = document.createElement('span');
+            isbn.className = 'wr-chip mono';
+            isbn.textContent = 'ISBN ' + info.isbn;
+            chips.appendChild(isbn);
+          }
+          meta.appendChild(chips);
+          // 阅读进度
           if (prog.progress != null) {
             var pbar = document.createElement('div');
             pbar.className = 'wr-modal-progress';
             pbar.textContent = '阅读进度：' + (prog.progress === 100 ? '已完成' : prog.progress + '%');
             meta.appendChild(pbar);
           }
+          // 跳转微信读书
+          var actions = document.createElement('div');
+          actions.className = 'wr-modal-actions';
+          if (info.deepLink) {
+            var link = document.createElement('a');
+            link.className = 'wr-modal-open';
+            link.href = info.deepLink;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = '在微信读书打开 ↗';
+            actions.appendChild(link);
+          }
+          meta.appendChild(actions);
           head.appendChild(meta);
           box.appendChild(head);
+
+          // 简介
           if (info.intro) {
             var intro = document.createElement('p');
             intro.className = 'wr-modal-intro';
             intro.textContent = info.intro;
             box.appendChild(intro);
           }
+
+          // 热门划线
+          if (d.highlights && d.highlights.length) {
+            var hSec = document.createElement('div');
+            hSec.className = 'wr-modal-sec';
+            var hTitle = document.createElement('div');
+            hTitle.className = 'wr-modal-sec-title mono';
+            hTitle.textContent = '热门划线';
+            hSec.appendChild(hTitle);
+            d.highlights.forEach(function (h) {
+              var blk = document.createElement('div');
+              blk.className = 'wr-quote';
+              var q = document.createElement('p');
+              q.textContent = '「' + (h.text || '') + '」';
+              blk.appendChild(q);
+              var tl = document.createElement('div');
+              tl.className = 'wr-quote-meta mono';
+              tl.textContent = (h.count || 0) + ' 人划线' + (h.chapter != null ? ' · 章节 ' + h.chapter : '');
+              blk.appendChild(tl);
+              hSec.appendChild(blk);
+            });
+            box.appendChild(hSec);
+          }
+
+          // 公开点评
+          if (d.reviews && d.reviews.length) {
+            var rSec = document.createElement('div');
+            rSec.className = 'wr-modal-sec';
+            var rTitle = document.createElement('div');
+            rTitle.className = 'wr-modal-sec-title mono';
+            rTitle.textContent = '公开点评';
+            rSec.appendChild(rTitle);
+            d.reviews.forEach(function (rv) {
+              var blk = document.createElement('div');
+              blk.className = 'wr-review';
+              var who = document.createElement('div');
+              who.className = 'wr-review-who';
+              if (rv.avatar) {
+                var av = document.createElement('img');
+                av.className = 'wr-review-avatar';
+                av.src = rv.avatar;
+                av.alt = '';
+                who.appendChild(av);
+              }
+              var nm = document.createElement('b');
+              nm.textContent = rv.name || '匿名';
+              who.appendChild(nm);
+              if (rv.star) {
+                var st = document.createElement('span');
+                st.className = 'wr-review-star';
+                st.textContent = '★ ' + rv.star;
+                who.appendChild(st);
+              }
+              if (rv.isFinish) {
+                var fin = document.createElement('span');
+                fin.className = 'wr-review-finish mono';
+                fin.textContent = '已读完';
+                who.appendChild(fin);
+              }
+              blk.appendChild(who);
+              if (rv.content) {
+                var ct = document.createElement('p');
+                ct.textContent = rv.content;
+                blk.appendChild(ct);
+              }
+              rSec.appendChild(blk);
+            });
+            box.appendChild(rSec);
+          }
+
           var close = document.createElement('button');
           close.type = 'button';
           close.className = 'wr-modal-close mono';
@@ -1281,9 +1385,41 @@ const leetcodeUser = siteData.site.leetcode?.username || '';
   .wr-modal-meta { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
   .wr-modal-meta h3 { font-size: 18px; margin: 0; }
   .wr-modal-meta p { font-size: 12.5px; color: var(--soft); margin: 0; }
-  .wr-modal-rating { color: var(--orange) !important; }
+  .wr-modal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .wr-chip { font-size: 10.5px; color: var(--soft); border: 1px solid rgba(128,128,128,.3); padding: 1px 7px; line-height: 1.6; }
+  .wr-chip-rating { color: var(--orange); border-color: var(--orange); }
   .wr-modal-progress { font-size: 12px; color: var(--green); border: 1px solid currentColor; padding: 2px 8px; align-self: flex-start; }
+  .wr-modal-actions { display: flex; gap: 8px; margin-top: 2px; }
+  .wr-modal-open {
+    font-size: 12px;
+    color: var(--paper);
+    background: var(--green);
+    border: 1px solid var(--green);
+    padding: 4px 12px;
+    text-decoration: none;
+    align-self: flex-start;
+  }
+  .wr-modal-open:hover { filter: brightness(1.08); }
   .wr-modal-intro { font-size: 13px; line-height: 1.8; color: var(--soft); }
+  .wr-modal-sec { border-top: 2px dashed rgba(128,128,128,.25); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .wr-modal-sec-title { font-size: 11px; color: var(--red); letter-spacing: .08em; }
+  .wr-quote {
+    border-left: 3px solid var(--orange);
+    background: var(--paper);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .wr-quote p { font-size: 12.5px; color: var(--ink); line-height: 1.7; margin: 0; }
+  .wr-quote-meta { font-size: 10.5px; color: var(--soft); }
+  .wr-review { border: var(--bd); background: var(--paper); padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .wr-review-who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .wr-review-who b { font-size: 12px; color: var(--ink); }
+  .wr-review-avatar { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(128,128,128,.2); }
+  .wr-review-star { font-size: 11px; color: var(--orange); }
+  .wr-review-finish { font-size: 10px; color: var(--green); border: 1px solid currentColor; padding: 0 5px; }
+  .wr-review p { font-size: 12.5px; color: var(--soft); line-height: 1.7; margin: 0; }
   .wr-modal-close {
     align-self: flex-end;
     font-family: inherit;
