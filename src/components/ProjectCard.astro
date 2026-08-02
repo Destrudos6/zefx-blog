@@ -15,6 +15,10 @@ interface Props {
 
 const { title, status, statusLabel, description, logs, tags, coverImage } = Astro.props;
 const coverUrl = coverImage ? getMediaUrl(coverImage) : null;
+// 标签最多显示 3 个，其余用 "+N" 汇总提示（防止标签过多把卡片拉高，也避免 CSS 截断切掉半个标签）
+const MAX_TAGS = 3;
+const shownTags = tags.slice(0, MAX_TAGS);
+const hiddenTagCount = tags.length - shownTags.length;
 ---
 
 <div class="project reveal">
@@ -35,8 +39,11 @@ const coverUrl = coverImage ? getMediaUrl(coverImage) : null;
     ))}
   </div>
   <div class="project-tags">
-    {tags.map(t => (
+    {shownTags.map(t => (
       <span class="tag">{t}</span>
     ))}
+    {hiddenTagCount > 0 && (
+      <span class="tag tag-more">+{hiddenTagCount}</span>
+    )}
   </div>
 </div>

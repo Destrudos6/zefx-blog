@@ -406,11 +406,8 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   /* 日志长文本最多 2 行，防止单条日志把项目卡片拉高 */
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
-.project-tags{
-  display:flex; gap:8px; flex-wrap:wrap;
-  /* 标签很多时限制为两行，超出隐藏，防止撑高项目卡片 */
-  max-height:48px; overflow:hidden;
-}
+.project-tags{display:flex; gap:8px; flex-wrap:wrap}
+.tag-more{opacity:.75}
 .project .tag{font-family:var(--mono); font-size:11px; color:var(--red); background:var(--paper); border:var(--bd); padding:2px 8px; font-weight:700}
 
 /* ============ 关于(反白整版) ============ */
