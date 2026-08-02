@@ -43,3 +43,6 @@ src/content/*/
 # Public media assets (pulled from B2 at build time)
 public/posts/
 public/projects/
+
+# Wrangler local dev state/cache (generated)
+.wrangler/
