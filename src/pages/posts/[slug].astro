@@ -53,7 +53,11 @@ export async function getStaticPaths() {
 
 const { post, toc, Content, prevPost, nextPost, relatedPosts } = Astro.props;
 const projectInfo = post.data.project ? projectMap[post.data.project] : null;
-const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : null;
+// 文章封面缺失但关联项目时，回退到项目封面（与项目卡片/详情页同一路径规则）
+const fallbackCover = projectInfo
+  ? projectInfo.data.coverImage || `projects/${post.data.project}/cover.png`
+  : null;
+const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : (fallbackCover ? getMediaUrl(fallbackCover) : null);
 ---
 
 <BaseLayout title={`${post.data.title} · ZEFX`} ogImage={post.data.coverImage ? getMediaUrl(post.data.coverImage) : undefined}>

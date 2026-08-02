@@ -24,7 +24,11 @@ export async function GET() {
         date: p.data.date,
         excerpt: p.data.excerpt,
         content: (p.body || '').replace(/\r\n/g, '\n').slice(0, 20000),
-        coverImage: p.data.coverImage ? getMediaUrl(p.data.coverImage) : null,
+        coverImage: p.data.coverImage
+          ? getMediaUrl(p.data.coverImage)
+          : (p.data.project && projectMap[p.data.project]
+              ? getMediaUrl(projectMap[p.data.project].coverImage || `projects/${projectMap[p.data.project].slug}/cover.png`)
+              : null),
         project: proj,
       };
     }),
