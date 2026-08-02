@@ -22,13 +22,23 @@ const aboutData = await getAboutData();
 const allProjects = await getAllProjects();
 const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
 
-// 统计当月每日发帖数（按东八区日期），供首页"关于站主"右侧月度热力图使用
-// 产出 { ts: count }，ts 为当月每日东八区零点对应的 UTC 时间戳；先铺满当月每一天，
-// 再累加当月帖子，保证前端能渲染完整月历（含零发帖日）
+// 统计近两个月每日发帖数（按东八区日期），供首页"关于站主"右侧热力图使用
+// 产出 { ts: count }，ts 为两个月每日东八区零点对应的 UTC 时间戳；先铺满两个月的每一天，
+// 再累加这两个月的帖子，保证前端能渲染完整月历（含零发帖日）
 const postCalendar: Record<string, number> = {};
 const nowCST = new Date(Date.now() + 8 * 3600 * 1000);
 const year = nowCST.getUTCFullYear();
-const month = nowCST.getUTCMonth(); // 0-11
+const month = nowCST.getUTCMonth(); // 0-11，当前月
+// 上一个月（跨年处理）
+const prevYear = month === 0 ? year - 1 : year;
+const prevMonth = month === 0 ? 11 : month - 1;
+// 先铺满上个月
+const prevDays = new Date(Date.UTC(prevYear, prevMonth + 1, 0)).getUTCDate();
+for (let d = 1; d <= prevDays; d++) {
+  const ts = Math.floor((Date.UTC(prevYear, prevMonth, d, 0, 0, 0) - 8 * 3600 * 1000) / 1000);
+  postCalendar[ts] = 0;
+}
+// 再铺满当前月
 const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 for (let d = 1; d <= daysInMonth; d++) {
   const ts = Math.floor((Date.UTC(year, month, d, 0, 0, 0) - 8 * 3600 * 1000) / 1000);
@@ -38,7 +48,10 @@ for (const p of allPosts) {
   const m = /^(\d{4})\.(\d{2})\.(\d{2})/.exec(p.date || '');
   if (!m) continue;
   const py = +m[1], pm = +m[2] - 1, pd = +m[3];
-  if (py !== year || pm !== month) continue; // 只统计当月
+  // 只统计上个月与当前月（跨年场景：prevYear/prevMonth 可能属于前一年）
+  const inPrev = py === prevYear && pm === prevMonth;
+  const inCurr = py === year && pm === month;
+  if (!inPrev && !inCurr) continue;
   const ts = Math.floor((Date.UTC(py, pm, pd, 0, 0, 0) - 8 * 3600 * 1000) / 1000);
   postCalendar[ts] = (postCalendar[ts] || 0) + 1;
 }
@@ -125,7 +138,7 @@ for (const p of allPosts) {
     </div>
   </section>
 
-  <About data={aboutData} postCalendar={postCalendar} heatmapYear={year} heatmapMonth={month} />
+  <About data={aboutData} postCalendar={postCalendar} heatmapYear={prevYear} heatmapMonth={prevMonth} />
   <Friends links={friendLinks} />
   <Footer />
   <BackToTop />

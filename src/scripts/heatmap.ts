@@ -165,13 +165,14 @@ export function calendarToWeeks(calendar) {
 }
 
 /**
- * 月度热力图：渲染指定月份（year 年 month 月，month 0-11）的单月贡献日历。
+ * 月度热力图：渲染指定月份（year 年 month 月，month 0-11）的贡献日历，
+ * 支持一次渲染连续多个月份（months 参数，默认 1）并排显示。
  * 与 renderHeatmap 共用 gh-* 结构与样式；列 = 周、行 = 日（周日到周六），
- * 当月 1 号按星期几对齐，格子数量 = 当月实际天数（由 year/month 精确计算），
+ * 每月 1 号按星期几对齐，格子数量 = 当月实际天数（由 year/month 精确计算），
  * 当月之外的空位用隐藏占位格保持对齐。
- * calendar: { ts秒: count }，仅取当月的值。
+ * calendar: { ts秒: count }。
  */
-export function renderMonthHeatmap(container, calendar, max, year, month) {
+export function renderMonthHeatmap(container, calendar, max, year, month, months) {
   if (!container) return;
   container.innerHTML = '';
 
@@ -182,62 +183,75 @@ export function renderMonthHeatmap(container, calendar, max, year, month) {
     byDay[fmtDay(d)] = (byDay[fmtDay(d)] || 0) + (calendar[ts] || 0);
   });
 
-  var daysInMonth = new Date(year, month + 1, 0).getDate(); // 当月实际天数
-  var firstDay = new Date(year, month, 1).getDay();          // 1 号是星期几（0=周日）
+  var count = months || 1;
 
-  // 顶部月份标签
-  var head = document.createElement('div');
-  head.className = 'gh-head';
-  var labelsSpace = document.createElement('div');
-  labelsSpace.className = 'gh-labels-space';
-  head.appendChild(labelsSpace);
-  var months = document.createElement('div');
-  months.className = 'gh-months';
-  var span = document.createElement('span');
-  span.className = 'gh-month';
-  span.style.width = 'auto';
-  span.textContent = year + ' 年 ' + (month + 1) + ' 月';
-  months.appendChild(span);
-  head.appendChild(months);
-  container.appendChild(head);
+  // 每个月份一个独立块（头部标签 + 星期列 + 周列），并排排列
+  for (var mi = 0; mi < count; mi++) {
+    var mDate = new Date(year, month + mi, 1);
+    var y = mDate.getFullYear();
+    var m = mDate.getMonth();
 
-  // 主体：左侧星期标签列 + 周列
-  var body = document.createElement('div');
-  body.className = 'gh-body';
-  var labels = document.createElement('div');
-  labels.className = 'gh-labels';
-  for (var i = 0; i < 7; i++) {
-    var lab = document.createElement('span');
-    lab.className = 'gh-label';
-    lab.textContent = WEEKDAYS[i];
-    labels.appendChild(lab);
-  }
-  body.appendChild(labels);
+    var block = document.createElement('div');
+    block.className = 'gh-month-block';
 
-  var cols = document.createElement('div');
-  cols.className = 'gh-cols';
-  var totalCells = firstDay + daysInMonth;              // 从周日对齐到月末的总格数
-  var weekCount = Math.ceil(totalCells / 7);            // 需要的周列数
-  for (var w = 0; w < weekCount; w++) {
-    var col = document.createElement('div');
-    col.className = 'gh-col';
-    for (var d = 0; d < 7; d++) {
-      var dayIndex = w * 7 + d - firstDay + 1;          // 当月第几天（1..daysInMonth）
-      var cell = document.createElement('span');
-      if (dayIndex < 1 || dayIndex > daysInMonth) {
-        // 当月之外的空位：隐藏占位，保持周对齐
-        cell.className = 'gh-cell c0';
-        cell.style.visibility = 'hidden';
-      } else {
-        var dayStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(dayIndex).padStart(2, '0');
-        var v = byDay[dayStr] || 0;
-        cell.className = 'gh-cell ' + levelClass(v, max);
-        cell.title = dayStr + '：' + v + ' 篇';
-      }
-      col.appendChild(cell);
+    var daysInMonth = new Date(y, m + 1, 0).getDate(); // 当月实际天数
+    var firstDay = new Date(y, m, 1).getDay();          // 1 号是星期几（0=周日）
+
+    // 顶部月份标签
+    var head = document.createElement('div');
+    head.className = 'gh-head';
+    var labelsSpace = document.createElement('div');
+    labelsSpace.className = 'gh-labels-space';
+    head.appendChild(labelsSpace);
+    var monthsEl = document.createElement('div');
+    monthsEl.className = 'gh-months';
+    var span = document.createElement('span');
+    span.className = 'gh-month';
+    span.style.width = 'auto';
+    span.textContent = y + ' 年 ' + (m + 1) + ' 月';
+    monthsEl.appendChild(span);
+    head.appendChild(monthsEl);
+    block.appendChild(head);
+
+    // 主体：左侧星期标签列 + 周列
+    var body = document.createElement('div');
+    body.className = 'gh-body';
+    var labels = document.createElement('div');
+    labels.className = 'gh-labels';
+    for (var i = 0; i < 7; i++) {
+      var lab = document.createElement('span');
+      lab.className = 'gh-label';
+      lab.textContent = WEEKDAYS[i];
+      labels.appendChild(lab);
     }
-    cols.appendChild(col);
+    body.appendChild(labels);
+
+    var cols = document.createElement('div');
+    cols.className = 'gh-cols';
+    var totalCells = firstDay + daysInMonth;              // 从周日对齐到月末的总格数
+    var weekCount = Math.ceil(totalCells / 7);            // 需要的周列数
+    for (var w = 0; w < weekCount; w++) {
+      var col = document.createElement('div');
+      col.className = 'gh-col';
+      for (var d = 0; d < 7; d++) {
+        var dayIndex = w * 7 + d - firstDay + 1;          // 当月第几天（1..daysInMonth）
+        var cell = document.createElement('span');
+        if (dayIndex < 1 || dayIndex > daysInMonth) {
+          // 当月之外的空位：隐藏占位，保持周对齐
+          cell.className = 'gh-cell c0';
+          cell.style.visibility = 'hidden';
+        } else {
+          var dayStr = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(dayIndex).padStart(2, '0');
+          var v = byDay[dayStr] || 0;
+          cell.className = 'gh-cell ' + levelClass(v, max);
+          cell.title = dayStr + '：' + v + ' 篇';
+        }
+        col.appendChild(cell);
+      }
+      cols.appendChild(col);
+    }
+    body.appendChild(cols);
+    block.appendChild(body);
+    container.appendChild(block);
   }
-  body.appendChild(cols);
-  container.appendChild(body);
 }

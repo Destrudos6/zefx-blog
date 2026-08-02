@@ -41,7 +41,7 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
         <div class="about-heatmap reveal" style="--d:.2s" data-calendar={JSON.stringify(postCalendar)} data-year={heatmapYear} data-month={heatmapMonth}>
           <h3 class="about-heatmap-title">发帖<span class="ah-hl">热力图</span></h3>
           <div class="about-heatmap-body" id="post-heatmap"></div>
-          <p class="about-heatmap-note mono">当月每日发帖数 · 颜色越深发帖越多</p>
+          <p class="about-heatmap-note mono">近两月每日发帖数 · 颜色越深发帖越多</p>
         </div>
       )}
     </div>
@@ -60,7 +60,7 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
       const max = Math.max(1, ...Object.values(calendar).map(v => Number(v) || 0));
       const year = Number(host.dataset.year) || new Date().getFullYear();
       const month = Number(host.dataset.month) || new Date().getMonth();
-      renderMonthHeatmap(box, calendar, max, year, month);
+      renderMonthHeatmap(box, calendar, max, year, month, 2);
     }
   }
 </script>
@@ -91,6 +91,11 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
     opacity: .6;
     margin: 14px 0 0;
   }
+  .about-heatmap-body {
+    display: flex;
+    gap: 36px;
+    align-items: flex-start;
+  }
 
   @media (max-width: 1000px) {
     .about-cols {
@@ -108,6 +113,9 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
 <style is:global>
   /* 发帖热力图：格子由 JS 动态创建（无 Astro scoped 属性），样式必须全局生效。
      about 区块为深色背景（--ink），配色使用深色主题专用色阶。 */
+  .about-heatmap .gh-month-block {
+    flex-shrink: 0;
+  }
   .about-heatmap .gh-head {
     display: flex;
     align-items: flex-end;
