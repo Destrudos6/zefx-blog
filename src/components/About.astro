@@ -6,9 +6,11 @@ import { getMediaUrl } from '../utils/media';
 interface Props {
   data: AboutData;
   postCalendar?: Record<string, number>;
+  heatmapYear?: number;
+  heatmapMonth?: number;
 }
 
-const { data, postCalendar = {} } = Astro.props;
+const { data, postCalendar = {}, heatmapYear, heatmapMonth } = Astro.props;
 const siteData = await getSiteData();
 const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
 const hasHeatmap = Object.keys(postCalendar).length > 0;
@@ -33,17 +35,17 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
     </div>
 
     {hasHeatmap && (
-      <div class="about-heatmap reveal" style="--d:.2s" data-calendar={JSON.stringify(postCalendar)}>
+      <div class="about-heatmap reveal" style="--d:.2s" data-calendar={JSON.stringify(postCalendar)} data-year={heatmapYear} data-month={heatmapMonth}>
         <h3 class="about-heatmap-title">发帖<span class="ah-hl">热力图</span></h3>
         <div class="about-heatmap-body" id="post-heatmap"></div>
-        <p class="about-heatmap-note mono">最近一年每日发帖数 · 颜色越深发帖越多</p>
+        <p class="about-heatmap-note mono">当月每日发帖数 · 颜色越深发帖越多</p>
       </div>
     )}
   </div>
 </section>
 
 <script>
-  import { calendarToWeeks, renderHeatmap } from '../scripts/heatmap';
+  import { renderMonthHeatmap } from '../scripts/heatmap';
 
   const box = document.getElementById('post-heatmap');
   if (box) {
@@ -52,7 +54,9 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
       let calendar = {};
       try { calendar = JSON.parse(host.dataset.calendar || '{}'); } catch { /* 忽略解析失败 */ }
       const max = Math.max(1, ...Object.values(calendar).map(v => Number(v) || 0));
-      renderHeatmap(box, calendarToWeeks(calendar), max);
+      const year = Number(host.dataset.year) || new Date().getFullYear();
+      const month = Number(host.dataset.month) || new Date().getMonth();
+      renderMonthHeatmap(box, calendar, max, year, month);
     }
   }
 </script>
@@ -127,19 +131,35 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
     flex-direction: column;
     gap: 3px;
   }
+  /* 色阶跟随主题：about 区块背景为 var(--ink)（亮色=深墨蓝、暗色=浅米白），
+     格子配色必须随之反转——亮色主题用亮色系（深背景上清晰），暗色主题用深色系（浅背景上清晰） */
+  .about-heatmap {
+    --hm-c0: rgba(253, 250, 241, .1);
+    --hm-c1: #9be9a8;
+    --hm-c2: #40c463;
+    --hm-c3: #30a14e;
+    --hm-c4: #216e39;
+  }
+  html[data-theme="dark"] .about-heatmap {
+    --hm-c0: rgba(31, 37, 55, .14);
+    --hm-c1: #2d6a4f;
+    --hm-c2: #40916c;
+    --hm-c3: #52b788;
+    --hm-c4: #95d5b2;
+  }
   .about-heatmap .gh-cell {
     width: 10px;
     height: 10px;
     border-radius: 2px;
-    background: rgba(253,250,241,.12);
-    border: 1px solid rgba(253,250,241,.08);
+    background: var(--hm-c0);
+    border: 1px solid transparent;
     flex-shrink: 0;
   }
-  .about-heatmap .gh-cell.c0 { background: rgba(253,250,241,.1); border-color: transparent; }
-  .about-heatmap .gh-cell.c1 { background: #2d6a4f; border-color: transparent; }
-  .about-heatmap .gh-cell.c2 { background: #40916c; border-color: transparent; }
-  .about-heatmap .gh-cell.c3 { background: #52b788; border-color: transparent; }
-  .about-heatmap .gh-cell.c4 { background: #95d5b2; border-color: transparent; }
+  .about-heatmap .gh-cell.c0 { background: var(--hm-c0); }
+  .about-heatmap .gh-cell.c1 { background: var(--hm-c1); }
+  .about-heatmap .gh-cell.c2 { background: var(--hm-c2); }
+  .about-heatmap .gh-cell.c3 { background: var(--hm-c3); }
+  .about-heatmap .gh-cell.c4 { background: var(--hm-c4); }
 
   /* 移动端适配：缩小格子尺寸 + 容器横向滚动，避免 53 列溢出破坏布局 */
   @media (max-width: 640px) {
