@@ -27,6 +27,10 @@ const ogImage = getMediaUrl(coverPath);
 <BaseLayout title={`${project.title} · ZEFX`} ogImage={ogImage}>
   <Header />
 
+  <div class="back-link reveal">
+    <a class="btn" href="/projects" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/projects'}">← 返回</a>
+  </div>
+
   <div class="project-hero reveal">
     <div class="project-hero-inner">
       <span class="project-status-badge">
@@ -90,10 +94,6 @@ const ogImage = getMediaUrl(coverPath);
       </div>
     )}
   </section>
-
-  <div class="back-link reveal" style="margin-top:20px">
-    <a class="btn" href="/projects" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/projects'}">← 返回</a>
-  </div>
 
   <Giscus />
   <Footer />
@@ -216,7 +216,7 @@ const ogImage = getMediaUrl(coverPath);
     border-top: 2px dashed rgba(128,128,128,.25);
   }
 
-  .back-link { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+  .back-link { max-width: 1200px; margin: 0 auto; padding: 80px 24px 24px; }
   .btn {
     display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
     background: var(--red); color: #fff; border: var(--bd); padding: 12px 24px;
