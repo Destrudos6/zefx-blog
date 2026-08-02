@@ -411,12 +411,12 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .project .tag{font-family:var(--mono); font-size:11px; color:var(--red); background:var(--paper); border:var(--bd); padding:2px 8px; font-weight:700}
 
 /* ============ 关于(反白整版) ============ */
-.about{background:var(--ink); color:var(--paper); border-top:3px solid var(--ink); border-bottom:3px solid var(--ink)}
+.about{background:var(--card); color:var(--ink); border-top:3px solid var(--ink); border-bottom:3px solid var(--ink)}
 .about .sec-no{color:var(--lemon)}
 .about-grid{display:grid; grid-template-columns:auto 1fr; gap:60px; align-items:center}
 .ava{
   width:132px; height:132px; transform:rotate(-3deg);
-  border:3px solid var(--paper);
+  border:3px solid var(--ink);
   box-shadow:9px 9px 0 var(--red);
   overflow:hidden;
   transition:transform .3s;

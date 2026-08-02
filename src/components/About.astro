@@ -18,29 +18,33 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
 
 <section class="about" id="about">
   <div class="section">
-    <div class="about-grid">
-      <div class="ava reveal"><img src={avatarUrl} alt="头像" width="132" height="132" /></div>
-      <div class="reveal" style="--d:.1s">
-        <h2>关于站主</h2>
-        <p class="bio">{data.bio}</p>
-        <p class="facts">
-          {data.facts.map(f => <><b>▸</b>{f}<br /></>)}
-        </p>
+    <div class="about-cols">
+      <div class="about-left">
+        <div class="about-grid">
+          <div class="ava reveal"><img src={avatarUrl} alt="头像" width="132" height="132" /></div>
+          <div class="reveal" style="--d:.1s">
+            <h2>关于站主</h2>
+            <p class="bio">{data.bio}</p>
+            <p class="facts">
+              {data.facts.map(f => <><b>▸</b>{f}<br /></>)}
+            </p>
+          </div>
+        </div>
+        <div class="stats reveal" style="--d:.15s">
+          {data.stats.map(s => (
+            <div class="stat"><div class="num" data-count={s.count}>0</div><small>{s.unit}</small></div>
+          ))}
+        </div>
       </div>
-    </div>
-    <div class="stats reveal" style="--d:.15s">
-      {data.stats.map(s => (
-        <div class="stat"><div class="num" data-count={s.count}>0</div><small>{s.unit}</small></div>
-      ))}
-    </div>
 
-    {hasHeatmap && (
-      <div class="about-heatmap reveal" style="--d:.2s" data-calendar={JSON.stringify(postCalendar)} data-year={heatmapYear} data-month={heatmapMonth}>
-        <h3 class="about-heatmap-title">发帖<span class="ah-hl">热力图</span></h3>
-        <div class="about-heatmap-body" id="post-heatmap"></div>
-        <p class="about-heatmap-note mono">当月每日发帖数 · 颜色越深发帖越多</p>
-      </div>
-    )}
+      {hasHeatmap && (
+        <div class="about-heatmap reveal" style="--d:.2s" data-calendar={JSON.stringify(postCalendar)} data-year={heatmapYear} data-month={heatmapMonth}>
+          <h3 class="about-heatmap-title">发帖<span class="ah-hl">热力图</span></h3>
+          <div class="about-heatmap-body" id="post-heatmap"></div>
+          <p class="about-heatmap-note mono">当月每日发帖数 · 颜色越深发帖越多</p>
+        </div>
+      )}
+    </div>
   </div>
 </section>
 
@@ -62,9 +66,16 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
 </script>
 
 <style>
+  .about-cols {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 48px;
+    align-items: center;
+  }
   .about-heatmap {
-    margin-top: 56px;
-    max-width: 640px;
+    max-width: 480px;
+    padding-left: 48px;
+    border-left: 2px dashed rgba(128,128,128,.4);
   }
   .about-heatmap-title {
     font-family: var(--serif);
@@ -80,6 +91,18 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
     opacity: .6;
     margin: 14px 0 0;
   }
+
+  @media (max-width: 1000px) {
+    .about-cols {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .about-heatmap {
+      padding-left: 0;
+      border-left: none;
+      max-width: 100%;
+    }
+  }
 </style>
 
 <style is:global>
@@ -90,67 +113,69 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
     align-items: flex-end;
   }
   .about-heatmap .gh-labels-space {
-    width: 28px;
+    width: 36px;
     flex-shrink: 0;
   }
   .about-heatmap .gh-months {
     display: flex;
-    gap: 3px;
+    gap: 4px;
   }
   .about-heatmap .gh-month {
-    font-size: 9px;
+    font-size: 13px;
+    font-weight: 700;
     line-height: 1;
-    color: rgba(253,250,241,.55);
+    color: var(--ink);
     white-space: nowrap;
     overflow: visible;
     text-align: center;
   }
   .about-heatmap .gh-body {
     display: flex;
-    gap: 3px;
+    gap: 4px;
   }
   .about-heatmap .gh-labels {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    width: 28px;
+    gap: 4px;
+    width: 36px;
     flex-shrink: 0;
   }
   .about-heatmap .gh-label {
-    height: 10px;
-    font-size: 9px;
-    line-height: 10px;
-    color: rgba(253,250,241,.55);
+    height: 14px;
+    font-size: 12px;
+    line-height: 14px;
+    color: var(--ink);
+    opacity: .75;
   }
   .about-heatmap .gh-cols {
     display: flex;
-    gap: 3px;
+    gap: 4px;
   }
   .about-heatmap .gh-col {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
-  /* 色阶跟随主题：about 区块背景为 var(--ink)（亮色=深墨蓝、暗色=浅米白），
-     格子配色必须随之反转——亮色主题用亮色系（深背景上清晰），暗色主题用深色系（浅背景上清晰） */
+  /* 色阶跟随主题：about 区块背景为 var(--card)（亮色=浅米白、暗色=深蓝黑），
+     格子配色与其对比——亮色主题（浅背景）用深绿系，暗色主题（深背景）用亮绿系 */
   .about-heatmap {
-    --hm-c0: rgba(253, 250, 241, .1);
-    --hm-c1: #9be9a8;
-    --hm-c2: #40c463;
-    --hm-c3: #30a14e;
-    --hm-c4: #216e39;
-  }
-  html[data-theme="dark"] .about-heatmap {
-    --hm-c0: rgba(31, 37, 55, .14);
+    --hm-c0: rgba(31, 37, 55, .12);
     --hm-c1: #2d6a4f;
     --hm-c2: #40916c;
     --hm-c3: #52b788;
     --hm-c4: #95d5b2;
   }
+  html[data-theme="dark"] .about-heatmap {
+    --hm-c0: rgba(253, 250, 241, .14);
+    --hm-c1: #9be9a8;
+    --hm-c2: #40c463;
+    --hm-c3: #30a14e;
+    --hm-c4: #216e39;
+  }
   .about-heatmap .gh-cell {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
     background: var(--hm-c0);
     border: 1px solid transparent;
     flex-shrink: 0;
@@ -161,7 +186,7 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
   .about-heatmap .gh-cell.c3 { background: var(--hm-c3); }
   .about-heatmap .gh-cell.c4 { background: var(--hm-c4); }
 
-  /* 移动端适配：缩小格子尺寸 + 容器横向滚动，避免 53 列溢出破坏布局 */
+  /* 移动端适配：月度格子少，保持较大的格子尺寸，仅略微缩小并允许横向滚动 */
   @media (max-width: 640px) {
     .about-heatmap {
       max-width: 100%;
@@ -172,31 +197,31 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
     }
     .about-heatmap .gh-head,
     .about-heatmap .gh-body {
-      gap: 2px;
+      gap: 3px;
     }
     .about-heatmap .gh-labels-space,
     .about-heatmap .gh-labels {
-      width: 20px;
+      width: 28px;
     }
     .about-heatmap .gh-months,
     .about-heatmap .gh-cols {
-      gap: 2px;
+      gap: 3px;
     }
     .about-heatmap .gh-month {
-      font-size: 8px;
+      font-size: 12px;
     }
     .about-heatmap .gh-label {
-      height: 7px;
-      font-size: 8px;
-      line-height: 7px;
+      height: 12px;
+      font-size: 11px;
+      line-height: 12px;
     }
     .about-heatmap .gh-col {
-      gap: 2px;
+      gap: 3px;
     }
     .about-heatmap .gh-cell {
-      width: 7px;
-      height: 7px;
-      border-radius: 1.5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 2.5px;
     }
   }
 </style>
