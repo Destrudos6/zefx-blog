@@ -21,6 +21,16 @@ const tickerItems = await getTickerItems();
 const aboutData = await getAboutData();
 const allProjects = await getAllProjects();
 const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
+
+// 统计每日发帖数（按东八区日期），供首页"关于站主"右侧热力图使用
+// 产出 { ts: count }，ts 为该日东八区零点对应的 UTC 时间戳
+const postCalendar: Record<string, number> = {};
+for (const p of allPosts) {
+  const m = /^(\d{4})\.(\d{2})\.(\d{2})/.exec(p.date || '');
+  if (!m) continue;
+  const ts = Math.floor((Date.UTC(+m[1], +m[2] - 1, +m[3], 0, 0, 0) - 8 * 3600 * 1000) / 1000);
+  postCalendar[ts] = (postCalendar[ts] || 0) + 1;
+}
 ---
 
 <BaseLayout>
@@ -104,7 +114,7 @@ const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
     </div>
   </section>
 
-  <About data={aboutData} />
+  <About data={aboutData} postCalendar={postCalendar} />
   <Friends links={friendLinks} />
   <Footer />
   <BackToTop />

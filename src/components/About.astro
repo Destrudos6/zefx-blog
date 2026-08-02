@@ -5,11 +5,13 @@ import { getMediaUrl } from '../utils/media';
 
 interface Props {
   data: AboutData;
+  postCalendar?: Record<string, number>;
 }
 
-const { data } = Astro.props;
+const { data, postCalendar = {} } = Astro.props;
 const siteData = await getSiteData();
 const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
+const hasHeatmap = Object.keys(postCalendar).length > 0;
 ---
 
 <section class="about" id="about">
@@ -29,5 +31,113 @@ const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
         <div class="stat"><div class="num" data-count={s.count}>0</div><small>{s.unit}</small></div>
       ))}
     </div>
+
+    {hasHeatmap && (
+      <div class="about-heatmap reveal" style="--d:.2s" data-calendar={JSON.stringify(postCalendar)}>
+        <h3 class="about-heatmap-title">发帖<span class="ah-hl">热力图</span></h3>
+        <div class="about-heatmap-body" id="post-heatmap"></div>
+        <p class="about-heatmap-note mono">最近一年每日发帖数 · 颜色越深发帖越多</p>
+      </div>
+    )}
   </div>
 </section>
+
+<script>
+  import { calendarToWeeks, renderHeatmap } from '../scripts/heatmap';
+
+  const box = document.getElementById('post-heatmap');
+  if (box) {
+    const host = box.closest('[data-calendar]');
+    if (host) {
+      let calendar = {};
+      try { calendar = JSON.parse(host.dataset.calendar || '{}'); } catch { /* 忽略解析失败 */ }
+      const max = Math.max(1, ...Object.values(calendar).map(v => Number(v) || 0));
+      renderHeatmap(box, calendarToWeeks(calendar), max);
+    }
+  }
+</script>
+
+<style>
+  .about-heatmap {
+    margin-top: 56px;
+    max-width: 640px;
+  }
+  .about-heatmap-title {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 22px;
+    margin: 0 0 16px;
+  }
+  .ah-hl {
+    background-image: linear-gradient(transparent 64%, var(--red) 64%);
+  }
+  .about-heatmap-note {
+    font-size: 10.5px;
+    opacity: .6;
+    margin: 14px 0 0;
+  }
+</style>
+
+<style is:global>
+  /* 发帖热力图：格子由 JS 动态创建（无 Astro scoped 属性），样式必须全局生效。
+     about 区块为深色背景（--ink），配色使用深色主题专用色阶。 */
+  .about-heatmap .gh-head {
+    display: flex;
+    align-items: flex-end;
+  }
+  .about-heatmap .gh-labels-space {
+    width: 28px;
+    flex-shrink: 0;
+  }
+  .about-heatmap .gh-months {
+    display: flex;
+    gap: 3px;
+  }
+  .about-heatmap .gh-month {
+    font-size: 9px;
+    line-height: 1;
+    color: rgba(253,250,241,.55);
+    white-space: nowrap;
+    overflow: visible;
+    text-align: center;
+  }
+  .about-heatmap .gh-body {
+    display: flex;
+    gap: 3px;
+  }
+  .about-heatmap .gh-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 28px;
+    flex-shrink: 0;
+  }
+  .about-heatmap .gh-label {
+    height: 10px;
+    font-size: 9px;
+    line-height: 10px;
+    color: rgba(253,250,241,.55);
+  }
+  .about-heatmap .gh-cols {
+    display: flex;
+    gap: 3px;
+  }
+  .about-heatmap .gh-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .about-heatmap .gh-cell {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: rgba(253,250,241,.12);
+    border: 1px solid rgba(253,250,241,.08);
+    flex-shrink: 0;
+  }
+  .about-heatmap .gh-cell.c0 { background: rgba(253,250,241,.1); border-color: transparent; }
+  .about-heatmap .gh-cell.c1 { background: #2d6a4f; border-color: transparent; }
+  .about-heatmap .gh-cell.c2 { background: #40916c; border-color: transparent; }
+  .about-heatmap .gh-cell.c3 { background: #52b788; border-color: transparent; }
+  .about-heatmap .gh-cell.c4 { background: #95d5b2; border-color: transparent; }
+</style>

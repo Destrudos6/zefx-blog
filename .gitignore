@@ -31,7 +31,7 @@ build-log.txt
 
 # AI agent state
 .codeartsdoer/
-
+.atomcode/
 # B2 content index (generated per deployment)
 content-index.json
 
