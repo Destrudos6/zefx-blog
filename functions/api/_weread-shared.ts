@@ -54,10 +54,16 @@ export function normalizeBook(b) {
 
 /** 阅读统计 → 前端所需字段 */
 export function normalizeStats(d) {
+  const readDays = d.readDays || 0;
+  const totalReadTime = d.totalReadTime || 0;
+  // overall 模式 API 不返回 dayAverageReadTime，按 总时长 ÷ 阅读天数 兜底计算
+  const dayAverageReadTime = d.dayAverageReadTime != null
+    ? d.dayAverageReadTime
+    : (readDays > 0 ? Math.round(totalReadTime / readDays) : 0);
   return {
-    readDays: d.readDays || 0,
-    totalReadTime: d.totalReadTime || 0,
-    dayAverageReadTime: d.dayAverageReadTime || 0,
+    readDays,
+    totalReadTime,
+    dayAverageReadTime,
     compare: d.compare == null ? null : d.compare,
     readStat: d.readStat || [],
     readLongest: d.readLongest || [],
