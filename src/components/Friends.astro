@@ -69,7 +69,10 @@ const { links, variant = "compact", showExchange = false } = Astro.props;
             </div>
         </>
     ) : (
-        <>
+        <section class="section" id="friends">
+            <div class="sec-head reveal">
+                <h2>友链 · 还在认真写博客的<span class="hl">友友</span></h2>
+            </div>
             <div class="flinks reveal">
                 {
                     links.map((f) => {
@@ -104,7 +107,7 @@ const { links, variant = "compact", showExchange = false } = Astro.props;
                     </p>
                 )
             }
-        </>
+        </section>
     )
 }
 
