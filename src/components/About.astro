@@ -140,4 +140,43 @@ const hasHeatmap = Object.keys(postCalendar).length > 0;
   .about-heatmap .gh-cell.c2 { background: #40916c; border-color: transparent; }
   .about-heatmap .gh-cell.c3 { background: #52b788; border-color: transparent; }
   .about-heatmap .gh-cell.c4 { background: #95d5b2; border-color: transparent; }
+
+  /* 移动端适配：缩小格子尺寸 + 容器横向滚动，避免 53 列溢出破坏布局 */
+  @media (max-width: 640px) {
+    .about-heatmap {
+      max-width: 100%;
+    }
+    .about-heatmap-body {
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .about-heatmap .gh-head,
+    .about-heatmap .gh-body {
+      gap: 2px;
+    }
+    .about-heatmap .gh-labels-space,
+    .about-heatmap .gh-labels {
+      width: 20px;
+    }
+    .about-heatmap .gh-months,
+    .about-heatmap .gh-cols {
+      gap: 2px;
+    }
+    .about-heatmap .gh-month {
+      font-size: 8px;
+    }
+    .about-heatmap .gh-label {
+      height: 7px;
+      font-size: 8px;
+      line-height: 7px;
+    }
+    .about-heatmap .gh-col {
+      gap: 2px;
+    }
+    .about-heatmap .gh-cell {
+      width: 7px;
+      height: 7px;
+      border-radius: 1.5px;
+    }
+  }
 </style>
