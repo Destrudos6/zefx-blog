@@ -92,7 +92,6 @@ const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `;
     flex-direction: column;
     position: fixed;
     width: 320px;
-    height: 400px;
     padding-top: 24px;
     background: var(--card);
     border: 3px solid var(--ink);
@@ -108,9 +107,8 @@ const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `;
 
   .preview-cover {
     position: relative;
-    width: 200px;
-    height: 200px;
-    align-self: center;
+    width: 100%;
+    aspect-ratio: var(--cover-ratio);
     flex-shrink: 0;
     display: grid;
     place-items: center;
