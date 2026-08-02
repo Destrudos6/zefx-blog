@@ -56,8 +56,9 @@ export function normalizeBook(b) {
 export function normalizeStats(d) {
   const readDays = d.readDays || 0;
   const totalReadTime = d.totalReadTime || 0;
-  // overall 模式 API 不返回 dayAverageReadTime，按 总时长 ÷ 阅读天数 兜底计算
-  const dayAverageReadTime = d.dayAverageReadTime != null
+  // overall 模式 API 返回的 dayAverageReadTime 为 0（而非缺失），
+  // 故按"有实际值才保留"判断：0 或缺失都按 总时长 ÷ 阅读天数 兜底计算
+  const dayAverageReadTime = d.dayAverageReadTime > 0
     ? d.dayAverageReadTime
     : (readDays > 0 ? Math.round(totalReadTime / readDays) : 0);
   return {
