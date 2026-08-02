@@ -92,6 +92,7 @@ const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `;
     flex-direction: column;
     position: fixed;
     width: 320px;
+    height: 400px; /* 与热门文章卡片（.hot-posts）等高，保持视觉协调 */
     padding-top: 24px;
     background: var(--card);
     border: 3px solid var(--ink);
@@ -131,7 +132,7 @@ const catStyle = data ? `--ac:${data.categoryColor}${data.categoryTextColor ? `;
     filter: grayscale(.15);
   }
 
-  .preview-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .preview-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
   .preview-meta { display: flex; align-items: center; gap: 8px; }
   .cat {
     background: var(--ac, var(--blue)); color: var(--actext, #fff);
