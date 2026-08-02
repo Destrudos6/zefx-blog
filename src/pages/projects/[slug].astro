@@ -4,6 +4,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BackToTop from '../../components/BackToTop.astro';
 import Cover from '../../components/Cover.astro';
+import Giscus from '../../components/Giscus.astro';
 import { getAllProjects, getProjectPosts } from '../../data/content';
 import { getMediaUrl } from '../../utils/media';
 
@@ -94,6 +95,7 @@ const ogImage = getMediaUrl(coverPath);
     <a class="btn" href="/projects" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/projects'}">← 返回</a>
   </div>
 
+  <Giscus />
   <Footer />
   <BackToTop />
 </BaseLayout>
