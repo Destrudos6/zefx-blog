@@ -391,7 +391,11 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .project-status.done{background:var(--lemon); color:var(--ink)}
 .project-status.pause{background:var(--soft); color:var(--paper)}
 
-.project-desc{font-size:13.5px; color:var(--soft); line-height:1.6}
+.project-desc{
+  font-size:13.5px; color:var(--soft); line-height:1.6;
+  /* 摘要长文本最多 3 行，超出省略号，防止拉高项目卡片 */
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
 
 /* 更新日志 */
 .project-updates{display:flex; flex-direction:column; gap:8px; padding:10px 0; border-top:2px dashed var(--ink); border-bottom:2px dashed var(--ink)}
@@ -402,7 +406,11 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   /* 日志长文本最多 2 行，防止单条日志把项目卡片拉高 */
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
-.project-tags{display:flex; gap:8px; flex-wrap:wrap}
+.project-tags{
+  display:flex; gap:8px; flex-wrap:wrap;
+  /* 标签很多时限制为两行，超出隐藏，防止撑高项目卡片 */
+  max-height:48px; overflow:hidden;
+}
 .project .tag{font-family:var(--mono); font-size:11px; color:var(--red); background:var(--paper); border:var(--bd); padding:2px 8px; font-weight:700}
 
 /* ============ 关于(反白整版) ============ */
