@@ -1,5 +1,5 @@
 import { getAllProjects } from '../data/content';
-import { getMediaUrl } from '../utils/media';
+import { getMediaUrl, getPostCoverPath } from '../utils/media';
 import { getCollection } from 'astro:content';
 
 export async function GET() {
@@ -23,12 +23,8 @@ export async function GET() {
         categoryColor: p.data.categoryColor,
         date: p.data.date,
         excerpt: p.data.excerpt,
-        content: (p.body || '').replace(/\r\n/g, '\n').slice(0, 20000),
-        coverImage: p.data.coverImage
-          ? getMediaUrl(p.data.coverImage)
-          : (p.data.project && projectMap[p.data.project]
-              ? getMediaUrl(projectMap[p.data.project].coverImage || `projects/${projectMap[p.data.project].slug}/cover.png`)
-              : null),
+        content: (p.body || '').replace(/\r\n/g, '\n').slice(0, 5000),
+        coverImage: getPostCoverPath(p.data, projectMap) ? getMediaUrl(getPostCoverPath(p.data, projectMap)) : null,
         project: proj,
       };
     }),

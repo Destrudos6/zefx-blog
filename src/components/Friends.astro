@@ -1,5 +1,6 @@
 ---
 import type { FriendLink } from "../data/backblaze";
+import { safeHost } from "../utils/url";
 
 interface Props {
     links: FriendLink[];
@@ -7,16 +8,6 @@ interface Props {
 }
 
 const { links, showExchange = false } = Astro.props;
-
-/** 从友链 URL 安全提取域名；无效 URL 返回空串（不显示 favicon） */
-function safeHost(url?: string): string {
-    if (!url || !/^https?:\/\//i.test(url)) return '';
-    try {
-        return new URL(url).hostname;
-    } catch {
-        return '';
-    }
-}
 ---
 
 <section class="section" id="friends">
@@ -38,10 +29,9 @@ function safeHost(url?: string): string {
                                 width="16"
                                 height="16"
                                 decoding="async"
+                                loading="lazy"
                                 referrerpolicy="no-referrer"
                                 data-host={host}
-                                onload="this.previousElementSibling.style.display='none';this.classList.add('ok')"
-                                onerror="if(!this.dataset.fbk){this.dataset.fbk='1';this.src='https://www.google.com/s2/favicons?domain='+this.dataset.host+'&sz=64'}else{this.style.display='none'}"
                             />
                         )}
                         {f.name}
@@ -59,3 +49,17 @@ function safeHost(url?: string): string {
         )
     }
 </section>
+
+<script>
+  // favicon 加载成功隐藏占位圆点，失败隐藏图标（无第三方回退，保护访客隐私）
+  document.querySelectorAll('.fl-ico').forEach((img) => {
+    img.addEventListener('load', () => {
+      const dot = img.previousElementSibling;
+      if (dot) dot.style.display = 'none';
+      img.classList.add('ok');
+    });
+    img.addEventListener('error', () => {
+      img.style.display = 'none';
+    });
+  });
+</script>

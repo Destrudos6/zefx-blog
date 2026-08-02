@@ -22,6 +22,15 @@ export async function onRequestGet(context) {
     });
   }
 
+  // 参数格式校验：GitHub 用户名/仓库名只允许字母数字、点、下划线、连字符。
+  // 防止非法字符触发额外的 API 请求消耗配额，也避免注入异常路径。
+  if (!/^[A-Za-z0-9._-]+$/.test(owner) || !/^[A-Za-z0-9._-]+$/.test(repo)) {
+    return new Response(JSON.stringify({ error: 'Invalid owner or repo' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   // 白名单校验：配置了 GITHUB_OWNER / GITHUB_REPO 时，只允许查询该仓库。
   // GitHub 用户名/仓库名大小写不敏感，统一转小写比较，避免因大小写不一致误拦截。
   const expectedOwner = (env.GITHUB_OWNER || '').trim().toLowerCase();

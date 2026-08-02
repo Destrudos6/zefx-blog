@@ -7,7 +7,7 @@ import MobileActions from '../../components/MobileActions.astro';
 import Giscus from '../../components/Giscus.astro';
 import Cover from '../../components/Cover.astro';
 import { getCollection, render } from 'astro:content';
-import { getMediaUrl } from '../../utils/media';
+import { getMediaUrl, getPostCoverPath } from '../../utils/media';
 
 const allProjects = await getCollection('projects');
 const projectMap = Object.fromEntries(allProjects.map(p => [p.id.split('/')[0], p]));
@@ -53,17 +53,15 @@ export async function getStaticPaths() {
 
 const { post, toc, Content, prevPost, nextPost, relatedPosts } = Astro.props;
 const projectInfo = post.data.project ? projectMap[post.data.project] : null;
-// 文章封面缺失但关联项目时，回退到项目封面（与项目卡片/详情页同一路径规则）
-const fallbackCover = projectInfo
-  ? projectInfo.data.coverImage || `projects/${post.data.project}/cover.png`
-  : null;
-const coverImage = post.data.coverImage ? getMediaUrl(post.data.coverImage) : (fallbackCover ? getMediaUrl(fallbackCover) : null);
+// 文章封面缺失但关联项目时，回退到项目封面（统一规则见 getPostCoverPath）
+const coverPath = getPostCoverPath(post.data, projectMap ? Object.fromEntries(allProjects.map(p => [p.id.split('/')[0], p])) : null);
+const coverImage = coverPath ? getMediaUrl(coverPath) : null;
 ---
 
 <BaseLayout title={`${post.data.title} · ZEFX`} ogImage={post.data.coverImage ? getMediaUrl(post.data.coverImage) : undefined}>
   <Header />
   <div class="article-page">
-  <a class="back-bar reveal" href="/posts" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/posts'}">← 返回</a>
+  <a class="back-bar reveal" href="/posts" data-back-link>← 返回</a>
   <div class="article-header reveal">
     <div class="article-header-main">
       <div class="article-meta">

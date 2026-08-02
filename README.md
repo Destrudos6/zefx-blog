@@ -267,7 +267,7 @@ git push origin main
 ## 项目结构
 
 ```
-zefx/
+zefx-blog/
 ├── .env.example            # 环境变量模板
 ├── astro.config.mjs        # Astro 配置（含 sitemap）
 ├── content-index.json      # B2 内容索引（构建时生成）

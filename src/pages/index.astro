@@ -11,6 +11,7 @@ import Footer from '../components/Footer.astro';
 import BackToTop from '../components/BackToTop.astro';
 import { getAllPostsFromCollection, getAllProjects } from '../data/content';
 import { getFriendLinks, getTickerItems, getAboutData } from '../data/backblaze';
+import { getPostCoverPath } from '../utils/media';
 
 const allPosts = await getAllPostsFromCollection();
 const latest = allPosts[0] ?? null;
@@ -59,18 +60,13 @@ for (const p of allPosts) {
 
 <BaseLayout>
   <Header />
-  <Hero hotPosts={allPosts.map(p => {
-    // 文章封面缺失但关联项目时，回退到项目封面（与项目卡片/详情页同一路径规则）
-    const fallbackCover = p.project && projectMap[p.project]
-      ? projectMap[p.project].coverImage || `projects/${projectMap[p.project].slug}/cover.png`
-      : undefined;
-    return {
-      slug: p.slug, title: p.title, category: p.category, categoryColor: p.categoryColor,
-      categoryTextColor: p.categoryTextColor, excerpt: p.excerpt, coverColor: p.categoryColor,
-      coverImage: p.coverImage || fallbackCover,
-      project: p.project ? projectMap[p.project] ?? null : null,
-    };
-  })} />
+  <Hero hotPosts={allPosts.map(p => ({
+    // 文章封面缺失但关联项目时，回退到项目封面（统一规则见 getPostCoverPath）
+    slug: p.slug, title: p.title, category: p.category, categoryColor: p.categoryColor,
+    categoryTextColor: p.categoryTextColor, excerpt: p.excerpt, coverColor: p.categoryColor,
+    coverImage: getPostCoverPath(p, projectMap),
+    project: p.project ? projectMap[p.project] ?? null : null,
+  }))} />
   <Ticker items={tickerItems} />
 
   <section class="section" id="posts">
@@ -90,9 +86,7 @@ for (const p of allPosts) {
           readTime={latest.readTime}
           comments={latest.comments}
           href={`/posts/${latest.slug}`}
-          coverImage={latest.coverImage || (latest.project && projectMap[latest.project]
-            ? projectMap[latest.project].coverImage || `projects/${projectMap[latest.project].slug}/cover.png`
-            : undefined)}
+          coverImage={getPostCoverPath(latest, projectMap)}
           project={latest.project ? projectMap[latest.project] ?? null : null}
         />
       )}
@@ -107,9 +101,7 @@ for (const p of allPosts) {
           readTime={secondLatest.readTime}
           comments={secondLatest.comments}
           href={`/posts/${secondLatest.slug}`}
-          coverImage={secondLatest.coverImage || (secondLatest.project && projectMap[secondLatest.project]
-            ? projectMap[secondLatest.project].coverImage || `projects/${projectMap[secondLatest.project].slug}/cover.png`
-            : undefined)}
+          coverImage={getPostCoverPath(secondLatest, projectMap)}
           project={secondLatest.project ? projectMap[secondLatest.project] ?? null : null}
         />
       )}
@@ -124,9 +116,7 @@ for (const p of allPosts) {
           readTime={thirdLatest.readTime}
           comments={thirdLatest.comments}
           href={`/posts/${thirdLatest.slug}`}
-          coverImage={thirdLatest.coverImage || (thirdLatest.project && projectMap[thirdLatest.project]
-            ? projectMap[thirdLatest.project].coverImage || `projects/${projectMap[thirdLatest.project].slug}/cover.png`
-            : undefined)}
+          coverImage={getPostCoverPath(thirdLatest, projectMap)}
           project={thirdLatest.project ? projectMap[thirdLatest.project] ?? null : null}
         />
       )}

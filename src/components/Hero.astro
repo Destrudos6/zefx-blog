@@ -26,7 +26,7 @@ const { hero } = siteData.site;
       <h1 class="reveal" style="--d:.08s">
         {hero.title.split('').map(c => <span class="word">{c}</span>)}
       </h1>
-      <p class="subtitle reveal" style="--d:.16s" set:html={hero.subtitle}></p>
+      <p class="subtitle reveal" style="--d:.16s">{hero.subtitle}</p>
       <p class="tagline reveal" style="--d:.22s">
         {hero.tagline}<span class="caret"></span>
       </p>

@@ -28,7 +28,7 @@ const ogImage = getMediaUrl(coverPath);
   <Header />
 
   <div class="back-link reveal">
-    <a class="btn" href="/projects" onclick="event.preventDefault();if(window.history.length>1){window.history.back()}else{window.location.href='/projects'}">← 返回</a>
+    <a class="btn" href="/projects" data-back-link>← 返回</a>
   </div>
 
   <div class="project-hero reveal">

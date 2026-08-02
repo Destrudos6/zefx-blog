@@ -1,6 +1,6 @@
 ---
 import Cover from './Cover.astro';
-import { getMediaUrl } from '../utils/media';
+import { getMediaUrl, getPostCoverPath } from '../utils/media';
 import type { Post, Project } from '../data/content';
 
 interface Props {
@@ -11,11 +11,9 @@ interface Props {
 }
 
 const { post, projectMap, color, index } = Astro.props;
-// 文章封面缺失但关联项目时，回退到项目封面（与项目卡片/详情页同一路径规则）
-const fallbackCover = post.project && projectMap[post.project]
-  ? projectMap[post.project].coverImage || `projects/${projectMap[post.project].slug}/cover.png`
-  : null;
-const coverImage = post.coverImage ? getMediaUrl(post.coverImage) : (fallbackCover ? getMediaUrl(fallbackCover) : null);
+// 文章封面缺失但关联项目时，回退到项目封面（统一规则见 getPostCoverPath）
+const coverPath = getPostCoverPath(post, projectMap);
+const coverImage = coverPath ? getMediaUrl(coverPath) : null;
 ---
 
 <a class="post-card reveal" href={`/posts/${post.slug}`} style={`--ac:${post.categoryColor}; --cover-bg:${color}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}`} data-category={post.category}>

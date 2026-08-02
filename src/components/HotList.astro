@@ -39,7 +39,7 @@ const { posts } = Astro.props;
 
   document.addEventListener('DOMContentLoaded', () => {
     const items = document.querySelectorAll('#hot-list li');
-    let hideTimer = null;
+    let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
     items.forEach(li => {
       li.addEventListener('mouseenter', () => {

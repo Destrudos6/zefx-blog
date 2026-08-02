@@ -74,32 +74,6 @@ const nextPage = page < totalPages ? `/posts/${page + 1}` : null;
 </style>
 
 <script define:vars={{ catMap }}>
-  (function() {
-    var buttons = document.querySelectorAll('.cat-btn');
-    var grid = document.getElementById('posts-grid');
-    if (!grid) return;
-    var items = grid.querySelectorAll('.post-card');
-    buttons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        buttons.forEach(function(b) { b.classList.remove('on'); b.setAttribute('aria-pressed','false'); });
-        btn.classList.add('on'); btn.setAttribute('aria-pressed','true');
-        var label = btn.dataset.label;
-        var en = Object.entries(catMap).find(function(v) { return v[1] === label; })?.[0] || '';
-        history.replaceState(null, '', en ? '#' + en : window.location.pathname);
-        var visibleCount = 0;
-        items.forEach(function(item) {
-          var show = (label === '全部' || item.dataset.category === label);
-          item.style.display = show ? '' : 'none';
-          if (show) visibleCount++;
-        });
-        grid.style.setProperty('display', visibleCount > 0 ? 'grid' : 'none');
-      });
-    });
-    var hash = window.location.hash.slice(1);
-    if (hash) {
-      var zhLabel = catMap[hash] || hash;
-      var target = document.querySelector('.cat-btn[data-label="' + zhLabel + '"]');
-      if (target) target.click();
-    }
-  })();
+  import { initCategoryFilter } from '../../scripts/category-filter';
+  initCategoryFilter(catMap);
 </script>

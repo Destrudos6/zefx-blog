@@ -23,7 +23,7 @@ const avatarUrl = getMediaUrl(siteData.site.avatar || '/Avatar.png');
     <div class="about-grid">
       <div class="ava reveal"><img src={avatarUrl} alt="头像" width="132" height="132" /></div>
       <div class="reveal" style="--d:.1s">
-        <p class="bio" style="font-size:17px; line-height:1.9" set:html={aboutData.bioLong}></p>
+        <p class="bio" style="font-size:17px; line-height:1.9; white-space:pre-line">{aboutData.bioLong}</p>
         <p class="facts">
           {aboutData.facts.map(f => <><b>▸</b>{f}<br /></>)}
         </p>

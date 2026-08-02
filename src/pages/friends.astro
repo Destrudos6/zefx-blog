@@ -4,18 +4,9 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import BackToTop from "../components/BackToTop.astro";
 import { getFriendLinks } from "../data/backblaze";
+import { safeHost } from "../utils/url";
 
 const friends = await getFriendLinks();
-
-/** 从友链 URL 安全提取域名；无效 URL 返回空串（不显示 favicon） */
-function safeHost(url?: string): string {
-    if (!url || !/^https?:\/\//i.test(url)) return "";
-    try {
-        return new URL(url).hostname;
-    } catch {
-        return "";
-    }
-}
 ---
 
 <BaseLayout title="友链 · ZEFX">
@@ -51,10 +42,9 @@ function safeHost(url?: string): string {
                                         width="18"
                                         height="18"
                                         decoding="async"
+                                        loading="lazy"
                                         referrerpolicy="no-referrer"
                                         data-host={host}
-                                        onload="this.previousElementSibling.style.display='none';this.classList.add('ok')"
-                                        onerror="if(!this.dataset.fbk){this.dataset.fbk='1';this.src='https://www.google.com/s2/favicons?domain='+this.dataset.host+'&sz=64'}else{this.style.display='none'}"
                                     />
                                 )}
                                 <span class="fl-name">{f.name}</span>
@@ -186,3 +176,17 @@ function safeHost(url?: string): string {
     }
     .btn:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--ink); }
 </style>
+
+<script>
+  // favicon 加载成功隐藏占位圆点，失败隐藏图标（无第三方回退，保护访客隐私）
+  document.querySelectorAll('.fl-ico').forEach((img) => {
+    img.addEventListener('load', () => {
+      const dot = img.previousElementSibling;
+      if (dot) dot.style.display = 'none';
+      img.classList.add('ok');
+    });
+    img.addEventListener('error', () => {
+      img.style.display = 'none';
+    });
+  });
+</script>
