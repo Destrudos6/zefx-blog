@@ -277,7 +277,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 /* 相关文章卡片封面（Cover 场景类，贴顶负 margin 与项目卡片一致） */
 .related-cover{
   border: var(--bd);
-  margin: -20px -20px 0;
+  margin: -16px -16px 0;
 }
 .related-cover:not(.has-img){ background:var(--cover-bg, var(--blue)); }
 /* PostCard 占位符在移动端的场景覆盖（Cover 组件内默认纵向） */
