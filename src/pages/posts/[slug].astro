@@ -374,10 +374,15 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
   .article-content :global(mark) {
     background: var(--lemon);
     color: var(--ink);
-    /* 上下各留 2px，荧光条略高于文字，
-       盖住回退字体渲染的方块字形（如弯引号缺字形时的豆腐块），避免上下错位 */
-    padding: 2px 4px;
+    padding: 0 4px;
     border-radius: 2px;
+  }
+
+  /* 高亮里的代码框（`code`）与荧光条对齐：
+     mono 字体的基线偏下，代码框顶边比正文文字矮约 1~2px，
+     顶部多垫 2px 使其顶边与文字齐平，不再露出荧光条 */
+  .article-content :global(mark) :global(code) {
+    padding-top: 4px;
   }
 
   .article-content :global(ul),
