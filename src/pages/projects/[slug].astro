@@ -79,8 +79,8 @@ const ogImage = getMediaUrl(coverPath);
               <Cover src={coverImage} alt={post.title} class="proj-post-cover" icon="📸" label={`IMG_${String(i + 1).padStart(4, '0')}`} />
               <div class="proj-post-right">
                 <div class="proj-post-meta-row">
-                  <time>{post.date}</time>
                   <span class="cat">{post.category}</span>
+                  <time>{post.date}</time>
                 </div>
                 <h3><a href={`/posts/${post.slug}`}>{post.title}</a></h3>
                 <p>{post.excerpt}</p>
