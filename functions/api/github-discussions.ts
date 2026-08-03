@@ -56,9 +56,13 @@ export async function onRequestGet(context) {
 
   try {
     // 分页拉取全部讨论，避免超过 100 条时评论数被静默截断
+    // 加 10s 超时：GitHub API 在部分网络下会长时间无响应，避免请求无限挂起
     const all = [];
     for (let page = 1; page <= MAX_PAGES; page++) {
-      const resp = await fetch(`https://api.github.com/repos/${owner}/${repo}/discussions?per_page=100&page=${page}`, { headers });
+      const resp = await fetch(`https://api.github.com/repos/${owner}/${repo}/discussions?per_page=100&page=${page}`, {
+        headers,
+        signal: AbortSignal.timeout(10000),
+      });
 
       // 错误响应不设置 Cache-Control，避免把 GitHub 的错误结果缓存 5 分钟
       if (!resp.ok) {

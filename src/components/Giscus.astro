@@ -34,28 +34,51 @@ const themeDark = resolveTheme(giscus?.themeDark) || themeLight;
       (function() {
         var cfg = JSON.parse(document.currentScript.dataset.giscus);
         var sec = document.currentScript.parentNode;
-        var s = localStorage.getItem('theme');
-        var isDark = s === 'dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches);
-        var theme = isDark ? sec.dataset.themeDark : sec.dataset.themeLight;
+        var loaded = false;
 
-        var g = document.createElement('script');
-        g.src = 'https://giscus.app/client.js';
-        g.setAttribute('data-repo', cfg.repo);
-        g.setAttribute('data-repo-id', cfg.repoId);
-        g.setAttribute('data-category', cfg.category);
-        g.setAttribute('data-category-id', cfg.categoryId);
-        g.setAttribute('data-mapping', cfg.mapping);
-        g.setAttribute('data-strict', cfg.strict);
-        g.setAttribute('data-reactions-enabled', cfg.reactionsEnabled);
-        g.setAttribute('data-emit-metadata', '0');
-        g.setAttribute('data-input-position', cfg.inputPosition);
-        g.setAttribute('data-theme', theme);
-        g.setAttribute('data-lang', cfg.lang);
-        g.setAttribute('data-loading', 'lazy');
-        g.crossOrigin = 'anonymous';
-        g.async = true;
+        function loadGiscus() {
+          if (loaded) return;
+          loaded = true;
 
-        sec.appendChild(g);
+          var s = localStorage.getItem('theme');
+          var isDark = s === 'dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches);
+          var theme = isDark ? sec.dataset.themeDark : sec.dataset.themeLight;
+
+          var g = document.createElement('script');
+          g.src = 'https://giscus.app/client.js';
+          g.setAttribute('data-repo', cfg.repo);
+          g.setAttribute('data-repo-id', cfg.repoId);
+          g.setAttribute('data-category', cfg.category);
+          g.setAttribute('data-category-id', cfg.categoryId);
+          g.setAttribute('data-mapping', cfg.mapping);
+          g.setAttribute('data-strict', cfg.strict);
+          g.setAttribute('data-reactions-enabled', cfg.reactionsEnabled);
+          g.setAttribute('data-emit-metadata', '0');
+          g.setAttribute('data-input-position', cfg.inputPosition);
+          g.setAttribute('data-theme', theme);
+          g.setAttribute('data-lang', cfg.lang);
+          g.setAttribute('data-loading', 'lazy');
+          g.crossOrigin = 'anonymous';
+          g.async = true;
+
+          sec.appendChild(g);
+        }
+
+        // 滚动到评论区附近才注入 client.js：评论区在页面底部，
+        // 提前注入会在本地/受限网络下因 giscus.app 挂起拖住页面加载指示。
+        if ('IntersectionObserver' in window) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                loadGiscus();
+                io.disconnect();
+              }
+            });
+          }, { rootMargin: '200px 0px' });
+          io.observe(sec);
+        } else {
+          loadGiscus();
+        }
       })();
     </script>
   </section>
