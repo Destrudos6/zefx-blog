@@ -374,7 +374,9 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
   .article-content :global(mark) {
     background: var(--lemon);
     color: var(--ink);
-    padding: 0 4px;
+    /* 上下各留 2px，荧光条略高于文字，
+       盖住回退字体渲染的方块字形（如弯引号缺字形时的豆腐块），避免上下错位 */
+    padding: 2px 4px;
     border-radius: 2px;
   }
 
