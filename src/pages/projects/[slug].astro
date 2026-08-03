@@ -77,11 +77,11 @@ const ogImage = getMediaUrl(coverPath);
             return (
             <article class="proj-post reveal" style={`--ac:${post.categoryColor}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}; --cover-bg:${post.categoryColor}; --d:.${(i + 1) * 8}s`}>
               <Cover src={coverImage} alt={post.title} class="proj-post-cover" icon="📸" label={`IMG_${String(i + 1).padStart(4, '0')}`} />
-              <div class="proj-post-left">
-                <time>{post.date}</time>
-                <span class="cat">{post.category}</span>
-              </div>
               <div class="proj-post-right">
+                <div class="proj-post-meta-row">
+                  <time>{post.date}</time>
+                  <span class="cat">{post.category}</span>
+                </div>
                 <h3><a href={`/posts/${post.slug}`}>{post.title}</a></h3>
                 <p>{post.excerpt}</p>
                 <div class="proj-post-meta">
@@ -168,7 +168,7 @@ const ogImage = getMediaUrl(coverPath);
   .project-posts { display: flex; flex-direction: column; gap: 0; }
   .proj-post {
     display: grid;
-    grid-template-columns: 220px 130px 1fr;
+    grid-template-columns: 220px 1fr;
     gap: 24px; padding: 24px 0;
     border-bottom: 2px dashed rgba(128,128,128,.25);
     transition: background .2s;
@@ -176,10 +176,11 @@ const ogImage = getMediaUrl(coverPath);
   .proj-post:last-child { border-bottom: none; }
   .proj-post:hover .proj-post-cover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ac); }
   .proj-post:hover { background: var(--card); }
-  .proj-post-left {
-    display: flex; flex-direction: column; gap: 8px; padding-top: 4px;
+  .proj-post-meta-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px; padding-top: 2px;
   }
-  .proj-post-left time {
+  .proj-post-meta-row time {
     font-family: var(--mono); font-size: 12px;
     color: var(--soft); letter-spacing: .08em;
   }
