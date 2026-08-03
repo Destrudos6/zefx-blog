@@ -239,11 +239,25 @@ tags: ["随笔", "生活"]
 - `status`：`active` / `done` / `pause`
 - 项目页会展示项目日志，以及 `project` 字段关联到该项目的文章列表
 
+项目目录是**自包含**的，文章与资源都归入项目文件夹：
+
+```
+src/content/projects/<slug>/
+├── logs.json            ← 项目元数据 + 更新日志（必需）
+├── coverimage/          ← 项目文章封面图
+├── illustration/        ← 项目文章内嵌图片
+└── posts/               ← 项目文章（id 自动带 <slug>- 前缀）
+```
+
+项目文章也可以放在 `src/content/posts/` 下，通过 frontmatter 的 `project` 字段关联；但推荐物理归入 `projects/<slug>/posts/`，便于归档与整目录迁移。关联始终以 frontmatter 的 `project` 字段为准（`getProjectPosts` 按它过滤）。
+
 ## 媒体资源
 
-- **文章封面图**：`/posts/coverimage/<slug>.png`，frontmatter 的 `coverImage` 引用
-- **文章内嵌图片**：正文中直接引用 `/posts/illustration/xxx.png`
+- **普通文章封面图**：`/posts/coverimage/<slug>.png`，frontmatter 的 `coverImage` 引用
+- **普通文章内嵌图片**：正文中直接引用 `/posts/illustration/xxx.png`
 - **项目封面图**：`projects/<slug>/cover.png`（或 `coverImage` 字段指定）
+- **项目文章封面图**：`projects/<slug>/coverimage/<文件名>.png`，frontmatter 的 `coverImage` 引用
+- **项目文章内嵌图片**：正文中直接引用 `projects/<slug>/illustration/xxx.png`
 - 所有路径在 Markdown / JSON 中用**本地相对路径**（以 `/` 开头），系统会按 `USE_B2` 自动转换为 B2 代理 URL
 
 ## 评论系统（Giscus）

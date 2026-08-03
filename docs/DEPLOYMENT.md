@@ -98,16 +98,20 @@ your-bucket/
 │   ├── friends.json            ← 友链数据
 │   ├── ticker.json             ← 跑马灯文本
 │   └── categories.json         ← 分类定义
-├── posts/                      ← 文章 Markdown 文件
+├── posts/                      ← 普通文章 Markdown 文件
 │   ├── test.md
-│   ├── coverimage/             ← 文章封面图
+│   ├── coverimage/             ← 普通文章封面图
 │   │   └── test-cover.png
-│   └── illustration/           ← 文章内嵌图片
+│   └── illustration/           ← 普通文章内嵌图片
 │       └── sample.png
-└── projects/                   ← 项目数据
+└── projects/                   ← 项目数据（自包含）
     └── read-design-of-design/
         ├── cover.png           ← 项目封面图
         ├── logs.json           ← 项目元数据
+        ├── coverimage/         ← 项目文章封面图
+        │   └── xxx.png
+        ├── illustration/       ← 项目文章内嵌图片
+        │   └── sample.png
         └── posts/              ← 项目相关文章
             └── test.md
 ```
