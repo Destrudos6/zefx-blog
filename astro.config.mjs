@@ -131,9 +131,6 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       hastPlugins: [lazyImagesHastPlugin(), markHighlightHastPlugin()],
-      // 关闭 smartypants 的引号弯化：ASCII 直引号保持原样，
-      // 避免高亮内被转成弯引号后在部分字体下渲染成错位方块
-      features: { smartPunctuation: false },
     }),
   },
 });
