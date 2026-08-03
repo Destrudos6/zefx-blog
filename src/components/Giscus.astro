@@ -61,6 +61,18 @@ const themeDark = resolveTheme(giscus?.themeDark) || themeLight;
           g.crossOrigin = 'anonymous';
           g.async = true;
 
+          // giscus.app 在部分网络下连接会长时间挂起：10s 未加载完成则移除
+          // 脚本（中止请求），避免拖住页面加载指示（favicon 一直转），并给出失败提示。
+          var timer = setTimeout(function () {
+            g.remove();
+            var tip = document.createElement('p');
+            tip.className = 'giscus-tip';
+            tip.textContent = '评论加载失败（giscus.app 不可达），稍后刷新重试。';
+            sec.appendChild(tip);
+          }, 10000);
+          g.addEventListener('load', function () { clearTimeout(timer); });
+          g.addEventListener('error', function () { clearTimeout(timer); });
+
           sec.appendChild(g);
         }
 
