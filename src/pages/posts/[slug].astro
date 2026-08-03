@@ -11,6 +11,10 @@ import { getMediaUrl, getPostCoverPath } from '../../utils/media';
 
 const allProjects = await getCollection('projects');
 const projectMap = Object.fromEntries(allProjects.map(p => [p.id.split('/')[0], p]));
+// 相关文章取封面用：与 getPostCoverPath 签名匹配的干净映射（文章封面缺失时回退项目封面）
+const relatedCoverMap = Object.fromEntries(
+  allProjects.map(p => [p.id.split('/')[0], { coverImage: p.data.coverImage, slug: p.id.split('/')[0] }])
+);
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -123,13 +127,18 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
       <section class="related reveal" aria-label="相关文章">
         <h2 class="related-title">相关<span class="hl">文章</span></h2>
         <div class="related-grid">
-          {relatedPosts.map(r => (
-            <a class="related-card" href={`/posts/${r.id}`}>
+          {relatedPosts.map(r => {
+            const rCoverPath = getPostCoverPath(r.data, relatedCoverMap);
+            const rCoverImage = rCoverPath ? getMediaUrl(rCoverPath) : null;
+            return (
+            <a class="related-card" href={`/posts/${r.id}`} style={`--cover-bg:${r.data.categoryColor}`}>
+              <Cover src={rCoverImage} alt={r.data.title} class="related-cover" icon="📸" label={`IMG_${String(0).padStart(4, '0')}`} />
               <span class="related-cat" style={`--ac:${r.data.categoryColor}; ${r.data.categoryTextColor ? `--actext:${r.data.categoryTextColor}` : ''}`}>{r.data.category}</span>
               <span class="related-card-title">{r.data.title}</span>
               <time class="related-meta mono">{r.data.date}</time>
             </a>
-          ))}
+            );
+          })}
         </div>
       </section>
     )}
