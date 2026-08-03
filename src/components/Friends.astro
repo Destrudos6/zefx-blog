@@ -114,14 +114,23 @@ const { links, variant = "compact", showExchange = false } = Astro.props;
 <script>
   // favicon 加载成功隐藏占位圆点，失败隐藏图标（无第三方回退，保护访客隐私）
   document.querySelectorAll('.fl-ico').forEach((img) => {
-    img.addEventListener('load', () => {
+    const onLoad = () => {
       const dot = img.previousElementSibling;
       if (dot) dot.style.display = 'none';
       img.classList.add('ok');
-    });
-    img.addEventListener('error', () => {
+    };
+    const onError = () => {
       img.style.display = 'none';
-    });
+    };
+    // 图片可能在脚本执行前已从缓存加载完成：complete 时直接判定成败，
+    // 避免错过 load 事件导致图标永远停留在 display:none
+    if (img.complete) {
+      if (img.naturalWidth > 0) onLoad();
+      else onError();
+      return;
+    }
+    img.addEventListener('load', onLoad);
+    img.addEventListener('error', onError);
   });
 </script>
 

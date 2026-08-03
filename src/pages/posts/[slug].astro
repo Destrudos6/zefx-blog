@@ -309,6 +309,19 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
     margin-bottom: 24px;
   }
 
+  /* 正文链接视觉差异化：与普通文本区分（颜色 + 黄色下划线），悬停加深 */
+  .article-content :global(a) {
+    color: var(--red);
+    text-decoration: underline;
+    text-decoration-color: var(--lemon);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    transition: color .15s;
+  }
+  .article-content :global(a:hover) {
+    color: var(--ink);
+  }
+
   .article-content :global(pre) {
     background: var(--ink);
     color: var(--paper);
@@ -320,6 +333,38 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
     line-height: 1.6;
     margin-bottom: 24px;
     box-shadow: 6px 6px 0 rgba(0,0,0,.15);
+    position: relative;
+  }
+
+  /* 代码块复制按钮：悬停/聚焦代码块时在右上角显示 */
+  .article-content :global(pre) .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--paper);
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.25);
+    padding: 3px 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s, background .15s;
+    line-height: 1.5;
+  }
+  .article-content :global(pre):hover .copy-btn,
+  .article-content :global(pre):focus-within .copy-btn {
+    opacity: 1;
+  }
+  .article-content :global(pre) .copy-btn:hover {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .article-content :global(pre) .copy-btn.copied {
+    background: var(--green);
+    border-color: var(--green);
   }
 
   .article-content :global(code) {
@@ -337,20 +382,25 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
   }
 
   .article-content :global(blockquote) {
+    border: none;
     border-left: 4px solid var(--red);
-    padding: 20px 28px;
-    margin: 32px 0;
-    background: var(--card);
-    border: var(--bd);
-    border-left: 6px solid var(--red);
+    margin: 24px 0;
+    padding: 2px 0 2px 20px;
     font-style: italic;
     color: var(--soft);
-    box-shadow: 4px 4px 0 var(--ink);
   }
 
   .article-content :global(strong) {
     font-weight: 700;
     color: var(--ink);
+  }
+
+  /* 高亮标记 ==text== → <mark>（由 mark-highlight hast 插件在构建时生成） */
+  .article-content :global(mark) {
+    background: var(--lemon);
+    color: var(--ink);
+    padding: 0 4px;
+    border-radius: 2px;
   }
 
   .article-content :global(ul),
@@ -574,3 +624,52 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
     .back-bar { font-size: 13px; padding: 6px 16px; }
   }
 </style>
+
+<script>
+  // 为文章正文的每个代码块注入右上角复制按钮（悬停/聚焦时显示）
+  (function () {
+    const pres = document.querySelectorAll('.article-content pre');
+    if (!pres.length) return;
+
+    pres.forEach((pre) => {
+      // 跳过已经注入过按钮的代码块（防止重复执行）
+      if (pre.querySelector('.copy-btn')) return;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-btn mono';
+      btn.textContent = '复制';
+      btn.setAttribute('aria-label', '复制代码');
+
+      btn.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        const text = code ? code.innerText : pre.innerText;
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = '已复制 ✓';
+          btn.classList.add('copied');
+        } catch {
+          // 剪贴板 API 不可用时回退到 textarea 复制
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy');
+            btn.textContent = '已复制 ✓';
+            btn.classList.add('copied');
+          } catch {
+            btn.textContent = '复制失败';
+          }
+          ta.remove();
+        }
+        setTimeout(() => {
+          btn.textContent = '复制';
+          btn.classList.remove('copied');
+        }, 1500);
+      });
+
+      pre.appendChild(btn);
+    });
+  })();
+</script>
