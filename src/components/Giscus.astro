@@ -78,12 +78,18 @@ const themeDark = resolveTheme(giscus?.themeDark) || themeLight;
 
         // 滚动到评论区附近才注入 client.js：评论区在页面底部，
         // 提前注入会在本地/受限网络下因 giscus.app 挂起拖住页面加载指示。
+        // 即使评论区已在视口附近（短页面如项目页），也等主文档 load 完成
+        // 再注入，避免挂起请求拖住 favicon 加载指示。
         if ('IntersectionObserver' in window) {
           var io = new IntersectionObserver(function (entries) {
             entries.forEach(function (e) {
               if (e.isIntersecting) {
-                loadGiscus();
                 io.disconnect();
+                if (document.readyState === 'complete') {
+                  loadGiscus();
+                } else {
+                  window.addEventListener('load', loadGiscus, { once: true });
+                }
               }
             });
           }, { rootMargin: '200px 0px' });
