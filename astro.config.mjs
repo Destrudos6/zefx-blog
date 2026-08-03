@@ -72,27 +72,6 @@ function markHighlightHastPlugin() {
           return out;
         };
 
-        // smartypants 会把高亮里的直引号转成弯引号（U+2018/U+2019/U+201C/U+201D），
-        // 部分字体回退会把它渲染成上下错位的方块；高亮内还原为直引号，与源码一致
-        const revertSmartQuotes = (node) => {
-          if (node.type === 'text') {
-            const v = node.value
-              .replace(/[\u2018\u2019]/g, "'")
-              .replace(/[\u201c\u201d]/g, '"');
-            return v === node.value ? node : { type: 'text', value: v };
-          }
-          if (node.type === 'element' && Array.isArray(node.children)) {
-            let changed = false;
-            const kids = node.children.map((c) => {
-              const r = revertSmartQuotes(c);
-              if (r !== c) changed = true;
-              return r;
-            });
-            return changed ? { ...node, children: kids } : node;
-          }
-          return node;
-        };
-
         const out = [];
         let cursor = 0;
         let matched = false;
@@ -107,7 +86,7 @@ function markHighlightHastPlugin() {
             type: 'element',
             tagName: 'mark',
             properties: {},
-            children: slice(spanStart + 2, spanEnd - 2).map(revertSmartQuotes), // 去掉两端的 ==
+            children: slice(spanStart + 2, spanEnd - 2), // 去掉两端的 ==
           });
           cursor = spanEnd;
         }
