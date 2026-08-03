@@ -268,6 +268,12 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   position:absolute; inset:0; object-position:center;
 }
 .post-cover:not(.has-img){ background:var(--cover-bg, var(--blue)); }
+/* 项目页文章卡片封面（Cover 场景类，基础比例/定位由 Cover 组件处理，这里只加装饰） */
+.proj-post-cover{
+  border: var(--bd);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.proj-post-cover:not(.has-img){ background:var(--cover-bg, var(--green)); }
 /* PostCard 占位符在移动端的场景覆盖（Cover 组件内默认纵向） */
 @media (max-width: 640px) {
   .post-cover .cover-inner{flex-direction:row; gap:8px}

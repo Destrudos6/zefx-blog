@@ -6,17 +6,18 @@ import BackToTop from '../../components/BackToTop.astro';
 import Cover from '../../components/Cover.astro';
 import Giscus from '../../components/Giscus.astro';
 import { getAllProjects, getProjectPosts } from '../../data/content';
-import { getMediaUrl } from '../../utils/media';
+import { getMediaUrl, getPostCoverPath } from '../../utils/media';
 
 export async function getStaticPaths() {
   const allProjects = await getAllProjects();
+  const projectMap = Object.fromEntries(allProjects.map(p => [p.slug, p]));
   return allProjects.map(project => ({
     params: { slug: project.slug },
-    props: { project },
+    props: { project, projectMap },
   }));
 }
 
-const { project } = Astro.props;
+const { project, projectMap } = Astro.props;
 const projectPosts = await getProjectPosts(project.slug);
 
 const statusIcon = project.status === 'active' ? '▶' : project.status === 'done' ? '✓' : '⏸';
@@ -70,8 +71,12 @@ const ogImage = getMediaUrl(coverPath);
       <div class="posts-section reveal" style="margin-top:48px">
         <h2>项目<span class="hl">文章</span></h2>
         <div class="project-posts">
-          {projectPosts.map((post, i) => (
-            <article class="proj-post reveal" style={`--ac:${post.categoryColor}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}; --d:.${(i + 1) * 8}s`}>
+          {projectPosts.map((post, i) => {
+            const coverPath = getPostCoverPath(post, projectMap);
+            const coverImage = coverPath ? getMediaUrl(coverPath) : null;
+            return (
+            <article class="proj-post reveal" style={`--ac:${post.categoryColor}; ${post.categoryTextColor ? `--actext:${post.categoryTextColor}` : ''}; --cover-bg:${post.categoryColor}; --d:.${(i + 1) * 8}s`}>
+              <Cover src={coverImage} alt={post.title} class="proj-post-cover" icon="📸" label={`IMG_${String(i + 1).padStart(4, '0')}`} />
               <div class="proj-post-left">
                 <time>{post.date}</time>
                 <span class="cat">{post.category}</span>
@@ -85,7 +90,8 @@ const ogImage = getMediaUrl(coverPath);
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </div>
     ) : (
@@ -162,12 +168,13 @@ const ogImage = getMediaUrl(coverPath);
   .project-posts { display: flex; flex-direction: column; gap: 0; }
   .proj-post {
     display: grid;
-    grid-template-columns: 140px 1fr;
+    grid-template-columns: 220px 130px 1fr;
     gap: 24px; padding: 24px 0;
     border-bottom: 2px dashed rgba(128,128,128,.25);
     transition: background .2s;
   }
   .proj-post:last-child { border-bottom: none; }
+  .proj-post:hover .proj-post-cover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ac); }
   .proj-post:hover { background: var(--card); }
   .proj-post-left {
     display: flex; flex-direction: column; gap: 8px; padding-top: 4px;
@@ -229,7 +236,8 @@ const ogImage = getMediaUrl(coverPath);
     .project-hero { grid-template-columns: 1fr; }
   }
   @media (max-width: 640px) {
-    .proj-post { grid-template-columns: 1fr; gap: 8px; }
+    .proj-post { grid-template-columns: 1fr; gap: 12px; }
+    .proj-post-cover { max-width: 100%; }
     .project-hero { padding: 40px 18px 0; }
     .project-hero h1 { font-size: clamp(26px, 7vw, 36px); }
     .project-desc { font-size: 15px; }
