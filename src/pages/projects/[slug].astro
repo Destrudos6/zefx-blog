@@ -132,6 +132,10 @@ const ogImage = getMediaUrl(coverPath);
   .project-desc {
     font-size: 17px; color: var(--soft);
     line-height: 1.7; margin-bottom: 20px; max-width: 32em;
+    /* 覆盖 global.css 的 -webkit-line-clamp:3 截断，详情页摘要完整显示 */
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
   }
   .tag {
     font-family: var(--mono); font-size: 11.5px;
