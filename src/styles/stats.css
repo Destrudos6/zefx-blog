@@ -61,6 +61,12 @@ html[data-theme="dark"] .gh-cell.c0 { background: #21262d; }
 .gh-cell.c2 { background: #40c463; border-color: transparent; }
 .gh-cell.c3 { background: #30a14e; border-color: transparent; }
 .gh-cell.c4 { background: #216e39; border-color: transparent; }
+/* 暗色主题下 c1-c4 用 GitHub 官方暗色贡献色（等级越高越亮），
+   否则亮色系的深绿在暗背景上过暗，高等级格子反而不显眼（"发帖越多颜色越浅"的错觉） */
+html[data-theme="dark"] .gh-cell.c1 { background: #0e4429; }
+html[data-theme="dark"] .gh-cell.c2 { background: #006d32; }
+html[data-theme="dark"] .gh-cell.c3 { background: #26a641; }
+html[data-theme="dark"] .gh-cell.c4 { background: #39d353; }
 
 /* ---------- 公开仓库列表（JS 动态创建） ---------- */
 .gh-repos {
