@@ -188,7 +188,8 @@ const giscusRepo = giscusParts[1] || '';
 
   // 项目名自适应字号：测量元信息行内项目名的可用空间，按比例缩放 font-size，
   // 保证分类+项目名+时间戳始终排在一行、项目名完整显示不截断。
-  // 缩小设下限，极端超长时仍由 flex-wrap 兜底换行，不会溢出。
+  // 优化点：padding 不参与缩放比例（避免固定 padding 占比导致字号过度缩小）、
+  // 接近边界时留 1px 容差不缩放、已被 flex-wrap 挤到独立行时不缩放；下限 7px 兜底。
   function fitProjectTags() {
     const tags = document.querySelectorAll('.project-tag');
     if (!tags.length) return;
@@ -203,9 +204,16 @@ const giscusRepo = giscusParts[1] || '';
       const gap = parseFloat(getComputedStyle(parent).gap) || 0;
       const avail = parent.clientWidth - siblingW - gap * (parent.children.length - 1);
       if (avail <= 0) return;
-      const natural = tag.scrollWidth;
-      if (natural > avail) {
-        tag.style.fontSize = Math.max(MIN, BASE * avail / natural) + 'px';
+      // 已被 flex-wrap 挤到第二行：项目名独占一行，无需缩放
+      if (siblings.length && tag.offsetTop > siblings[0].offsetTop) return;
+      // 只按文本部分缩放：减去固定 padding，避免 padding 占比例导致字号缩得过小
+      const cs = getComputedStyle(tag);
+      const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      const naturalText = tag.scrollWidth - pad;
+      const availText = avail - pad;
+      // 1px 容差：接近边界时保持基准字号，避免无谓缩小
+      if (naturalText > availText + 1) {
+        tag.style.fontSize = Math.max(MIN, BASE * availText / naturalText) + 'px';
       }
     });
   }
