@@ -185,4 +185,31 @@ const giscusRepo = giscusParts[1] || '';
       }
     });
   });
+
+  // 项目名自适应字号：测量元信息行内项目名的可用空间，按比例缩放 font-size，
+  // 保证分类+项目名+时间戳始终排在一行、项目名完整显示不截断。
+  // 缩小设下限，极端超长时仍由 flex-wrap 兜底换行，不会溢出。
+  function fitProjectTags() {
+    const tags = document.querySelectorAll('.project-tag');
+    if (!tags.length) return;
+    const BASE = 10; // 基准字号，与 CSS 保持一致
+    const MIN = 7;   // 最小字号
+    tags.forEach(tag => {
+      const parent = tag.parentElement;
+      if (!parent) return;
+      tag.style.fontSize = BASE + 'px'; // 重置为基准后再测量自然宽度
+      const siblings = Array.from(parent.children).filter(c => c !== tag);
+      const siblingW = siblings.reduce((s, c) => s + (c.offsetWidth || 0), 0);
+      const gap = parseFloat(getComputedStyle(parent).gap) || 0;
+      const avail = parent.clientWidth - siblingW - gap * (parent.children.length - 1);
+      if (avail <= 0) return;
+      const natural = tag.scrollWidth;
+      if (natural > avail) {
+        tag.style.fontSize = Math.max(MIN, BASE * avail / natural) + 'px';
+      }
+    });
+  }
+  fitProjectTags();
+  document.fonts?.ready?.then(fitProjectTags);
+  addEventListener('resize', () => requestAnimationFrame(fitProjectTags));
 </script>
