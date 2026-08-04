@@ -42,20 +42,27 @@ export async function getAllPostsFromCollection(): Promise<Post[]> {
     const db = b.data.date || '';
     return db.localeCompare(da);
   });
-  return entries.map(entry => ({
-    slug: entry.id,
-    category: entry.data.category,
-    categoryColor: entry.data.categoryColor,
-    categoryTextColor: entry.data.categoryTextColor,
-    date: entry.data.date,
-    title: entry.data.title,
-    excerpt: entry.data.excerpt,
-    readTime: entry.data.readTime,
-    comments: entry.data.comments,
-    coverImage: entry.data.coverImage,
-    project: entry.data.project,
-    tags: entry.data.tags ?? [],
-  }));
+  // 分类固定颜色：以 categories.json 为准，覆盖文章 frontmatter 里各自写的颜色；
+  // categories.json 未收录的分类保留文章自己的颜色兜底
+  const categories = await (await import('../data/backblaze')).getCategories();
+  const catColorMap = Object.fromEntries(categories.map(c => [c.label, c]));
+  return entries.map(entry => {
+    const cat = catColorMap[entry.data.category];
+    return {
+      slug: entry.id,
+      category: entry.data.category,
+      categoryColor: cat?.color ?? entry.data.categoryColor,
+      categoryTextColor: cat?.textColor ?? entry.data.categoryTextColor,
+      date: entry.data.date,
+      title: entry.data.title,
+      excerpt: entry.data.excerpt,
+      readTime: entry.data.readTime,
+      comments: entry.data.comments,
+      coverImage: entry.data.coverImage,
+      project: entry.data.project,
+      tags: entry.data.tags ?? [],
+    };
+  });
 }
 
 /**

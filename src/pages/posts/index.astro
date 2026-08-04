@@ -44,7 +44,10 @@ const coverColors = ['var(--blue)', 'var(--green)', 'var(--red)', 'var(--orange)
   <BackToTop />
 </BaseLayout>
 
-<script define:vars={{ catMap }}>
+<script is:inline define:vars={{ catMap }}>
+  window.__CAT_MAP__ = catMap;
+</script>
+<script>
   import { initCategoryFilter } from '../../scripts/category-filter';
-  initCategoryFilter(catMap);
+  initCategoryFilter(window.__CAT_MAP__);
 </script>
