@@ -19,7 +19,8 @@ const posts = defineCollection({
   }),
   schema: z.object({
     category: z.string(),
-    categoryColor: z.string(),
+    // 分类颜色已由 categories.json 统一决定，frontmatter 不再必填；缺失时用默认蓝兜底
+    categoryColor: z.string().default('var(--blue)'),
     categoryTextColor: z.string().optional(),
     date: z.string(),
     title: z.string(),
