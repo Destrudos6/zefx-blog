@@ -300,6 +300,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .article-cover{
   border:var(--bd);
   box-shadow:8px 8px 0 var(--ink);
+  cursor: zoom-in;
 }
 .article-cover::before{
   content:""; position:absolute; inset:0;

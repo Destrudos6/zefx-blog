@@ -148,6 +148,15 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
   <Footer />
   <BackToTop />
   <MobileActions hasToc={toc.length > 0} hasComments={true} />
+
+  <!-- 封面大图灯箱 -->
+  <div class="lightbox" id="coverLightbox" aria-hidden="true">
+    <div class="lightbox-overlay" data-lightbox-close></div>
+    <figure class="lightbox-figure">
+      <img id="lightboxImg" src="" alt="" />
+      <button class="lightbox-close" data-lightbox-close aria-label="关闭大图">×</button>
+    </figure>
+  </div>
 </BaseLayout>
 
 <style>
@@ -620,6 +629,60 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
     .article-excerpt { font-size: 15px; }
     .back-bar { font-size: 13px; padding: 6px 16px; }
   }
+
+  /* 封面大图灯箱 */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 12, 20, .82);
+  }
+  .lightbox.open { display: flex; }
+  .lightbox-overlay {
+    position: absolute;
+    inset: 0;
+    cursor: zoom-out;
+  }
+  .lightbox-figure {
+    position: relative;
+    margin: 0;
+    max-width: min(92vw, 1200px);
+    max-height: 88vh;
+  }
+  .lightbox-figure img {
+    display: block;
+    max-width: 92vw;
+    max-height: 88vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: var(--bd);
+    background: var(--card);
+    box-shadow: 0 14px 48px rgba(0,0,0,.55);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    border: var(--bd);
+    background: var(--red);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .lightbox-close:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 var(--ink);
+  }
 </style>
 
 <style is:global>
@@ -718,4 +781,28 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
       }
     });
   });
+
+  // 封面点击展开大图（灯箱）：点遮罩/关闭按钮/ESC 关闭
+  const articleCover = document.querySelector('.article-cover img');
+  const lightbox = document.getElementById('coverLightbox');
+  if (articleCover && lightbox) {
+    const lightboxImg = document.getElementById('lightboxImg');
+    const openLightbox = () => {
+      lightboxImg.src = articleCover.src;
+      lightboxImg.alt = articleCover.alt || '';
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+    };
+    const closeLightbox = () => {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden', 'true');
+    };
+    articleCover.addEventListener('click', openLightbox);
+    lightbox.querySelectorAll('[data-lightbox-close]').forEach(el => {
+      el.addEventListener('click', closeLightbox);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  }
 </script>
