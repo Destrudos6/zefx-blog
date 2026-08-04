@@ -15,6 +15,11 @@ const projectMap = Object.fromEntries(allProjects.map(p => [p.id.split('/')[0], 
 const relatedCoverMap = Object.fromEntries(
   allProjects.map(p => [p.id.split('/')[0], { coverImage: p.data.coverImage, slug: p.id.split('/')[0] }])
 );
+// 分类固定颜色映射：直接使用 entry.data 渲染的标签（文章页头部、相关文章）也按分类着色，
+// 避免文章删除 categoryColor 后全部落到 schema 默认的 var(--blue)
+const catColorMap = Object.fromEntries(
+  (await (await import('../../data/backblaze')).getCategories()).map(c => [c.label, c])
+);
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -69,7 +74,7 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
   <div class="article-header reveal">
     <div class="article-header-main">
       <div class="article-meta">
-          <span class="cat" style={`--ac:${post.data.categoryColor}; ${post.data.categoryTextColor ? `--actext:${post.data.categoryTextColor}` : ''}`}>{post.data.category}</span>
+          <span class="cat" style={`--ac:${catColorMap[post.data.category]?.color ?? post.data.categoryColor}; ${(catColorMap[post.data.category]?.textColor ?? post.data.categoryTextColor) ? `--actext:${catColorMap[post.data.category]?.textColor ?? post.data.categoryTextColor}` : ''}`}>{post.data.category}</span>
           {projectInfo && (
             <span class="project-tag" style={`--pc:${projectInfo.data.coverColor}`}>{projectInfo.data.title}</span>
           )}
@@ -131,9 +136,9 @@ const coverImage = coverPath ? getMediaUrl(coverPath) : null;
             const rCoverPath = getPostCoverPath(r.data, relatedCoverMap);
             const rCoverImage = rCoverPath ? getMediaUrl(rCoverPath) : null;
             return (
-            <a class="related-card" href={`/posts/${r.id}`} style={`--cover-bg:${r.data.categoryColor}`}>
+            <a class="related-card" href={`/posts/${r.id}`} style={`--cover-bg:${catColorMap[r.data.category]?.color ?? r.data.categoryColor}`}>
               <Cover src={rCoverImage} alt={r.data.title} class="related-cover" icon="📸" label={`IMG_${String(0).padStart(4, '0')}`} />
-              <span class="related-cat" style={`--ac:${r.data.categoryColor}; ${r.data.categoryTextColor ? `--actext:${r.data.categoryTextColor}` : ''}`}>{r.data.category}</span>
+              <span class="related-cat" style={`--ac:${catColorMap[r.data.category]?.color ?? r.data.categoryColor}; ${(catColorMap[r.data.category]?.textColor ?? r.data.categoryTextColor) ? `--actext:${catColorMap[r.data.category]?.textColor ?? r.data.categoryTextColor}` : ''}`}>{r.data.category}</span>
               <span class="related-card-title">{r.data.title}</span>
               <time class="related-meta mono">{r.data.date}</time>
             </a>

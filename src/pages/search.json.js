@@ -1,14 +1,17 @@
 import { getAllProjects } from '../data/content';
 import { getMediaUrl, getPostCoverPath } from '../utils/media';
 import { getCollection } from 'astro:content';
+import { getCategories } from '../data/backblaze';
 
 export async function GET() {
-  const [posts, projects] = await Promise.all([
+  const [posts, projects, categories] = await Promise.all([
     getCollection('posts'),
     getAllProjects(),
+    getCategories(),
   ]);
 
   const projectMap = Object.fromEntries(projects.map(p => [p.slug, p]));
+  const catColorMap = Object.fromEntries(categories.map(c => [c.label, c]));
 
   const data = [
     ...posts.map(p => {
@@ -20,7 +23,7 @@ export async function GET() {
         slug: p.id,
         title: p.data.title,
         category: p.data.category,
-        categoryColor: p.data.categoryColor,
+        categoryColor: catColorMap[p.data.category]?.color ?? p.data.categoryColor,
         date: p.data.date,
         excerpt: p.data.excerpt,
         content: (p.body || '').replace(/\r\n/g, '\n').slice(0, 5000),
