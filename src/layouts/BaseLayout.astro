@@ -217,6 +217,8 @@ const giscusRepo = giscusParts[1] || '';
       }
     });
   }
+  // 暴露给动态渲染的页面（如搜索结果）在渲染完成后重新适配
+  window.fitProjectTags = fitProjectTags;
   fitProjectTags();
   document.fonts?.ready?.then(fitProjectTags);
   addEventListener('resize', () => requestAnimationFrame(fitProjectTags));

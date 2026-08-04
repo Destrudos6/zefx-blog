@@ -158,6 +158,8 @@ import BackToTop from '../components/BackToTop.astro';
       }
 
       container.innerHTML = html;
+      // 动态生成的卡片包含 project-tag，渲染完成后重新做项目名自适应字号
+      window.fitProjectTags?.();
     } catch (e) {
       container.innerHTML = `<p class="search-empty">搜索服务暂时不可用。请稍后再试。</p>`;
     }
