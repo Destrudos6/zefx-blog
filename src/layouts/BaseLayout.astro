@@ -174,4 +174,15 @@ const giscusRepo = giscusParts[1] || '';
     addEventListener('scroll', updateToc, { passive: true });
     updateToc();
   }
+
+  // 返回按钮：站内跳转进来时回退浏览器历史（保留滚动位置，回到上一级）；
+  // 直接访问或从外部站点进入时走 href 兜底（/posts、/projects 等）
+  document.querySelectorAll('[data-back-link]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      if (document.referrer && new URL(document.referrer).origin === location.origin) {
+        e.preventDefault();
+        history.back();
+      }
+    });
+  });
 </script>
