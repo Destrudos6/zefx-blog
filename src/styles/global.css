@@ -374,7 +374,8 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
 .post-card:hover .go{background:var(--ac); color:var(--actext,#fff); transform:translateX(4px) rotate(-45deg)}
 
 /* ============ 项目 ============ */
-.projects-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; align-items:start}
+/* align-items 默认 stretch：同一行内所有项目卡片等高，有日志的卡片不再比普通卡片更长 */
+.projects-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:24px}
 @media(max-width:1000px){.projects-grid{grid-template-columns:repeat(2, 1fr)}}
 @media(max-width:640px){.projects-grid{grid-template-columns:1fr}}
 
@@ -383,6 +384,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   border:3px solid var(--ink); background:var(--card);
   box-shadow:6px 6px 0 var(--ink);
   padding:18px; display:flex; flex-direction:column; gap:12px;
+  height:100%; /* 撑满 .project-link 网格单元格，保证同列等高 */
   transition:transform .28s, box-shadow .28s;
 }
 .project:hover{transform:translate(-3px,-3px); box-shadow:9px 9px 0 var(--red)}
@@ -420,7 +422,7 @@ h2{font-family:var(--serif); font-weight:900; font-size:clamp(27px,3.4vw,38px); 
   /* 日志长文本最多 2 行，防止单条日志把项目卡片拉高 */
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
-.project-tags{display:flex; gap:8px; flex-wrap:wrap}
+.project-tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:auto}
 .tag-more{opacity:.75}
 .project .tag{font-family:var(--mono); font-size:11px; color:var(--red); background:var(--paper); border:var(--bd); padding:2px 8px; font-weight:700}
 
