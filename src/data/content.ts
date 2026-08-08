@@ -87,7 +87,8 @@ export async function getAllProjects(): Promise<Project[]> {
   });
 }
 
-export const POSTS_PER_PAGE = 8;
+// 与 posts-grid 列数对齐（桌面 3 列、平板 2 列）：取 3 和 2 的公倍数 12，保证所有断点都能放满不空缺
+export const POSTS_PER_PAGE = 12;
 
 export async function getProjectPosts(projectSlug: string) {
   const allPosts = await getAllPostsFromCollection();
